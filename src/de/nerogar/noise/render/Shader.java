@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL20.*;
 
 import java.io.*;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,7 +62,7 @@ public class Shader {
 	}
 
 	public void setUniformf(String name, FloatBuffer floatBuffer) {
-		glUniform1(getUniformLocation(name), floatBuffer);
+		glUniform1fv(getUniformLocation(name), floatBuffer);
 	}
 
 	public void setUniform1f(String name, float f0) {
@@ -80,11 +81,30 @@ public class Shader {
 		glUniform4f(getUniformLocation(name), f0, f1, f2, f3);
 	}
 
+	public void setUniformMat2f(String name, FloatBuffer buffer) {
+		glUniformMatrix2fv(getUniformLocation(name), true, buffer);
+	}
+
+	public void setUniformMat3f(String name, FloatBuffer buffer) {
+		glUniformMatrix3fv(getUniformLocation(name), true, buffer);
+	}
+
 	public void setUniformMat4f(String name, FloatBuffer buffer) {
-		glUniformMatrix4(getUniformLocation(name), true, buffer);
+		glUniformMatrix4fv(getUniformLocation(name), true, buffer);
 	}
 
 	//int
+	public void setUniformi(String name, int[] values) {
+		IntBuffer intBuffer = BufferUtils.createIntBuffer(values.length);
+		intBuffer.put(values);
+		intBuffer.flip();
+		setUniformi(name, intBuffer);
+	}
+
+	public void setUniformi(String name, IntBuffer intBuffer) {
+		glUniform1iv(getUniformLocation(name), intBuffer);
+	}
+
 	public void setUniform1i(String name, int i0) {
 		glUniform1i(getUniformLocation(name), i0);
 	}
