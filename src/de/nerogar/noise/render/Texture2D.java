@@ -128,11 +128,11 @@ public class Texture2D {
 		return filename;
 	}
 
-	public void setWidth(int width) {
+	protected void setWidth(int width) {
 		this.width = width;
 	}
 
-	public void setHeight(int height) {
+	protected void setHeight(int height) {
 		this.height = height;
 	}
 

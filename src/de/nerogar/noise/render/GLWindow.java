@@ -6,23 +6,41 @@ import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GLContext;
 
 import de.nerogar.noise.listener.GLWindowSizeChangeListener;
+import de.nerogar.noise.log.Logger;
 
 public class GLWindow implements IRenderTarget {
+
+	private static List<GLWindow> windows;
 
 	private long windowPointer;
 
 	private String title;
-	private int width, height;
+	private int windowWidth, windowHeight;
 	private int swapInterval;
 	private boolean resizable;
 
 	private GLContext glContext;
 
 	private GLWindowSizeChangeListener sizeChangeListener;
+
+	private InputHandler inputHandler;
+
+	//holds references to callbacks, the gc will delete them otherwise
+	private GLFWFramebufferSizeCallback frameBufferCallback;
+	private GLFWCursorPosCallback cursorPosCallback;
+	private GLFWKeyCallback keyCallback;
+	private GLFWCharModsCallback charModsCallback;
+	private GLFWMouseButtonCallback mouseButtonCallback;
+	private GLFWScrollCallback scrollCallback;
+
+	private boolean deleted;
 
 	/**
 	 * Creates a new window for OpenGL. A new GLContext will be created.
@@ -37,6 +55,7 @@ public class GLWindow implements IRenderTarget {
 	 * @param parentWindow the window to share opengl objects with, null otherwise
 	 */
 	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval, Monitor monitor, GLWindow parentWindow) {
+		windows.add(this);
 		this.title = title;
 		this.resizable = resizable;
 
@@ -46,48 +65,92 @@ public class GLWindow implements IRenderTarget {
 		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 
 		windowPointer = glfwCreateWindow(width, height, title, monitor == null ? NULL : monitor.getPointer(), parentWindow == null ? NULL : parentWindow.windowPointer);
+		glfwSetInputMode(windowPointer, GLFW_STICKY_KEYS, GL_TRUE);
+		inputHandler = new InputHandler(windowPointer);
 
 		glfwMakeContextCurrent(windowPointer);
 		glContext = GLContext.createFromCurrent();
 
 		setSwapInterval(swapInterval);
 
-		glfwSetFramebufferSizeCallback(windowPointer, new GLFWFramebufferSizeCallback() {
+		frameBufferCallback = new GLFWFramebufferSizeCallback() {
 			@Override
-			public void invoke(long window, int width, int height) {
+			public void invoke(long window, int newWidth, int newHeight) {
 				long currentContext = glfwGetCurrentContext();
 				glfwMakeContextCurrent(windowPointer);
-				glViewport(0, 0, width, height);
+				glViewport(0, 0, newWidth, newHeight);
 				glfwMakeContextCurrent(currentContext);
 
-				updateResolution(width, height);
+				windowWidth = newWidth;
+				windowHeight = newHeight;
 
-				if (sizeChangeListener != null) sizeChangeListener.onChange(width, height);
+				if (sizeChangeListener != null) sizeChangeListener.onChange(newWidth, newHeight);
 			}
-		});
+		};
 
-	}
+		cursorPosCallback = new GLFWCursorPosCallback() {
+			@Override
+			public void invoke(long window, double xpos, double ypos) {
+				inputHandler.setCursorPosition(xpos, ypos);
 
-	private void updateResolution(int width, int height) {
-		this.width = width;
-		this.height = height;
+				//glfwSetCursorPos(windowPointer, 0.0, 0.0);
+			}
+		};
+
+		keyCallback = new GLFWKeyCallback() {
+			@Override
+			public void invoke(long window, int key, int scancode, int action, int mods) {
+				inputHandler.addKeyboardKeyEvent(key, scancode, action, mods);
+			}
+		};
+
+		charModsCallback = new GLFWCharModsCallback() {
+			@Override
+			public void invoke(long window, int codepoint, int mods) {
+				inputHandler.addInputTextCodepoint(codepoint);
+			}
+		};
+
+		mouseButtonCallback = new GLFWMouseButtonCallback() {
+			@Override
+			public void invoke(long window, int button, int action, int mods) {
+				inputHandler.addMouseButtonEvent(button, action, mods);
+			}
+		};
+
+		scrollCallback = new GLFWScrollCallback() {
+			@Override
+			public void invoke(long window, double xoffset, double yoffset) {
+				inputHandler.setScrollWheelDelta(xoffset, yoffset);
+			}
+		};
+
+		glfwSetFramebufferSizeCallback(windowPointer, frameBufferCallback);
+		glfwSetCursorPosCallback(windowPointer, cursorPosCallback);
+		glfwSetKeyCallback(windowPointer, keyCallback);
+		glfwSetCharModsCallback(windowPointer, charModsCallback);
+		glfwSetMouseButtonCallback(windowPointer, mouseButtonCallback);
+		glfwSetScrollCallback(windowPointer, scrollCallback);
+
+		glfwGetKey(windowPointer, GLFW_KEY_0);
+
 	}
 
 	@Override
 	public void setResolution(int width, int height) {
-		this.width = width;
-		this.height = height;
+		this.windowWidth = width;
+		this.windowHeight = height;
 		glfwSetWindowSize(windowPointer, width, height);
 	}
 
 	@Override
 	public int getWidth() {
-		return width;
+		return windowWidth;
 	}
 
 	@Override
 	public int getHeight() {
-		return height;
+		return windowHeight;
 	}
 
 	public void setSwapInterval(int swapInterval) {
@@ -107,13 +170,13 @@ public class GLWindow implements IRenderTarget {
 		return glfwWindowShouldClose(windowPointer) == GL_TRUE;
 	}
 
-	public String getTitle() {
-		return title;
-	}
-
 	public void setTitle(String title) {
 		this.title = title;
 		glfwSetWindowTitle(windowPointer, title);
+	}
+
+	public String getTitle() {
+		return title;
 	}
 
 	public boolean isResizable() {
@@ -122,6 +185,10 @@ public class GLWindow implements IRenderTarget {
 
 	public GLContext getGLContext() {
 		return glContext;
+	}
+
+	public InputHandler getInputHandler() {
+		return inputHandler;
 	}
 
 	public void setSizeChangeListener(GLWindowSizeChangeListener sizeChangeListener) {
@@ -137,33 +204,50 @@ public class GLWindow implements IRenderTarget {
 		glfwShowWindow(windowPointer);
 	}
 
-	public void enableMouseHiding(boolean hide) {
+	public void setMouseHiding(boolean hide) {
 		if (hide) {
-			glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		} else {
 			glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		} else {
+			glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 	}
 
-	public void update() {
-		long currentContext = glfwGetCurrentContext();
+	/**
+	 * Updates all events and swaps buffers on all windows.
+	 */
+	public static void updateAll() {
+		for (GLWindow window : windows) {
+			window.inputHandler.resetInputText();
+			window.inputHandler.resetKeyboardKeyEvents();
+			window.inputHandler.resetMouseButtonEvents();
+			glfwSwapBuffers(window.windowPointer);
+		}
 
-		glfwMakeContextCurrent(windowPointer);
 		glfwPollEvents();
-
-		glfwSwapBuffers(windowPointer);
-
-		glfwMakeContextCurrent(currentContext);
 	}
 
-	public void makeContextCurrent(){
+	public void makeContextCurrent() {
 		glfwMakeContextCurrent(windowPointer);
 	}
-	
+
 	@Override
 	public void bind() {
 		glfwMakeContextCurrent(windowPointer);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	public void cleanup() {
+		glfwDestroyWindow(windowPointer);
+		windows.remove(this);
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		if (!deleted) Logger.log(Logger.WARNING, "Window not cleaned up. pointer: " + title + ", @" + Long.toHexString(windowPointer));
+	}
+
+	static {
+		windows = new ArrayList<GLWindow>();
 	}
 
 }

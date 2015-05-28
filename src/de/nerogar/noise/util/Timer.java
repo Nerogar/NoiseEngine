@@ -1,48 +1,105 @@
 package de.nerogar.noise.util;
 
-import de.nerogar.noise.log.Logger;
-
 public class Timer {
 
-	private long lastFrameTime;
-	private float timeDelta;
+	private class Average {
+		private final int TIME_COUNT = 10;
 
-	private int frameCount;
-	private long lastFramePrint;
+		public double[] times = new double[TIME_COUNT];
+		private int index = 0;
 
-	private long startTime;
-	private double runTime;
+		public void addTime(double time) {
+			times[index] = time;
+			index++;
+			index %= TIME_COUNT;
+		}
+
+		public double getAvg() {
+			double sum = 0;
+			for (int i = 0; i < TIME_COUNT; i++) {
+				sum += times[i];
+			}
+			return sum * 0.1 * 1.1; //never underestimate sleep times
+		}
+	}
+
+	private double firstFrame;
+	private double lastFrame;
+
+	private double calcTime;
+	private double delta;
+
+	private Average sleepAvg, yieldAvg;
 
 	public Timer() {
-		startTime = System.nanoTime();
-		lastFrameTime = startTime;
-		lastFramePrint = startTime;
-		runTime = 0D;
-		timeDelta = 1F;
+		firstFrame = getTime();
+		lastFrame = firstFrame;
+
+		sleepAvg = new Average();
+		yieldAvg = new Average();
 	}
 
-	public void update() {
-		long currentTime = System.nanoTime();
-		timeDelta = (float) ((double) (currentTime - lastFrameTime) * 0.000000001D);
+	private double getTime() {
+		return System.nanoTime() * 0.000000001d;
+	}
 
-		if (currentTime - lastFramePrint > 1000000000L) {
-			lastFramePrint += 1000000000L;
-			Logger.log(Logger.DEBUG, "fps: " + frameCount + "; time: " + (1f / frameCount * 1000f) + "ms");
-			frameCount = 0;
+	/**
+	 * Updates delta times. Set targetDelta to the time you want to synchronize with,
+	 * or a value < 0 if you dont want to synchronize.
+	 * 
+	 * @param targetDelta the target time delta for synchronizing
+	 */
+
+	public void update(double targetDelta) {
+		try {
+			double startSync = getTime();
+			calcTime = startSync - lastFrame;
+
+			if (targetDelta > 0) {
+				double sleepTimer = startSync;
+				double currTime;
+
+				while (sleepTimer - lastFrame < targetDelta - sleepAvg.getAvg()) {
+					Thread.sleep(1);
+
+					currTime = getTime();
+					sleepAvg.addTime(currTime - sleepTimer);
+					sleepTimer = currTime;
+				}
+
+				while (sleepTimer - lastFrame < targetDelta - yieldAvg.getAvg()) {
+					Thread.yield();
+
+					currTime = getTime();
+					yieldAvg.addTime(currTime - sleepTimer);
+					sleepTimer = currTime;
+				}
+			}
+
+			double endSync = getTime();
+			delta = endSync - lastFrame;
+
+			lastFrame = endSync;
+
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		frameCount++;
-
-		lastFrameTime = currentTime;
-		runTime += (double) timeDelta;
-
 	}
 
-	public float getTimeDelta() {
-		return timeDelta;
+	public float getCalcTime() {
+		return (float) calcTime;
 	}
 
-	public double getRunTime() {
-		return runTime;
+	public float getDelta() {
+		return (float) delta;
+	}
+
+	public float getFrequency() {
+		return (float) (1.0 / delta);
+	}
+
+	public double getRuntime() {
+		return lastFrame - firstFrame;
 	}
 
 }
