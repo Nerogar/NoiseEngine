@@ -1,14 +1,15 @@
 package de.nerogar.noise.render;
 
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
-import static org.lwjgl.glfw.GLFW.*;
 
+import static org.lwjgl.glfw.GLFW.*;
 import de.nerogar.noise.log.Logger;
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
@@ -130,6 +131,7 @@ public class FrameBufferObject implements IRenderTarget {
 		if (!initialized) throw new IllegalStateException("RenderScene not initialized");
 		glfwMakeContextCurrent(glContext);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
+		glViewport(0, 0, width, height);
 	}
 
 	public static void bindDefault() {

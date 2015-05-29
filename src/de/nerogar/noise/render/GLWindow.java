@@ -58,6 +58,8 @@ public class GLWindow implements IRenderTarget {
 		windows.add(this);
 		this.title = title;
 		this.resizable = resizable;
+		this.windowWidth = width;
+		this.windowHeight = height;
 
 		glfwDefaultWindowHints();
 		glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
@@ -234,6 +236,7 @@ public class GLWindow implements IRenderTarget {
 	public void bind() {
 		glfwMakeContextCurrent(windowPointer);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, windowWidth, windowHeight);
 	}
 
 	public void cleanup() {
