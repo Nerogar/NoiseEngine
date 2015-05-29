@@ -16,6 +16,18 @@ import org.lwjgl.BufferUtils;
 import de.nerogar.noise.log.Logger;
 
 public class VertexBufferObject {
+
+	/**Renders points using 1 vertex.*/
+	public static final int POINTS = GL_POINTS;
+
+	/**Renders lines using 2 vertices.*/
+	public static final int LINES = GL_LINES;
+
+	/**Renders triangles using 3 vertices.*/
+	public static final int TRIANGLES = GL_TRIANGLES;
+
+	private int renderType;
+
 	private int vboHandle;
 	private HashMap<Long, Integer> glContextVaoHandles;
 
@@ -33,6 +45,20 @@ public class VertexBufferObject {
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
 	public VertexBufferObject(int[] componentCounts, float[]... attributes) {
+		this(TRIANGLES, componentCounts, attributes);
+	}
+
+	/**
+	 * @param renderType type of rendered primitives. Either {@link VertexBufferObject#POINTS POINTS},
+	 * {@link VertexBufferObject#TRIANGLES TRIANGLES} or {@link VertexBufferObject#LINES LINES}
+	 * @param componentCounts an array containing all component counts
+	 * @param attributes arays containing all components to use for this VBO
+	 * 
+	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
+	 */
+	public VertexBufferObject(int renderType, int[] componentCounts, float[]... attributes) {
+		this.renderType = renderType;
+
 		if (componentCounts.length != attributes.length) throw new ArrayIndexOutOfBoundsException();
 
 		glContextVaoHandles = new HashMap<Long, Integer>();
@@ -87,7 +113,7 @@ public class VertexBufferObject {
 		}
 
 		for (int i = 0; i < componentCounts.length; i++) {
-			glVertexAttribPointer(i, componentCounts[i], GL_FLOAT, false, totalComponents * Float.BYTES, incrementalComponentCounts[i] * Float.BYTES); //pos
+			glVertexAttribPointer(i, componentCounts[i], GL_FLOAT, false, totalComponents * Float.BYTES, incrementalComponentCounts[i] * Float.BYTES);
 
 			glEnableVertexAttribArray(i);
 		}
@@ -103,7 +129,7 @@ public class VertexBufferObject {
 		if (vaoHandle == null) vaoHandle = initVAO(null);
 
 		glBindVertexArray(vaoHandle);
-		glDrawArrays(GL_TRIANGLES, 0, vertices);
+		glDrawArrays(renderType, 0, vertices);
 		glBindVertexArray(0);
 	}
 
