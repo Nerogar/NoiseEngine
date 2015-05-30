@@ -192,7 +192,7 @@ public class Shader {
 			while ((line = fileReader.readLine()) != null) {
 				line = line.trim();
 				if (line.startsWith("#include ")) {
-					line = folder + line.substring(8);
+					line = folder + line.substring(9);
 
 					text.append(readFile(line));
 
