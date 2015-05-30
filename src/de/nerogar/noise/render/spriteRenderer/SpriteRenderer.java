@@ -16,7 +16,7 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 
 	private class VboContainer {
 		public ArrayList<Sprite2D> spriteList;
-		public VertexBufferObject vbo;
+		public VertexBufferObjectIndexed vbo;
 		public boolean dirty;
 
 		public VboContainer() {
@@ -73,8 +73,10 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 		}
 
 		int[] componentCount = { 3, 2 };
-		float[] pos = new float[container.spriteList.size() * 6 * 3];
-		float[] uv = new float[container.spriteList.size() * 6 * 2];
+		int[] indices = new int[container.spriteList.size() * 6];
+
+		float[] pos = new float[container.spriteList.size() * 4 * 3];
+		float[] uv = new float[container.spriteList.size() * 4 * 2];
 
 		Vector3f[] spritePos;
 		Vector2f[] spriteUV;
@@ -83,46 +85,39 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 			spritePos = container.spriteList.get(i).pos;
 			spriteUV = container.spriteList.get(i).uv;
 
-			//1
-			pos[i * 18 + 0] = spritePos[0].getX();
-			pos[i * 18 + 1] = spritePos[0].getY();
-			pos[i * 18 + 2] = spritePos[0].getZ();
-			uv[i * 12 + 0] = spriteUV[0].getX();
-			uv[i * 12 + 1] = spriteUV[0].getY();
+			pos[i * 12 + 0] = spritePos[0].getX();
+			pos[i * 12 + 1] = spritePos[0].getY();
+			pos[i * 12 + 2] = spritePos[0].getZ();
+			uv[i * 8 + 0] = spriteUV[0].getX();
+			uv[i * 8 + 1] = spriteUV[0].getY();
 
-			pos[i * 18 + 3] = spritePos[1].getX();
-			pos[i * 18 + 4] = spritePos[1].getY();
-			pos[i * 18 + 5] = spritePos[1].getZ();
-			uv[i * 12 + 2] = spriteUV[1].getX();
-			uv[i * 12 + 3] = spriteUV[1].getY();
+			pos[i * 12 + 3] = spritePos[1].getX();
+			pos[i * 12 + 4] = spritePos[1].getY();
+			pos[i * 12 + 5] = spritePos[1].getZ();
+			uv[i * 8 + 2] = spriteUV[1].getX();
+			uv[i * 8 + 3] = spriteUV[1].getY();
 
-			pos[i * 18 + 6] = spritePos[2].getX();
-			pos[i * 18 + 7] = spritePos[2].getY();
-			pos[i * 18 + 8] = spritePos[2].getZ();
-			uv[i * 12 + 4] = spriteUV[2].getX();
-			uv[i * 12 + 5] = spriteUV[2].getY();
+			pos[i * 12 + 6] = spritePos[2].getX();
+			pos[i * 12 + 7] = spritePos[2].getY();
+			pos[i * 12 + 8] = spritePos[2].getZ();
+			uv[i * 8 + 4] = spriteUV[2].getX();
+			uv[i * 8 + 5] = spriteUV[2].getY();
 
-			//2
-			pos[i * 18 + 9] = spritePos[2].getX();
-			pos[i * 18 + 10] = spritePos[2].getY();
-			pos[i * 18 + 11] = spritePos[2].getZ();
-			uv[i * 12 + 6] = spriteUV[2].getX();
-			uv[i * 12 + 7] = spriteUV[2].getY();
+			pos[i * 12 + 9] = spritePos[3].getX();
+			pos[i * 12 + 10] = spritePos[3].getY();
+			pos[i * 12 + 11] = spritePos[3].getZ();
+			uv[i * 8 + 6] = spriteUV[3].getX();
+			uv[i * 8 + 7] = spriteUV[3].getY();
 
-			pos[i * 18 + 12] = spritePos[0].getX();
-			pos[i * 18 + 13] = spritePos[0].getY();
-			pos[i * 18 + 14] = spritePos[0].getZ();
-			uv[i * 12 + 8] = spriteUV[0].getX();
-			uv[i * 12 + 9] = spriteUV[0].getY();
-
-			pos[i * 18 + 15] = spritePos[3].getX();
-			pos[i * 18 + 16] = spritePos[3].getY();
-			pos[i * 18 + 17] = spritePos[3].getZ();
-			uv[i * 12 + 10] = spriteUV[3].getX();
-			uv[i * 12 + 11] = spriteUV[3].getY();
+			indices[i * 6 + 0] = i * 4 + 0;
+			indices[i * 6 + 1] = i * 4 + 1;
+			indices[i * 6 + 2] = i * 4 + 2;
+			indices[i * 6 + 3] = i * 4 + 2;
+			indices[i * 6 + 4] = i * 4 + 3;
+			indices[i * 6 + 5] = i * 4 + 0;
 		}
 
-		container.vbo = new VertexBufferObject(componentCount, pos, uv);
+		container.vbo = new VertexBufferObjectIndexed(componentCount, indices, pos, uv);
 
 		container.dirty = false;
 	}
