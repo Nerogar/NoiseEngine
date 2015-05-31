@@ -79,11 +79,11 @@ public class RenderProperties3f implements RenderProperties {
 	}
 
 	private void setFinalMatrix() {
-		finalMatrix.set(positionMatrix);
-		finalMatrix.multiplyLeft(scaleMatrix);
-		finalMatrix.multiplyLeft(yawMatrix);
-		finalMatrix.multiplyLeft(pitchMatrix);
+		finalMatrix.set(scaleMatrix);
 		finalMatrix.multiplyLeft(rollMatrix);
+		finalMatrix.multiplyLeft(pitchMatrix);
+		finalMatrix.multiplyLeft(yawMatrix);
+		finalMatrix.multiplyLeft(positionMatrix);
 
 		finalMatrixDirty = false;
 	}

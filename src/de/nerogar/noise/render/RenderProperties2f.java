@@ -59,9 +59,9 @@ public class RenderProperties2f implements RenderProperties {
 	}
 
 	private void setFinalMatrix() {
-		finalMatrix.set(positionMatrix);
-		finalMatrix.multiplyLeft(scaleMatrix);
+		finalMatrix.set(scaleMatrix);
 		finalMatrix.multiplyLeft(rollMatrix);
+		finalMatrix.multiplyLeft(positionMatrix);
 
 		finalMatrixDirty = false;
 	}
