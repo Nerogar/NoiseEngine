@@ -32,7 +32,7 @@ public class GLWindow implements IRenderTarget {
 
 	private InputHandler inputHandler;
 
-	//holds references to callbacks, the gc will delete them otherwise
+	//holds references to callbacks, otherwise the gc will delete them 
 	private GLFWFramebufferSizeCallback frameBufferCallback;
 	private GLFWCursorPosCallback cursorPosCallback;
 	private GLFWKeyCallback keyCallback;
@@ -63,7 +63,6 @@ public class GLWindow implements IRenderTarget {
 
 		glfwDefaultWindowHints();
 		glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
-		//glfwWindowHint(GLFW_DECORATED, GL_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 
 		windowPointer = glfwCreateWindow(width, height, title, monitor == null ? NULL : monitor.getPointer(), parentWindow == null ? NULL : parentWindow.windowPointer);
@@ -94,8 +93,6 @@ public class GLWindow implements IRenderTarget {
 			@Override
 			public void invoke(long window, double xpos, double ypos) {
 				inputHandler.setCursorPosition(xpos, ypos);
-
-				//glfwSetCursorPos(windowPointer, 0.0, 0.0);
 			}
 		};
 
@@ -133,8 +130,6 @@ public class GLWindow implements IRenderTarget {
 		glfwSetCharModsCallback(windowPointer, charModsCallback);
 		glfwSetMouseButtonCallback(windowPointer, mouseButtonCallback);
 		glfwSetScrollCallback(windowPointer, scrollCallback);
-
-		glfwGetKey(windowPointer, GLFW_KEY_0);
 
 	}
 

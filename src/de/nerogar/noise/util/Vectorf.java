@@ -34,6 +34,8 @@ public interface Vectorf<T extends Vectorf<T>> {
 	public abstract T multiplied(float f);
 
 	//tools
+	public abstract float dot(Vectorf<?> v);
+
 	public abstract T normalize();
 
 	public abstract T normalized();

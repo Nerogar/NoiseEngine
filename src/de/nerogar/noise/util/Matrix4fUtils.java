@@ -1,17 +1,11 @@
 package de.nerogar.noise.util;
 
-public class Matrix4fUtils {
+public final class Matrix4fUtils {
 
-	//@formatter:off
-	public static void setUnitMatrix(Matrix4f m) {
-		m.set(new float[] {
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f
-		});
+	private Matrix4fUtils() {
 	}
 
+	//@formatter:off
 	public static void setPositionMatrix(Matrix4f m, float x, float y, float z) {
 		m.set(new float[] {
 				1.0f, 0.0f, 0.0f, x,
@@ -25,7 +19,7 @@ public class Matrix4fUtils {
 		m.set(new float[] {
 				(float) Math.cos(-radiants),	0.0f,					(float) Math.sin(-radiants),	0.0f,
 				0.0f,							1.0f,					0.0f,							0.0f,
-				(float)							-Math.sin(-radiants),	0.0f,							(float) Math.cos(-radiants), 0.0f,
+				(float)	-Math.sin(-radiants),	0.0f,					(float) Math.cos(-radiants),	0.0f,
 				0.0f,							0.0f,					0.0f,							1.0f
 		});
 	}
@@ -66,5 +60,41 @@ public class Matrix4fUtils {
 		});
 	}
 	//@formatter:on
+
+	public static Matrix4f getPositionMatrix(float x, float y, float z) {
+		Matrix4f mat = new Matrix4f();
+		setPositionMatrix(mat, x, y, z);
+		return mat;
+	}
+
+	public static Matrix4f getYawMatrix(Matrix4f m, float radiants) {
+		Matrix4f mat = new Matrix4f();
+		setYawMatrix(mat, radiants);
+		return mat;
+	}
+
+	public static Matrix4f getPitchMatrix(Matrix4f m, float radiants) {
+		Matrix4f mat = new Matrix4f();
+		setPitchMatrix(mat, radiants);
+		return mat;
+	}
+
+	public static Matrix4f getRollMatrix(Matrix4f m, float radiants) {
+		Matrix4f mat = new Matrix4f();
+		setRollMatrix(mat, radiants);
+		return mat;
+	}
+
+	public static Matrix4f getScaleMatrix(Matrix4f m, float scaleX, float scaleY, float scaleZ) {
+		Matrix4f mat = new Matrix4f();
+		setScaleMatrix(mat, scaleX, scaleY, scaleZ);
+		return mat;
+	}
+
+	public static Matrix4f getOrthographicProjection(Matrix4f m, float left, float right, float top, float bottom, float near, float far) {
+		Matrix4f mat = new Matrix4f();
+		setOrthographicProjection(mat, left, right, top, bottom, near, far);
+		return mat;
+	}
 
 }

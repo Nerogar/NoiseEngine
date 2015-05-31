@@ -21,11 +21,9 @@ public class Sprite2D implements IRenderable {
 	}
 
 	public Sprite2D(Vector3f pos, Vector3f size, Vector2f uv, Vector2f uvSize, Texture2D texture) {
-
 		this(pos.clone(), pos.clone().addY(size.getY()), pos.clone().addX(size.getX()).addY(size.getY()), pos.clone().addX(size.getX()),
 				uv.clone(), uv.clone().addY(uvSize.getY()), uv.added(uvSize), uv.clone().addX(uvSize.getX()),
 				texture);
-
 	}
 
 	public void setRenderProperties(RenderProperties2f renderProperties) {

@@ -127,8 +127,6 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			glEnableVertexAttribArray(i);
 		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 		//index data
 		if (indexBuffer != null) {
 			indexBufferHandle = glGenBuffers();
@@ -149,6 +147,8 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 				glVertexAttribDivisor(i + componentCounts.length, 1);
 			}
 		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glBindVertexArray(0);
 		glContextInstanceDataDirty.put(currentContext, false);

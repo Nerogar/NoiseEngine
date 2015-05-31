@@ -14,6 +14,13 @@ public interface IRenderer<RenderableT extends IRenderable> {
 	 * @param object the object you want to add to the scene
 	 */
 	public void addObject(RenderableT object);
+	
+	/**
+	 * Remove an object from the renderer.
+	 * 
+	 * @param object the object you want to remove from the scene
+	 */
+	public void removeObject(RenderableT object);
 
 	/**
 	 * Renders into the FrameBufferObject returned by getRenderTarget().

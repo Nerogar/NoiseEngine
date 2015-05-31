@@ -207,6 +207,11 @@ public class Vector3f implements Vectorf<Vector3f> {
 
 	//tools
 	@Override
+	public float dot(Vectorf<?> v) {
+		return x * v.get(0) + y * v.get(1) + z * v.get(2);
+	}
+
+	@Override
 	public Vector3f normalize() {
 		return setValue(1f);
 	}

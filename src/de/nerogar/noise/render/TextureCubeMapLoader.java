@@ -45,7 +45,6 @@ public class TextureCubeMapLoader {
 
 				int[] pixels = image[i].getRGB(0, 0, image[i].getWidth(), image[i].getHeight(), null, 0, image[i].getWidth());
 
-				
 				//invert images
 				for (int line = 0; line < image[i].getHeight() / 2; line++) {
 					for (int x = 0; x < image[i].getWidth(); x++) {

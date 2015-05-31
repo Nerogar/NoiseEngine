@@ -5,7 +5,7 @@ import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class InputHandler {
+public final class InputHandler {
 
 	public class KeyboardKeyEvent {
 		public int key;
@@ -40,7 +40,7 @@ public class InputHandler {
 	private long windowPointer;
 
 	private double cursorXpos, cursorYpos;
-	private double cursorXdelta, cursorYdelta;
+	private double cursorDeltaX, cursorDeltaY;
 	private double scrollDeltaY, scrollDeltaX;
 
 	private StringBuilder inputText;
@@ -56,15 +56,15 @@ public class InputHandler {
 		mouseButtonEvents = new ArrayList<InputHandler.MouseButtonEvent>();
 	}
 
+	//---[mouse]---
 	protected void setCursorPosition(double xpos, double ypos) {
-		cursorXdelta = xpos - cursorXpos;
-		cursorYdelta = ypos - cursorYpos;
+		cursorDeltaX = xpos - cursorXpos;
+		cursorDeltaY = ypos - cursorYpos;
 
 		cursorXpos = xpos;
 		cursorYpos = ypos;
 	}
 
-	//---[mouse]---
 	public float getCursorPosX() {
 		return (float) cursorXpos;
 	}
@@ -74,11 +74,11 @@ public class InputHandler {
 	}
 
 	public float getCursorDeltaX() {
-		return (float) cursorXdelta;
+		return (float) cursorDeltaX;
 	}
 
 	public float getCursorDeltaY() {
-		return (float) cursorYdelta;
+		return (float) cursorDeltaY;
 	}
 
 	public float getScrollDeltaX() {

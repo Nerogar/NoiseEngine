@@ -8,7 +8,7 @@ import de.nerogar.noise.util.*;
 
 /**
  * A renderer that renders simple 2D sprites with a single texture.
- * Moving individual sprites is not supported
+ * Sprites are static, moving them is not supported.
  * <p>
  * A new VertexBufferObject is created for every texture used. Try to keep texture count low.
  */
@@ -65,6 +65,16 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 		container.dirty = true;
 
 		//rebuildVBO(object.texture, container.spriteList);
+	}
+
+	@Override
+	public void removeObject(Sprite2D object) {
+		VboContainer container = vboMap.get(object.texture);
+
+		if (container != null) {
+			container.spriteList.remove(object);
+			rebuildVBO(container);
+		}
 	}
 
 	private void rebuildVBO(VboContainer container) {

@@ -164,6 +164,11 @@ public class Vector2f implements Vectorf<Vector2f> {
 
 	//tools
 	@Override
+	public float dot(Vectorf<?> v) {
+		return x * v.get(0) + y * v.get(1);
+	}
+
+	@Override
 	public Vector2f normalize() {
 		return setValue(1f);
 	}

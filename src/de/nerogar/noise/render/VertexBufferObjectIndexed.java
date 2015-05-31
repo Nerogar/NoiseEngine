@@ -99,6 +99,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 
 		glBindVertexArray(vaoHandle);
 
+		//vertex data
 		if (vboBuffer != null) {
 			vboHandle = glGenBuffers();
 			glBindBuffer(GL_ARRAY_BUFFER, vboHandle);
@@ -115,6 +116,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+		//index data
 		if (indexBuffer != null) {
 			indexBufferHandle = glGenBuffers();
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferHandle);

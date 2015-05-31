@@ -1,7 +1,5 @@
 package de.nerogar.noise.render;
 
-import org.lwjgl.opengl.GL13;
-
 import de.nerogar.noise.util.*;
 
 public class RenderProperties2f implements RenderProperties {
@@ -37,11 +35,6 @@ public class RenderProperties2f implements RenderProperties {
 		setPositionMatrix();
 		setScaleMatrix();
 		setRollMatrix();
-	}
-
-	@Override
-	public void transformGL() {
-		GL13.glMultTransposeMatrixf(getModelMatrix().asBuffer());
 	}
 
 	@Override

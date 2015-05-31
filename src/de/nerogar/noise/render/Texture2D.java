@@ -7,7 +7,7 @@ import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT32;
 import static org.lwjgl.opengl.GL30.GL_RGBA32F;
 
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 
 import de.nerogar.noise.log.Logger;
 
@@ -91,7 +91,7 @@ public class Texture2D {
 	 * @param interpolationType method used to interpolate pixels
 	 * @param dataType representation of the texture in memory
 	 */
-	public Texture2D(String name, int width, int height, IntBuffer colorBuffer, InterpolationType interpolationType, DataType dataType) {
+	public Texture2D(String name, int width, int height, ByteBuffer colorBuffer, InterpolationType interpolationType, DataType dataType) {
 		this.name = name;
 		this.width = width;
 		this.height = height;
@@ -101,7 +101,7 @@ public class Texture2D {
 		createTexture(colorBuffer);
 	}
 
-	protected void createTexture(IntBuffer colorBuffer) {
+	protected void createTexture(ByteBuffer colorBuffer) {
 		if (initialized) cleanup();
 
 		id = glGenTextures();

@@ -3,7 +3,7 @@ package de.nerogar.noise.render;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
@@ -47,9 +47,9 @@ public class Texture2DLoader {
 	}
 
 	public static Texture2D loadTexture(BufferedImage image, String textureName, InterpolationType interpolationType) {
-		IntBuffer buffer = BufferUtils.createIntBuffer(image.getWidth() * image.getHeight());
+		ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight());
 		int[] pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
-		buffer.put(pixels);
+		buffer.asIntBuffer().put(pixels);
 		buffer.rewind();
 		return new Texture2D(textureName, image.getWidth(), image.getHeight(), buffer, interpolationType, DataType.BGRA_8_8_8_8I);
 	}
