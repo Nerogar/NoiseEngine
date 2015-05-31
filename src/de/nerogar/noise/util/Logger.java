@@ -1,4 +1,4 @@
-package de.nerogar.noise.log;
+package de.nerogar.noise.util;
 
 import java.io.*;
 import java.util.*;
