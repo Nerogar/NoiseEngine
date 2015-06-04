@@ -1,7 +1,8 @@
 package de.nerogar.noise.render.spriteRenderer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import static org.lwjgl.opengl.GL11.*;
+
+import java.util.*;
 
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.*;
@@ -15,7 +16,7 @@ import de.nerogar.noise.util.*;
 public class SpriteRenderer implements IRenderer<Sprite2D> {
 
 	private class VboContainer {
-		public ArrayList<Sprite2D> spriteList;
+		public List<Sprite2D> spriteList;
 		public VertexBufferObjectIndexed vbo;
 		public boolean dirty;
 
@@ -133,6 +134,11 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 	}
 
 	@Override
+	public void setFrameBufferResolution(int width, int height) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
 	public void rebuild() {
 		for (VboContainer container : vboMap.values()) {
 			rebuildVBO(container);
@@ -141,6 +147,9 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 
 	@Override
 	public void render(Matrix4f viewMtrix) {
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+
 		shader.activate();
 		shader.setUniform1i("textureColor", 0);
 		shader.setUniformMat4f("viewMatrix", viewMtrix.asBuffer());
@@ -154,8 +163,12 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 			texture.bind(0);
 			container.vbo.render();
 		}
+		
+		Texture2D.unbind(0);
 
 		shader.deactivate();
+
+		glDisable(GL_DEPTH_TEST);
 	}
 
 	public void setProjectionSize(float width, float height, float depth) {

@@ -3,7 +3,6 @@ package de.nerogar.noise.render;
 import de.nerogar.noise.util.Matrix4f;
 
 /**
- * 
  * @param <RenderableT> the type of renderables this renderer can render
  */
 public interface IRenderer<RenderableT extends IRenderable> {
@@ -22,6 +21,15 @@ public interface IRenderer<RenderableT extends IRenderable> {
 	 */
 	public void removeObject(RenderableT object);
 
+	
+	/**
+	 * Set the resolution of the FrameBufferObject this renderer renders to.
+	 * 
+	 * @param width the new width
+	 * @param height the new height
+	 */
+	public void setFrameBufferResolution(int width, int height);
+	
 	/**
 	 * Renders into the FrameBufferObject returned by getRenderTarget().
 	 * 

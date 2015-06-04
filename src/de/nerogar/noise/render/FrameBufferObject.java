@@ -10,9 +10,9 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.glfw.GLFW.*;
-import de.nerogar.noise.log.Logger;
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
+import de.nerogar.noise.util.Logger;
 
 public class FrameBufferObject implements IRenderTarget {
 
@@ -30,7 +30,7 @@ public class FrameBufferObject implements IRenderTarget {
 	private boolean initialized;
 
 	private long glContext;
-	
+
 	private int framebufferID; //, colorTextureID, normalTextureID, depthTextureID;
 
 	private int width, height;
@@ -57,7 +57,6 @@ public class FrameBufferObject implements IRenderTarget {
 	}
 
 	private void activateDepthTexture() {
-		useDepthTexture = true;
 		depthTexture = new Texture2D("depth", 0, 0, null, InterpolationType.NEAREST, DataType.DEPTH);
 	}
 
@@ -78,7 +77,7 @@ public class FrameBufferObject implements IRenderTarget {
 		this.height = height;
 
 		glfwMakeContextCurrent(glContext);
-		
+
 		if (initialized) cleanup();
 
 		framebufferID = glGenFramebuffers();
@@ -122,7 +121,7 @@ public class FrameBufferObject implements IRenderTarget {
 		IntBuffer indexBuffer = BufferUtils.createIntBuffer(indices.length);
 		indexBuffer.put(indices);
 		indexBuffer.flip();
-		
+
 		glDrawBuffers(indexBuffer);
 	}
 
@@ -145,7 +144,6 @@ public class FrameBufferObject implements IRenderTarget {
 	public void cleanup() {
 		if (useDepthTexture) {
 			depthTexture.cleanup();
-			useDepthTexture = false;
 		}
 
 		for (Texture2D texture : textures) {

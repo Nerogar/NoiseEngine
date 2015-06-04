@@ -5,11 +5,11 @@ import static org.lwjgl.opengl.GL12.GL_BGRA;
 import static org.lwjgl.opengl.GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT32;
-import static org.lwjgl.opengl.GL30.GL_RGBA32F;
+import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.ByteBuffer;
 
-import de.nerogar.noise.log.Logger;
+import de.nerogar.noise.util.Logger;
 
 public class Texture2D {
 
@@ -39,8 +39,38 @@ public class Texture2D {
 	}
 
 	public enum DataType {
+		/**1 component, 8 bit, range is [0, 1]*/
+		BGRA_8I(GL_R8, GL_BGRA, GL_UNSIGNED_BYTE),
+
+		/**2 components, 8 bit each, range is [0, 1]*/
+		BGRA_8_8I(GL_RG8, GL_BGRA, GL_UNSIGNED_BYTE),
+
+		/**3 components, 8 bit each, range is [0, 1]*/
+		BGRA_8_8_8I(GL_RGB8, GL_BGRA, GL_UNSIGNED_BYTE),
+
 		/**4 components, 8 bit each, range is [0, 1]*/
-		BGRA_8_8_8_8I(GL_RGBA8, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV),
+		BGRA_8_8_8_8I(GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE),
+
+		/**1 component, 16 bit, half floating point precision*/
+		BGRA_16F(GL_R16F, GL_BGRA, GL_HALF_FLOAT),
+
+		/**2 components, 16 bit each, half floating point precision*/
+		BGRA_16_16F(GL_RG16F, GL_BGRA, GL_HALF_FLOAT),
+
+		/**3 components, 16 bit each, half floating point precision*/
+		BGRA_16_16_16F(GL_RGB16F, GL_BGRA, GL_HALF_FLOAT),
+
+		/**4 components, 16 bit each, half floating point precision*/
+		BGRA_16_16_16_16F(GL_RGBA16F, GL_BGRA, GL_HALF_FLOAT),
+		
+		/**1 components, 32 bit, floating point precision*/
+		BGRA_32F(GL_R32F, GL_BGRA, GL_FLOAT),
+
+		/**2 components, 32 bit each, floating point precision*/
+		BGRA_32_32F(GL_RG32F, GL_BGRA, GL_FLOAT),
+
+		/**3 components, 32 bit each, floating point precision*/
+		BGRA_32_32_32F(GL_RGB32F, GL_BGRA, GL_FLOAT),
 
 		/**4 components, 32 bit each, floating point precision*/
 		BGRA_32_32_32_32F(GL_RGBA32F, GL_BGRA, GL_FLOAT),
@@ -154,10 +184,28 @@ public class Texture2D {
 		glActiveTexture(texturePositions[0]);
 	}
 
+	public static void unbind(int slot) {
+		glActiveTexture(texturePositions[slot]);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(texturePositions[0]);
+	}
+
 	public void cleanup() {
 		glDeleteTextures(id);
 		Texture2DLoader.unloadTexture(filename);
 		initialized = false;
+	}
+
+	@Override
+	public int hashCode() {
+		return id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Texture2D) return ((Texture2D) obj).id == id;
+
+		return super.equals(obj);
 	}
 
 	@Override

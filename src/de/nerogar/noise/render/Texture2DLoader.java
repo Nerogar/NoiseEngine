@@ -47,8 +47,18 @@ public class Texture2DLoader {
 	}
 
 	public static Texture2D loadTexture(BufferedImage image, String textureName, InterpolationType interpolationType) {
-		ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight());
+		ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * Integer.BYTES);
 		int[] pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+
+		//invert image
+		for (int line = 0; line < image.getHeight() / 2; line++) {
+			for (int x = 0; x < image.getWidth(); x++) {
+				int tempColor = pixels[line * image.getWidth() + x];
+				pixels[line * image.getWidth() + x] = pixels[(image.getHeight() - line - 1) * image.getWidth() + x];
+				pixels[(image.getHeight() - line - 1) * image.getWidth() + x] = tempColor;
+			}
+		}
+
 		buffer.asIntBuffer().put(pixels);
 		buffer.rewind();
 		return new Texture2D(textureName, image.getWidth(), image.getHeight(), buffer, interpolationType, DataType.BGRA_8_8_8_8I);

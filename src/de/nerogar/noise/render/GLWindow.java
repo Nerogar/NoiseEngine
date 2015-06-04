@@ -13,7 +13,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GLContext;
 
 import de.nerogar.noise.listener.GLWindowSizeChangeListener;
-import de.nerogar.noise.log.Logger;
+import de.nerogar.noise.util.Logger;
 
 public class GLWindow implements IRenderTarget {
 

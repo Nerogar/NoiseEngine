@@ -2,8 +2,7 @@ package de.nerogar.noise.render;
 
 import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
@@ -17,7 +16,7 @@ import java.util.HashMap;
 
 import org.lwjgl.BufferUtils;
 
-import de.nerogar.noise.log.Logger;
+import de.nerogar.noise.util.Logger;
 
 public class VertexBufferObjectInstanced extends VertexBufferObject {
 
@@ -157,6 +156,9 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	}
 
 	/**
+	 * Updates the instance data of this VertexBuffer. ComponentCounts should contain only numbers from 1 to 4.
+	 * If you want to add 4x4 matrices, you have to specify 4 arrays, each containing a single collumn of the matrix
+	 * 
 	 * @param componentCountsInstance an array containing all component counts
 	 * @param attributesInstance arays containing all components to use for this VBO as instance data
 	 */

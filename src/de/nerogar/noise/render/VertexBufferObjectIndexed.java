@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 import org.lwjgl.BufferUtils;
 
-import de.nerogar.noise.log.Logger;
+import de.nerogar.noise.util.Logger;
 
 public class VertexBufferObjectIndexed extends VertexBufferObject {
 
