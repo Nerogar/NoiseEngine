@@ -6,7 +6,7 @@ public class RenderProperties3f implements RenderProperties {
 
 	private float yaw, pitch, roll;
 	private float x, y, z;
-	private float scaleX, scaleY, scaleZ;
+	private float scaleX, scaleY, scaleZ, maxScaleComponent;
 
 	private Matrix4f positionMatrix;
 	private Matrix4f scaleMatrix;
@@ -39,6 +39,7 @@ public class RenderProperties3f implements RenderProperties {
 		scaleX = 1.0f;
 		scaleY = 1.0f;
 		scaleZ = 1.0f;
+		maxScaleComponent = 1.0f;
 
 		setPositionMatrix();
 		setScaleMatrix();
@@ -185,6 +186,11 @@ public class RenderProperties3f implements RenderProperties {
 		this.scaleX = scaleX;
 		this.scaleY = scaleY;
 		this.scaleZ = scaleZ;
+
+		maxScaleComponent = scaleX;
+		if (scaleY > maxScaleComponent) maxScaleComponent = scaleY;
+		if (scaleZ > maxScaleComponent) maxScaleComponent = scaleZ;
+
 		setScaleMatrix();
 	}
 
@@ -198,6 +204,10 @@ public class RenderProperties3f implements RenderProperties {
 
 	public float getScaleZ() {
 		return scaleZ;
+	}
+
+	public float getMaxScaleComponent() {
+		return maxScaleComponent;
 	}
 
 	/**

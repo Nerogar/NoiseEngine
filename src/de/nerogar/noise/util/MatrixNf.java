@@ -28,13 +28,13 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public float get(int componentLine, int componentCollumn) {
-		return components[componentLine * componentCount + componentCollumn];
+	public float get(int collumnIndex, int lineIndex) {
+		return components[lineIndex * componentCount + collumnIndex];
 	}
 
 	@Override
-	public MatrixNf set(int componentLine, int componentCollumn, float f) {
-		components[componentLine * componentCount + componentCollumn] = f;
+	public MatrixNf set(int collumnIndex, int lineIndex, float f) {
+		components[lineIndex * componentCount + collumnIndex] = f;
 		return this;
 	}
 
@@ -48,7 +48,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf set(Matrixf<?> m) {
+	public MatrixNf set(MatrixNf m) {
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = 0; j < componentCount; j++) {
 				set(i, j, m.get(i, j));
@@ -59,7 +59,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf set(float[] m) {
+	public MatrixNf set(float... m) {
 		for (int i = 0; i < components.length; i++) {
 			components[i] = m[i];
 		}
@@ -68,7 +68,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf add(Matrixf<?> m) {
+	public MatrixNf add(MatrixNf m) {
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = 0; j < componentCount; j++) {
 				set(i, j, get(i, j) + m.get(i, j));
@@ -79,12 +79,12 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf added(Matrixf<?> m) {
+	public MatrixNf added(MatrixNf m) {
 		return clone().add(m);
 	}
 
 	@Override
-	public MatrixNf subtract(Matrixf<?> m) {
+	public MatrixNf subtract(MatrixNf m) {
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = 0; j < componentCount; j++) {
 				set(i, j, get(i, j) - m.get(i, j));
@@ -95,7 +95,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf subtracted(Matrixf<?> m) {
+	public MatrixNf subtracted(MatrixNf m) {
 		return clone().subtract(m);
 	}
 
@@ -119,7 +119,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf multiplyRight(Matrixf<?> m) {
+	public MatrixNf multiplyRight(MatrixNf m) {
 		float[] newMatrix = new float[componentCount * componentCount];
 
 		for (int i = 0; i < componentCount; i++) {
@@ -140,7 +140,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf multipliedRight(Matrixf<?> m) {
+	public MatrixNf multipliedRight(MatrixNf m) {
 		float[] newMatrix = new float[componentCount * componentCount];
 
 		for (int i = 0; i < componentCount; i++) {
@@ -159,7 +159,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf multiplyLeft(Matrixf<?> m) {
+	public MatrixNf multiplyLeft(MatrixNf m) {
 		float[] newMatrix = new float[componentCount * componentCount];
 
 		for (int i = 0; i < componentCount; i++) {
@@ -180,7 +180,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public MatrixNf multipliedLeft(Matrixf<?> m) {
+	public MatrixNf multipliedLeft(MatrixNf m) {
 		float[] newMatrix = new float[componentCount * componentCount];
 
 		for (int i = 0; i < componentCount; i++) {

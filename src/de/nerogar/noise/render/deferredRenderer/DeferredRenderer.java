@@ -5,10 +5,9 @@ import static org.lwjgl.opengl.GL11.*;
 import java.util.*;
 
 import de.nerogar.noise.render.*;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noise.util.*;
 
-public class DeferredRenderer implements IRenderer<DeferredRenderable> {
+public class DeferredRenderer {
 
 	/*
 	 * TODO: DeferredRenderer
@@ -49,16 +48,30 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 					container.getMesh().getNormalArray());
 		}
 
-		public void rebuildInstanceData() {
-			int[] instanceComponentCounts = { 4, 4, 4, 4 };
+		public void rebuildInstanceData(ViewFrustum frustum) {
+			ArrayList<Matrix4f> instanceMatrices = new ArrayList<Matrix4f>(renderables.size());
 
-			float[] modelMatrix1 = new float[renderables.size() * 4];
-			float[] modelMatrix2 = new float[renderables.size() * 4];
-			float[] modelMatrix3 = new float[renderables.size() * 4];
-			float[] modelMatrix4 = new float[renderables.size() * 4];
+			Vector3f point = new Vector3f();
 
 			for (int i = 0; i < renderables.size(); i++) {
-				Matrix4f mat = renderables.get(i).getModelMatrix();
+				point.setX(renderables.get(i).getRenderProperties().getX());
+				point.setY(renderables.get(i).getRenderProperties().getY());
+				point.setZ(renderables.get(i).getRenderProperties().getZ());
+
+				if (frustum.getPointDistance(point) < renderables.get(i).getContainer().getMesh().getMinBoundingSize() * renderables.get(i).getRenderProperties().getMaxScaleComponent()) {
+					instanceMatrices.add(renderables.get(i).getRenderProperties().getModelMatrix());
+				}
+			}
+
+			int[] instanceComponentCounts = { 4, 4, 4, 4 };
+
+			float[] modelMatrix1 = new float[instanceMatrices.size() * 4];
+			float[] modelMatrix2 = new float[instanceMatrices.size() * 4];
+			float[] modelMatrix3 = new float[instanceMatrices.size() * 4];
+			float[] modelMatrix4 = new float[instanceMatrices.size() * 4];
+
+			for (int i = 0; i < instanceMatrices.size(); i++) {
+				Matrix4f mat = instanceMatrices.get(i);
 
 				modelMatrix1[i * 4 + 0] = mat.get(0, 0);
 				modelMatrix1[i * 4 + 1] = mat.get(0, 1);
@@ -113,9 +126,9 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 				Texture2D.DataType.BGRA_16_16_16F,
 				Texture2D.DataType.BGRA_8_8I);
 
-		finalFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
 
-		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+		finalFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
 
 		fullscreenQuad = new VertexBufferObjectIndexed(
 				new int[] { 2, 2 },
@@ -128,7 +141,6 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		setFrameBufferResolution(width, height);
 	}
 
-	@Override
 	public void addObject(DeferredRenderable object) {
 		VboContainer container = vboMap.get(object.getContainer());
 
@@ -141,7 +153,6 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		vboMap.put(object.getContainer(), container);
 	}
 
-	@Override
 	public void removeObject(DeferredRenderable object) {
 		// TODO Auto-generated method stub
 
@@ -191,8 +202,6 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		lightShader.setUniform1i("texturePosition", 2);
 		lightShader.deactivate();
 
-		setProjectionMatrix(Matrix4fUtils.getPerspectiveProjection(90, 16f / 9f, 0.01f, 100f));
-
 		finalShader = new Shader("noiseEngine/shaders/deferredRenderer/final.vert", "noiseEngine/shaders/deferredRenderer/final.frag");
 		finalShader.activate();
 		finalShader.setUniform1i("textureColor", 0);
@@ -202,20 +211,18 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		finalShader.setUniform1i("textureLights", 4);
 		finalShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
 		finalShader.deactivate();
-
 	}
 
-	public void setProjectionMatrix(Matrix4f projectionMatrix) {
+	public void setProjectionMatrix(PerspectiveCamera camera) {
 		gBufferShader.activate();
-		gBufferShader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
+		gBufferShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
 		gBufferShader.deactivate();
 
 		lightShader.activate();
-		lightShader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
+		lightShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
 		lightShader.deactivate();
 	}
 
-	@Override
 	public void setFrameBufferResolution(int width, int height) {
 		gBuffer.setResolution(width, height);
 		lightFrameBuffer.setResolution(width, height);
@@ -230,8 +237,7 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		finalShader.deactivate();
 	}
 
-	@Override
-	public void render(Matrix4f viewMatrix) {
+	public void render(PerspectiveCamera camera) {
 
 		//render gBuffer
 		glEnable(GL_DEPTH_TEST);
@@ -245,10 +251,11 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		gBufferShader.activate();
-		gBufferShader.setUniformMat4f("viewMatrix", viewMatrix.asBuffer());
+		gBufferShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
+		gBufferShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
 
 		for (VboContainer container : vboMap.values()) {
-			container.rebuildInstanceData();
+			container.rebuildInstanceData(camera.getViewFrustum());
 
 			container.container.getColorTexture().bind(0);
 			container.container.getNormalTexture().bind(1);
@@ -279,9 +286,12 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		lightShader.activate();
-		lightShader.setUniformMat4f("viewMatrix", viewMatrix.asBuffer());
+		lightShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
+		lightShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
+
 		lightVbo.render();
 		lightShader.deactivate();
+
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_BLEND);
 
@@ -294,15 +304,8 @@ public class DeferredRenderer implements IRenderer<DeferredRenderable> {
 		finalShader.deactivate();
 	}
 
-	@Override
 	public FrameBufferObject getRenderTarget() {
 		return finalFrameBuffer;
-	}
-
-	@Override
-	public void rebuild() {
-		// TODO Auto-generated method stub
-
 	}
 
 }

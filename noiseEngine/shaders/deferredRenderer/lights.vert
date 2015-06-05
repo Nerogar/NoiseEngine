@@ -20,7 +20,7 @@ out DATA
 } vert_out;
 
 void main(){
-	gl_Position = projectionMatrix * viewMatrix * vec4(position * lightReach + lightPos, 1.0);
+	gl_Position = projectionMatrix * viewMatrix * vec4(position * lightReach * 1.1 + lightPos, 1.0);
 
 	vert_out.position = lightPos;
 	vert_out.color = lightColor;

@@ -14,32 +14,32 @@ public interface Matrixf<T extends Matrixf<T>> {
 
 	public abstract T set(float allComponents);
 
-	public abstract T set(Matrixf<?> m);
+	public abstract T set(T m);
 
-	public abstract T set(float[] m);
+	public abstract T set(float... m);
 
 	//add
-	public abstract T add(Matrixf<?> m);
+	public abstract T add(T m);
 
-	public abstract T added(Matrixf<?> m);
+	public abstract T added(T m);
 
 	//subtract
-	public abstract T subtract(Matrixf<?> m);
+	public abstract T subtract(T m);
 
-	public abstract T subtracted(Matrixf<?> m);
+	public abstract T subtracted(T m);
 
 	//multiply
 	public abstract T multiply(float f);
 
 	public abstract T multiplied(float f);
 
-	public abstract T multiplyRight(Matrixf<?> m);
+	public abstract T multiplyRight(T m);
 
-	public abstract T multipliedRight(Matrixf<?> m);
+	public abstract T multipliedRight(T m);
 
-	public abstract T multiplyLeft(Matrixf<?> m);
+	public abstract T multiplyLeft(T m);
 
-	public abstract T multipliedLeft(Matrixf<?> m);
+	public abstract T multipliedLeft(T m);
 
 	//tools
 	public abstract T clone();

@@ -8,14 +8,12 @@ import org.lwjgl.BufferUtils;
 public class Matrix4f implements Matrixf<Matrix4f> {
 
 	private float[] components;
-	private int componentCount;
 
 	private FloatBuffer buffer;
 	private boolean isBufferDirty;
 
 	public Matrix4f() {
-		componentCount = 4;
-		components = new float[componentCount * componentCount];
+		components = new float[4 * 4];
 
 		components[0] = 1.0f;
 		components[5] = 1.0f;
@@ -27,13 +25,12 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 
 	private Matrix4f(float[] components) {
 		this.components = components;
-		this.componentCount = 4;
 		isBufferDirty = true;
 	}
 
 	@Override
 	public int getComponentCount() {
-		return componentCount;
+		return 4;
 	}
 
 	@Override
@@ -42,13 +39,13 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public float get(int componentCollumn, int componentLine) {
-		return components[componentLine * componentCount + componentCollumn];
+	public float get(int collumnIndex, int lineIndex) {
+		return components[lineIndex * 4 + collumnIndex];
 	}
 
 	@Override
-	public Matrix4f set(int componentCollumn, int componentLine, float f) {
-		components[componentLine * componentCount + componentCollumn] = f;
+	public Matrix4f set(int collumnIndex, int lineIndex, float f) {
+		components[lineIndex * 4 + collumnIndex] = f;
 		isBufferDirty = true;
 		return this;
 	}
@@ -64,9 +61,9 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f set(Matrixf<?> m) {
-		for (int i = 0; i < componentCount; i++) {
-			for (int j = 0; j < componentCount; j++) {
+	public Matrix4f set(Matrix4f m) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				set(i, j, m.get(i, j));
 			}
 		}
@@ -76,7 +73,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f set(float[] m) {
+	public Matrix4f set(float... m) {
 		for (int i = 0; i < components.length; i++) {
 			components[i] = m[i];
 		}
@@ -86,9 +83,9 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f add(Matrixf<?> m) {
-		for (int i = 0; i < componentCount; i++) {
-			for (int j = 0; j < componentCount; j++) {
+	public Matrix4f add(Matrix4f m) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				set(i, j, get(i, j) + m.get(i, j));
 			}
 		}
@@ -98,14 +95,14 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f added(Matrixf<?> m) {
+	public Matrix4f added(Matrix4f m) {
 		return clone().add(m);
 	}
 
 	@Override
-	public Matrix4f subtract(Matrixf<?> m) {
-		for (int i = 0; i < componentCount; i++) {
-			for (int j = 0; j < componentCount; j++) {
+	public Matrix4f subtract(Matrix4f m) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				set(i, j, get(i, j) - m.get(i, j));
 			}
 		}
@@ -115,7 +112,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f subtracted(Matrixf<?> m) {
+	public Matrix4f subtracted(Matrix4f m) {
 		return clone().subtract(m);
 	}
 
@@ -131,7 +128,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 
 	@Override
 	public Matrix4f multiplied(float f) {
-		float[] newMatrix = new float[componentCount * componentCount];
+		float[] newMatrix = new float[4 * 4];
 		for (int i = 0; i < components.length; i++) {
 			newMatrix[i] = components[i] * f;
 		}
@@ -140,18 +137,18 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multiplyRight(Matrixf<?> m) {
-		float[] newMatrix = new float[componentCount * componentCount];
+	public Matrix4f multiplyRight(Matrix4f m) {
+		float[] newMatrix = new float[4 * 4];
 
-		for (int i = 0; i < componentCount; i++) {
-			for (int j = 0; j < componentCount; j++) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				float sum = 0;
 
-				for (int w = 0; w < componentCount; w++) {
+				for (int w = 0; w < 4; w++) {
 					sum += m.get(i, w) * get(w, j);
 				}
 
-				newMatrix[j * componentCount + i] = sum;
+				newMatrix[j * 4 + i] = sum;
 			}
 		}
 
@@ -162,18 +159,18 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multipliedRight(Matrixf<?> m) {
-		float[] newMatrix = new float[componentCount * componentCount];
+	public Matrix4f multipliedRight(Matrix4f m) {
+		float[] newMatrix = new float[4 * 4];
 
-		for (int i = 0; i < componentCount; i++) {
-			for (int j = 0; j < componentCount; j++) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				float sum = 0;
 
-				for (int w = 0; w < componentCount; w++) {
+				for (int w = 0; w < 4; w++) {
 					sum += m.get(i, w) * get(w, j);
 				}
 
-				newMatrix[j * componentCount + i] = sum;
+				newMatrix[j * 4 + i] = sum;
 			}
 		}
 
@@ -181,18 +178,18 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multiplyLeft(Matrixf<?> m) {
-		float[] newMatrix = new float[componentCount * componentCount];
+	public Matrix4f multiplyLeft(Matrix4f m) {
+		float[] newMatrix = new float[4 * 4];
 
-		for (int i = 0; i < componentCount; i++) {
-			for (int j = 0; j < componentCount; j++) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				float sum = 0;
 
-				for (int w = 0; w < componentCount; w++) {
+				for (int w = 0; w < 4; w++) {
 					sum += get(i, w) * m.get(w, j);
 				}
 
-				newMatrix[j * componentCount + i] = sum;
+				newMatrix[j * 4 + i] = sum;
 			}
 		}
 
@@ -203,18 +200,18 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multipliedLeft(Matrixf<?> m) {
-		float[] newMatrix = new float[componentCount * componentCount];
+	public Matrix4f multipliedLeft(Matrix4f m) {
+		float[] newMatrix = new float[4 * 4];
 
-		for (int i = 0; i < componentCount; i++) {
-			for (int j = 0; j < componentCount; j++) {
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
 				float sum = 0;
 
-				for (int w = 0; w < componentCount; w++) {
+				for (int w = 0; w < 4; w++) {
 					sum += get(i, w) * m.get(w, j);
 				}
 
-				newMatrix[j * componentCount + i] = sum;
+				newMatrix[j * 4 + i] = sum;
 			}
 		}
 
@@ -229,7 +226,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	private void createBuffer() {
-		buffer = BufferUtils.createFloatBuffer(componentCount * componentCount);
+		buffer = BufferUtils.createFloatBuffer(4 * 4);
 	}
 
 	private void updateBuffer() {
@@ -244,9 +241,9 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[");
 
-		for (int line = 0; line < componentCount; line++) {
-			for (int i = 0; i < componentCount; i++) {
-				sb.append(String.valueOf(components[line * componentCount + i])).append("|");
+		for (int line = 0; line < 4; line++) {
+			for (int i = 0; i < 4; i++) {
+				sb.append(String.valueOf(components[line * 4 + i])).append("|");
 			}
 
 			sb.append("| ");

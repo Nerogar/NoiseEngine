@@ -6,12 +6,14 @@ public class Mesh {
 	private float[] positionArray;
 	private float[] uvArray;
 	private float[] normalArray;
+	private float minBoundingSize;
 
-	public Mesh(int[] indexArray, float[] positionArray, float[] uvArray, float[] normalArray) {
+	public Mesh(int[] indexArray, float[] positionArray, float[] uvArray, float[] normalArray, float minBoundingSize) {
 		this.indexArray = indexArray;
 		this.positionArray = positionArray;
 		this.uvArray = uvArray;
 		this.normalArray = normalArray;
+		this.minBoundingSize = minBoundingSize;
 	}
 
 	public int[] getIndexArray() {
@@ -28,6 +30,10 @@ public class Mesh {
 
 	public float[] getNormalArray() {
 		return normalArray;
+	}
+
+	public float getMinBoundingSize() {
+		return minBoundingSize;
 	}
 
 }
