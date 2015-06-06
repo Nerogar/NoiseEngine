@@ -138,21 +138,25 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 
 	@Override
 	public Matrix4f multiplyRight(Matrix4f m) {
-		float[] newMatrix = new float[4 * 4];
+		for (int j = 0; j < 4; j++) {
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
+			float c0 = get(0, j);
+			float c1 = get(1, j);
+			float c2 = get(2, j);
+			float c3 = get(3, j);
+
+			for (int i = 0; i < 4; i++) {
 				float sum = 0;
 
-				for (int w = 0; w < 4; w++) {
-					sum += m.get(i, w) * get(w, j);
-				}
+				sum += m.get(i, 0) * c0;
+				sum += m.get(i, 1) * c1;
+				sum += m.get(i, 2) * c2;
+				sum += m.get(i, 3) * c3;
 
-				newMatrix[j * 4 + i] = sum;
+				set(i, j, sum);
 			}
 		}
 
-		components = newMatrix;
 		isBufferDirty = true;
 
 		return this;
@@ -179,21 +183,25 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 
 	@Override
 	public Matrix4f multiplyLeft(Matrix4f m) {
-		float[] newMatrix = new float[4 * 4];
-
 		for (int i = 0; i < 4; i++) {
+
+			float c0 = get(i, 0);
+			float c1 = get(i, 1);
+			float c2 = get(i, 2);
+			float c3 = get(i, 3);
+
 			for (int j = 0; j < 4; j++) {
 				float sum = 0;
 
-				for (int w = 0; w < 4; w++) {
-					sum += get(i, w) * m.get(w, j);
-				}
+				sum += c0 * m.get(0, j);
+				sum += c1 * m.get(1, j);
+				sum += c2 * m.get(2, j);
+				sum += c3 * m.get(3, j);
 
-				newMatrix[j * 4 + i] = sum;
+				set(i, j, sum);
 			}
 		}
 
-		components = newMatrix;
 		isBufferDirty = true;
 
 		return this;
