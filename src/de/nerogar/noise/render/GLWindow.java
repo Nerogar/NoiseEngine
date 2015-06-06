@@ -25,6 +25,8 @@ public class GLWindow implements IRenderTarget {
 	private int windowWidth, windowHeight;
 	private int swapInterval;
 	private boolean resizable;
+	private boolean hideMouse;
+	private boolean mouseHidden;
 
 	private GLContext glContext;
 
@@ -32,7 +34,8 @@ public class GLWindow implements IRenderTarget {
 
 	private InputHandler inputHandler;
 
-	//holds references to callbacks, otherwise the gc will delete them 
+	//holds references to callbacks, otherwise the gc will delete them
+	private GLFWWindowFocusCallback windowFocusCallback;
 	private GLFWFramebufferSizeCallback frameBufferCallback;
 	private GLFWCursorPosCallback cursorPosCallback;
 	private GLFWKeyCallback keyCallback;
@@ -74,6 +77,16 @@ public class GLWindow implements IRenderTarget {
 
 		setSwapInterval(swapInterval);
 
+		windowFocusCallback = new GLFWWindowFocusCallback() {
+			@Override
+			public void invoke(long window, int focused) {
+				if (focused == GL_TRUE && hideMouse) {
+					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					mouseHidden = false;
+				}
+			}
+		};
+
 		frameBufferCallback = new GLFWFramebufferSizeCallback() {
 			@Override
 			public void invoke(long window, int newWidth, int newHeight) {
@@ -113,6 +126,8 @@ public class GLWindow implements IRenderTarget {
 		mouseButtonCallback = new GLFWMouseButtonCallback() {
 			@Override
 			public void invoke(long window, int button, int action, int mods) {
+				if (hideMouse && !mouseHidden) glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 				inputHandler.addMouseButtonEvent(button, action, mods);
 			}
 		};
@@ -124,6 +139,7 @@ public class GLWindow implements IRenderTarget {
 			}
 		};
 
+		glfwSetWindowFocusCallback(windowPointer, windowFocusCallback);
 		glfwSetFramebufferSizeCallback(windowPointer, frameBufferCallback);
 		glfwSetCursorPosCallback(windowPointer, cursorPosCallback);
 		glfwSetKeyCallback(windowPointer, keyCallback);
@@ -202,6 +218,9 @@ public class GLWindow implements IRenderTarget {
 	}
 
 	public void setMouseHiding(boolean hide) {
+		this.hideMouse = hide;
+		this.mouseHidden = hide;
+
 		if (hide) {
 			glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		} else {

@@ -126,7 +126,7 @@ public class WavefrontLoader {
 		float[] texCoordsFinal = new float[vertexTuples.size() * 2];
 		int[] indices = new int[faces.size() * 3];
 
-		float minBoundingSize = 0;
+		float boundingRadius = 0;
 
 		for (int i = 0; i < vertexTuples.size(); i++) {
 			VertexTuple tuple = vertexTuples.get(i);
@@ -144,7 +144,7 @@ public class WavefrontLoader {
 
 			float tempBoundingSize = verticesFinal[i * 3 + 0] * verticesFinal[i * 3 + 0] + verticesFinal[i * 3 + 1] * verticesFinal[i * 3 + 1] + verticesFinal[i * 3 + 2] * verticesFinal[i * 3 + 2];
 
-			if (tempBoundingSize > minBoundingSize) minBoundingSize = tempBoundingSize;
+			if (tempBoundingSize > boundingRadius) boundingRadius = tempBoundingSize;
 		}
 
 		for (int i = 0; i < faces.size(); i++) {
@@ -153,7 +153,7 @@ public class WavefrontLoader {
 			indices[i * 3 + 2] = faces.get(i)[2];
 		}
 
-		object = new Mesh(indices, verticesFinal, texCoordsFinal, normalsFinal, minBoundingSize);
+		object = new Mesh(indices, verticesFinal, texCoordsFinal, normalsFinal, boundingRadius);
 
 		meshMap.put(filename, object);
 

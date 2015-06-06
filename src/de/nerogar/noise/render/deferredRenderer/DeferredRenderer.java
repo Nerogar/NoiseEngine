@@ -9,29 +9,6 @@ import de.nerogar.noise.util.*;
 
 public class DeferredRenderer {
 
-	/*
-	 * TODO: DeferredRenderer
-	 * lights, objects
-	 * 
-	 * object lists (size limit)
-	 * 
-	 * culling
-	 * 
-	 * textures output
-	 * 
-	 * depth 32bit
-	 * color 4 * 8bit
-	 * normal 3 * 8bit
-	 * position 3 * 32bit (world space)
-	 * ambient, reflection 8bit
-	 * 
-	 * light 3 * 8bit
-	 * 
-	 * sum: 32+32+24+96+16 = 200 bit
-	 * 
-	 * 
-	 */
-
 	private class VboContainer {
 		public DeferredContainer container;
 		public List<DeferredRenderable> renderables;
@@ -49,7 +26,7 @@ public class DeferredRenderer {
 		}
 
 		public void rebuildInstanceData(ViewFrustum frustum) {
-			ArrayList<Matrix4f> instanceMatrices = new ArrayList<Matrix4f>(renderables.size());
+			ArrayList<Matrix4f> instanceMatrices = new ArrayList<Matrix4f>();
 
 			Vector3f point = new Vector3f();
 
@@ -58,7 +35,7 @@ public class DeferredRenderer {
 				point.setY(renderables.get(i).getRenderProperties().getY());
 				point.setZ(renderables.get(i).getRenderProperties().getZ());
 
-				if (frustum.getPointDistance(point) < renderables.get(i).getContainer().getMesh().getMinBoundingSize() * renderables.get(i).getRenderProperties().getMaxScaleComponent()) {
+				if (frustum.getPointDistance(point) < renderables.get(i).getContainer().getMesh().getboundingRadius() * renderables.get(i).getRenderProperties().getMaxScaleComponent()) {
 					instanceMatrices.add(renderables.get(i).getRenderProperties().getModelMatrix());
 				}
 			}
@@ -154,8 +131,8 @@ public class DeferredRenderer {
 	}
 
 	public void removeObject(DeferredRenderable object) {
-		// TODO Auto-generated method stub
-
+		VboContainer container = vboMap.get(object.getContainer());
+		container.renderables.remove(object);
 	}
 
 	public LightContainer getLightContainer() {
