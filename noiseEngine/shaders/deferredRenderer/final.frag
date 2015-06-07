@@ -5,6 +5,7 @@ uniform sampler2D textureNormal;
 uniform sampler2D texturePosition;
 uniform sampler2D textureLight;
 uniform sampler2D textureLights;
+uniform sampler2D reflectionTexture;
 
 uniform vec2 inverseResolution;
 
@@ -56,6 +57,7 @@ void main(){
 	//samples
 	vec3 fxaaColorSample = fxaaBlur(colorSample.rgb, colorSampleNW.rgb, colorSampleNE.rgb, colorSampleSW.rgb, colorSampleSE.rgb, textureColor);
 	vec3 normalSample = texture2D(textureNormal, frag_in.uv).xyz;
+	vec2 lightSample = texture2D(textureLight, frag_in.uv).xy;
 	vec3 lightsSample = texture2D(textureLights, frag_in.uv).xyz;
 
 	//sunlight
@@ -64,7 +66,7 @@ void main(){
 	vec3 sunColor = vec3(1.0, 1.0, 0.9);
 	vec3 sunLight = sunColor * bright;
 
-	color.rgb = fxaaColorSample * (sunLight + lightsSample);
+	color.rgb = fxaaColorSample * (sunLight + lightsSample) * lightSample.x;
 
-	//color.rgb = lightsSample;
+	//color.rgb = (sunLight + lightsSample) * lightSample.x;
 }

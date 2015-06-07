@@ -33,7 +33,9 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	private int totalComponentsInstance;
 	private int[] componentCountsInstance;
 	private int[] incrementalComponentCountsInstance;
+	
 	private float[] attribArrayInstance;
+	private ByteBuffer instanceBuffer;
 
 	protected HashMap<Long, Boolean> glContextInstanceDataDirty;
 
@@ -188,7 +190,10 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			instanceCount = 0;
 		}
 
-		if (attribArrayInstance == null || attribArrayInstance.length < totalComponentsInstance * instanceCount) attribArrayInstance = new float[totalComponentsInstance * instanceCount];
+		if (attribArrayInstance == null || attribArrayInstance.length < totalComponentsInstance * instanceCount){
+			attribArrayInstance = new float[totalComponentsInstance * instanceCount];
+			instanceBuffer = BufferUtils.createByteBuffer(attribArrayInstance.length * Float.BYTES);
+		}
 
 		for (int attribInstance = 0; attribInstance < attributesInstance.length; attribInstance++) {
 			for (int instance = 0; instance < instanceCount; instance++) {
@@ -201,7 +206,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			}
 		}
 
-		ByteBuffer instanceBuffer = BufferUtils.createByteBuffer(attribArrayInstance.length * Float.BYTES);
+		instanceBuffer.clear();
 		instanceBuffer.asFloatBuffer().put(attribArrayInstance);
 
 		for (Long l : glContextInstanceDataDirty.keySet()) {
