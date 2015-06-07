@@ -17,9 +17,9 @@ public final class Matrix4fUtils {
 
 	public static void setYawMatrix(Matrix4f m, float radiants) {
 		m.set(
-				(float) Math.cos(-radiants),	0.0f,					(float) Math.sin(-radiants),	0.0f,
+				(float) Math.cos(radiants),		0.0f,					(float) Math.sin(radiants),		0.0f,
 				0.0f,							1.0f,					0.0f,							0.0f,
-				(float)	-Math.sin(-radiants),	0.0f,					(float) Math.cos(-radiants),	0.0f,
+				(float)	-Math.sin(radiants),	0.0f,					(float) Math.cos(radiants),		0.0f,
 				0.0f,							0.0f,					0.0f,							1.0f
 		);
 	}
@@ -27,16 +27,16 @@ public final class Matrix4fUtils {
 	public static void setPitchMatrix(Matrix4f m, float radiants) {
 		m.set(
 				1.0f,	0.0f,							0.0f,							0.0f,
-				0.0f,	(float) Math.cos(-radiants),	(float) -Math.sin(-radiants),	0.0f,
-				0.0f,	(float) Math.sin(-radiants),	(float) Math.cos(-radiants),	0.0f,
+				0.0f,	(float) Math.cos(radiants),		(float) Math.sin(radiants),		0.0f,
+				0.0f,	(float) -Math.sin(radiants),	(float) Math.cos(radiants),		0.0f,
 				0.0f,	0.0f,							0.0f,							1.0f
 		);
 	}
 
 	public static void setRollMatrix(Matrix4f m, float radiants) {
 		m.set(
-				(float) Math.cos(-radiants),	(float) -Math.sin(-radiants),	0.0f,	0.0f,
-				(float) Math.sin(-radiants),	(float) Math.cos(-radiants),	0.0f,	0.0f,
+				(float) Math.cos(radiants),		(float) Math.sin(radiants),		0.0f,	0.0f,
+				(float) -Math.sin(radiants),	(float) Math.cos(radiants),		0.0f,	0.0f,
 				0.0f,							0.0f,							1.0f,	0.0f,
 				0.0f,							0.0f,							0.0f,	1.0f
 		);

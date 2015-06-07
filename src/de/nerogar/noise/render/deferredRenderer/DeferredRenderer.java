@@ -81,8 +81,6 @@ public class DeferredRenderer {
 				modelMatrix4[i * 4 + 3] = mat.get(3, 3);
 			}
 
-			System.out.println(instanceMatrices.size());
-			
 			int[] instanceComponentCounts = { 4, 4, 4, 4 };
 			vbo.setInstanceData(instanceMatrices.size(), instanceComponentCounts, modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4);
 		}
