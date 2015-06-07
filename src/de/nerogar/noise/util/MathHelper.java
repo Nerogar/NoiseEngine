@@ -7,10 +7,12 @@ public class MathHelper {
 	private static final float HALF_PI = (float) (Math.PI * 0.5);
 	public static final float PI = (float) (Math.PI);
 	public static final float TAU = (float) (Math.PI * 2);
+	public static final float INVERSE_TAU = 1.0f / TAU;
 
 	public static float sin(float radiant) {
 		float x = (radiant % TAU);
 		if (x < 0) x += TAU;
+		x *= INVERSE_TAU;
 		return sinTable[(int) (x * LOOKUP_TABLE_LENGTH)];
 	}
 
@@ -22,7 +24,7 @@ public class MathHelper {
 		sinTable = new float[LOOKUP_TABLE_LENGTH];
 
 		for (int i = 0; i < LOOKUP_TABLE_LENGTH; i++) {
-			sinTable[i] = (float) Math.sin((TAU) * (float) (i / LOOKUP_TABLE_LENGTH));
+			sinTable[i] = (float) Math.sin((TAU) * ((float) i / LOOKUP_TABLE_LENGTH));
 		}
 	}*/
 

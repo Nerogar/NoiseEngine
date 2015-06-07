@@ -8,10 +8,15 @@ public class RenderProperties3f implements RenderProperties {
 	private float x, y, z;
 	private float scaleX, scaleY, scaleZ, maxScaleComponent;
 
+	private boolean positionMatrixDirty = true;
 	private Matrix4f positionMatrix;
+	private boolean scaleMatrixDirty = true;
 	private Matrix4f scaleMatrix;
+	private boolean yawMatrixDirty = true;
 	private Matrix4f yawMatrix;
+	private boolean pitchMatrixDirty = true;
 	private Matrix4f pitchMatrix;
+	private boolean rollMatrixDirty = true;
 	private Matrix4f rollMatrix;
 
 	private boolean finalMatrixDirty = true;
@@ -56,30 +61,31 @@ public class RenderProperties3f implements RenderProperties {
 
 	private void setPositionMatrix() {
 		Matrix4fUtils.setPositionMatrix(positionMatrix, x, y, z);
-		finalMatrixDirty = true;
 	}
 
 	private void setScaleMatrix() {
 		Matrix4fUtils.setScaleMatrix(scaleMatrix, scaleX, scaleY, scaleZ);
-		finalMatrixDirty = true;
 	}
 
 	private void setYawMatrix() {
 		Matrix4fUtils.setYawMatrix(yawMatrix, yaw);
-		finalMatrixDirty = true;
 	}
 
 	private void setPitchMatrix() {
 		Matrix4fUtils.setPitchMatrix(pitchMatrix, pitch);
-		finalMatrixDirty = true;
 	}
 
 	private void setRollMatrix() {
 		Matrix4fUtils.setRollMatrix(rollMatrix, roll);
-		finalMatrixDirty = true;
 	}
 
 	private void setFinalMatrix() {
+		if (positionMatrixDirty) setPositionMatrix();
+		if (scaleMatrixDirty) setScaleMatrix();
+		if (yawMatrixDirty) setYawMatrix();
+		if (pitchMatrixDirty) setPitchMatrix();
+		if (rollMatrixDirty) setRollMatrix();
+
 		finalMatrix.set(scaleMatrix);
 		finalMatrix.multiplyLeft(rollMatrix);
 		finalMatrix.multiplyLeft(pitchMatrix);
@@ -102,7 +108,9 @@ public class RenderProperties3f implements RenderProperties {
 	public void setYaw(float yaw) {
 		if (this.yaw == yaw) return;
 		this.yaw = yaw;
-		setYawMatrix();
+
+		yawMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	/**
@@ -118,7 +126,9 @@ public class RenderProperties3f implements RenderProperties {
 	public void setPitch(float pitch) {
 		if (this.pitch == pitch) return;
 		this.pitch = pitch;
-		setPitchMatrix();
+
+		pitchMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	/**
@@ -134,7 +144,9 @@ public class RenderProperties3f implements RenderProperties {
 	public void setRoll(float roll) {
 		if (this.roll == roll) return;
 		this.roll = roll;
-		setRollMatrix();
+
+		rollMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	public float getX() {
@@ -144,7 +156,9 @@ public class RenderProperties3f implements RenderProperties {
 	public void setX(float x) {
 		if (this.x == x) return;
 		this.x = x;
-		setPositionMatrix();
+
+		positionMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	public float getY() {
@@ -154,7 +168,9 @@ public class RenderProperties3f implements RenderProperties {
 	public void setY(float y) {
 		if (this.y == y) return;
 		this.y = y;
-		setPositionMatrix();
+
+		positionMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	public float getZ() {
@@ -164,7 +180,9 @@ public class RenderProperties3f implements RenderProperties {
 	public void setZ(float z) {
 		if (this.z == z) return;
 		this.z = z;
-		setPositionMatrix();
+
+		positionMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	/**
@@ -175,11 +193,26 @@ public class RenderProperties3f implements RenderProperties {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		setPositionMatrix();
+
+		positionMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	/**
 	 * sets the x, y and z properties
+	 */
+	public void setXYZ(Vector3f v) {
+		if (this.x == v.getX() && this.y == v.getY() && this.z == v.getZ()) return;
+		this.x = v.getX();
+		this.y = v.getY();
+		this.z = v.getZ();
+
+		positionMatrixDirty = true;
+		finalMatrixDirty = true;
+	}
+
+	/**
+	 * sets the x, y and z scale properties
 	 */
 	public void setScale(float scaleX, float scaleY, float scaleZ) {
 		if (this.scaleX == x && this.scaleY == y && this.scaleZ == z) return;
@@ -191,7 +224,8 @@ public class RenderProperties3f implements RenderProperties {
 		if (scaleY > maxScaleComponent) maxScaleComponent = scaleY;
 		if (scaleZ > maxScaleComponent) maxScaleComponent = scaleZ;
 
-		setScaleMatrix();
+		scaleMatrixDirty = true;
+		finalMatrixDirty = true;
 	}
 
 	public float getScaleX() {
@@ -208,17 +242,6 @@ public class RenderProperties3f implements RenderProperties {
 
 	public float getMaxScaleComponent() {
 		return maxScaleComponent;
-	}
-
-	/**
-	 * sets the x, y and z properties
-	 */
-	public void setXYZ(Vector3f v) {
-		if (this.x == v.getX() && this.y == v.getY() && this.z == v.getZ()) return;
-		this.x = v.getX();
-		this.y = v.getY();
-		this.z = v.getZ();
-		setPositionMatrix();
 	}
 
 }
