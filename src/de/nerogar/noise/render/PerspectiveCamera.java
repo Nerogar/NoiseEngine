@@ -86,8 +86,16 @@ public class PerspectiveCamera {
 		return viewMatrix;
 	}
 
+	private void setProjectionMatrix() {
+		Matrix4fUtils.setPerspectiveProjection(projectionMatrix, fov, aspect, near, far);
+
+		projectionMatrixDirty = false;
+
+		frustum.setPlanes(this);
+	}
+
 	public Matrix4f getProjectionMatrix() {
-		if (projectionMatrixDirty) Matrix4fUtils.setPerspectiveProjection(projectionMatrix, fov, aspect, near, far);
+		if (projectionMatrixDirty) setProjectionMatrix();
 
 		return projectionMatrix;
 	}
