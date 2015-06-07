@@ -14,9 +14,17 @@ public class DeferredRenderer {
 		public List<DeferredRenderable> renderables;
 		public VertexBufferObjectInstanced vbo;
 
+		private ArrayList<Matrix4f> instanceMatrices;
+		private float[] modelMatrix1;
+		private float[] modelMatrix2;
+		private float[] modelMatrix3;
+		private float[] modelMatrix4;
+
 		public VboContainer(DeferredContainer container) {
 			this.container = container;
 			renderables = new ArrayList<DeferredRenderable>();
+
+			instanceMatrices = new ArrayList<Matrix4f>();
 
 			vbo = new VertexBufferObjectInstanced(new int[] { 3, 2, 3 },
 					container.getMesh().getIndexArray(),
@@ -26,7 +34,8 @@ public class DeferredRenderer {
 		}
 
 		public void rebuildInstanceData(ViewFrustum frustum) {
-			ArrayList<Matrix4f> instanceMatrices = new ArrayList<Matrix4f>();
+
+			instanceMatrices.clear();
 
 			Vector3f point = new Vector3f();
 
@@ -40,12 +49,13 @@ public class DeferredRenderer {
 				}
 			}
 
-			int[] instanceComponentCounts = { 4, 4, 4, 4 };
-
-			float[] modelMatrix1 = new float[instanceMatrices.size() * 4];
-			float[] modelMatrix2 = new float[instanceMatrices.size() * 4];
-			float[] modelMatrix3 = new float[instanceMatrices.size() * 4];
-			float[] modelMatrix4 = new float[instanceMatrices.size() * 4];
+			//if arrays are too short, resize them
+			if (modelMatrix1 == null || modelMatrix1.length < instanceMatrices.size() * 4) {
+				modelMatrix1 = new float[instanceMatrices.size() * 4];
+				modelMatrix2 = new float[instanceMatrices.size() * 4];
+				modelMatrix3 = new float[instanceMatrices.size() * 4];
+				modelMatrix4 = new float[instanceMatrices.size() * 4];
+			}
 
 			for (int i = 0; i < instanceMatrices.size(); i++) {
 				Matrix4f mat = instanceMatrices.get(i);
@@ -71,7 +81,10 @@ public class DeferredRenderer {
 				modelMatrix4[i * 4 + 3] = mat.get(3, 3);
 			}
 
-			vbo.setInstanceData(instanceComponentCounts, modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4);
+			System.out.println(instanceMatrices.size());
+			
+			int[] instanceComponentCounts = { 4, 4, 4, 4 };
+			vbo.setInstanceData(instanceMatrices.size(), instanceComponentCounts, modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4);
 		}
 	}
 
@@ -161,7 +174,7 @@ public class DeferredRenderer {
 			intensity[i] = lights.get(i).intensity;
 		}
 
-		lightVbo.setInstanceData(new int[] { 3, 3, 1, 1 }, position, color, reach, intensity);
+		lightVbo.setInstanceData(lights.size(), new int[] { 3, 3, 1, 1 }, position, color, reach, intensity);
 	}
 
 	//TODO: remove
@@ -188,16 +201,6 @@ public class DeferredRenderer {
 		finalShader.setUniform1i("textureLights", 4);
 		finalShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
 		finalShader.deactivate();
-	}
-
-	public void setProjectionMatrix(PerspectiveCamera camera) {
-		gBufferShader.activate();
-		gBufferShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
-		gBufferShader.deactivate();
-
-		lightShader.activate();
-		lightShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
-		lightShader.deactivate();
 	}
 
 	public void setFrameBufferResolution(int width, int height) {

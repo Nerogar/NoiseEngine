@@ -16,7 +16,7 @@ public interface Matrixf<T extends Matrixf<T>> {
 
 	public abstract T set(T m);
 
-	public abstract T set(float... m);
+	public abstract T set(float[] m);
 
 	//add
 	public abstract T add(T m);

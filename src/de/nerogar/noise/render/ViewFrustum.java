@@ -27,21 +27,21 @@ public class ViewFrustum {
 	public float getPointDistance(Vector3f point) {
 		camera.pointToViewSpace(point);
 
-		float[] distances = new float[6];
+		float near = point.getZ() - camera.getNear(); //near
+		float far = -camera.getFar() - point.getZ(); //far
 
-		distances[0] = point.getZ() - camera.getNear(); //near
-		distances[1] = -camera.getFar() - point.getZ(); //far
+		float left = farWidth * point.getZ() * inverseFar - point.getX(); //left
+		float right = point.getX() + farWidth * point.getZ() * inverseFar; //right
 
-		distances[2] = farWidth * point.getZ() * inverseFar - point.getX(); //left
-		distances[3] = point.getX() + farWidth * point.getZ() * inverseFar; //right
+		float bottom = farHeight * point.getZ() * inverseFar - point.getY(); //bottom
+		float top = point.getY() + farHeight * point.getZ() * inverseFar; //top
 
-		distances[4] = farHeight * point.getZ() * inverseFar - point.getY(); //bottom
-		distances[5] = point.getY() + farHeight * point.getZ() * inverseFar; //top
-
-		float max = distances[0];
-		for (int i = 1; i < 6; i++) {
-			if (distances[i] > max) max = distances[i];
-		}
+		float max = near;
+		if (far > max) max = far;
+		if (left > max) max = left;
+		if (right > max) max = right;
+		if (bottom > max) max = bottom;
+		if (top > max) max = top;
 
 		return max;
 	}

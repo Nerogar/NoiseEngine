@@ -10,8 +10,7 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.nio.*;
 import java.util.HashMap;
 
 import org.lwjgl.BufferUtils;
@@ -34,6 +33,8 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	private int totalComponentsInstance;
 	private int[] componentCountsInstance;
 	private int[] incrementalComponentCountsInstance;
+	private float[] attribArrayInstance;
+
 	protected HashMap<Long, Boolean> glContextInstanceDataDirty;
 
 	/**
@@ -101,7 +102,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		initVAO(buffer, indexBuffer, null);
 	}
 
-	private int initVAO(FloatBuffer vboBuffer, IntBuffer indexBuffer, FloatBuffer instanceBuffer) {
+	private int initVAO(FloatBuffer vboBuffer, IntBuffer indexBuffer, ByteBuffer instanceBuffer) {
 		long currentContext = glfwGetCurrentContext();
 		Integer oldVaoHandle = glContextVaoHandles.get(currentContext);
 		if (oldVaoHandle != null) glDeleteVertexArrays(oldVaoHandle);
@@ -138,7 +139,8 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		//instance data
 		if (instanceBufferHandle == 0) instanceBufferHandle = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, instanceBufferHandle);
-		if (instanceBuffer != null) glBufferData(GL_ARRAY_BUFFER, instanceBuffer, GL_STATIC_DRAW);
+		if (instanceBuffer != null) glBufferData(GL_ARRAY_BUFFER, instanceCount * totalComponentsInstance * Float.BYTES, instanceBuffer, GL_STATIC_DRAW);
+
 		if (componentCountsInstance != null) {
 			for (int i = 0; i < componentCountsInstance.length; i++) {
 				glEnableVertexAttribArray(i + componentCounts.length);
@@ -159,11 +161,13 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	 * Updates the instance data of this VertexBuffer. ComponentCounts should contain only numbers from 1 to 4.
 	 * If you want to add 4x4 matrices, you have to specify 4 arrays, each containing a single collumn of the matrix
 	 * 
+	 * @param instanceCount number of instances to render
 	 * @param componentCountsInstance an array containing all component counts
 	 * @param attributesInstance arays containing all components to use for this VBO as instance data
 	 */
-	public void setInstanceData(int[] componentCountsInstance, float[]... attributesInstance) {
+	public void setInstanceData(int instanceCount, int[] componentCountsInstance, float[]... attributesInstance) {
 		this.componentCountsInstance = componentCountsInstance;
+		this.instanceCount = instanceCount;
 
 		Integer vaoHandle = glContextVaoHandles.get(glfwGetCurrentContext());
 
@@ -184,7 +188,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			instanceCount = 0;
 		}
 
-		float[] attribArrayInstance = new float[totalComponentsInstance * instanceCount];
+		if (attribArrayInstance == null || attribArrayInstance.length < totalComponentsInstance * instanceCount) attribArrayInstance = new float[totalComponentsInstance * instanceCount];
 
 		for (int attribInstance = 0; attribInstance < attributesInstance.length; attribInstance++) {
 			for (int instance = 0; instance < instanceCount; instance++) {
@@ -197,17 +201,14 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			}
 		}
 
-		FloatBuffer instanceBuffer = BufferUtils.createFloatBuffer(attribArrayInstance.length);
-		instanceBuffer.put(attribArrayInstance);
-		instanceBuffer.flip();
+		ByteBuffer instanceBuffer = BufferUtils.createByteBuffer(attribArrayInstance.length * Float.BYTES);
+		instanceBuffer.asFloatBuffer().put(attribArrayInstance);
 
 		for (Long l : glContextInstanceDataDirty.keySet()) {
 			glContextInstanceDataDirty.put(l, true);
 		}
 
 		initVAO(null, null, instanceBuffer);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glBindVertexArray(0);
 	}

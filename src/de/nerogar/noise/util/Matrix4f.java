@@ -73,10 +73,37 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f set(float... m) {
+	public Matrix4f set(float[] m) {
 		for (int i = 0; i < components.length; i++) {
 			components[i] = m[i];
 		}
+		isBufferDirty = true;
+
+		return this;
+	}
+
+	public Matrix4f set(float c0, float c1, float c2, float c3, float c4, float c5, float c6, float c7, float c8, float c9, float c10, float c11, float c12, float c13, float c14, float c15) {
+
+		components[0] = c0;
+		components[1] = c1;
+		components[2] = c2;
+		components[3] = c3;
+
+		components[4] = c4;
+		components[5] = c5;
+		components[6] = c6;
+		components[7] = c7;
+
+		components[8] = c8;
+		components[9] = c9;
+		components[10] = c10;
+		components[11] = c11;
+
+		components[12] = c12;
+		components[13] = c13;
+		components[14] = c14;
+		components[15] = c15;
+
 		isBufferDirty = true;
 
 		return this;
