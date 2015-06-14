@@ -101,6 +101,8 @@ public class DeferredRenderer {
 
 	private VertexBufferObjectIndexed fullscreenQuad;
 
+	private TextureCubeMap reflectionTexture;
+
 	public DeferredRenderer(int width, int height) {
 
 		vboMap = new HashMap<DeferredContainer, VboContainer>();
@@ -197,6 +199,7 @@ public class DeferredRenderer {
 		finalShader.setUniform1i("texturePosition", 2);
 		finalShader.setUniform1i("textureLight", 3);
 		finalShader.setUniform1i("textureLights", 4);
+		finalShader.setUniform1i("textureReflection", 5);
 		finalShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
 		finalShader.deactivate();
 	}
@@ -213,6 +216,10 @@ public class DeferredRenderer {
 		finalShader.activate();
 		finalShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		finalShader.deactivate();
+	}
+
+	public void setReflectionTexture(TextureCubeMap reflectionTexture) {
+		this.reflectionTexture = reflectionTexture;
 	}
 
 	public void render(PerspectiveCamera camera) {
@@ -274,10 +281,12 @@ public class DeferredRenderer {
 		glDisable(GL_BLEND);
 
 		lightFrameBuffer.getTextureAttachment(0).bind(4);
+		if (reflectionTexture != null) reflectionTexture.bind(5);
 
 		//final pass
 		finalFrameBuffer.bind();
 		finalShader.activate();
+		finalShader.setUniform3f("cameraPosition", camera.getX(), camera.getY(), camera.getZ());
 		fullscreenQuad.render();
 		finalShader.deactivate();
 	}

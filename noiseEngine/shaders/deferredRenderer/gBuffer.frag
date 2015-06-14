@@ -17,12 +17,12 @@ in DATA
 } frag_in;
 
 void main(){
-	color = texture2D(textureColor, frag_in.uv);
+	color = texture(textureColor, frag_in.uv);
 
-	vec3 normalSample = texture2D(textureNormal, frag_in.uv).xyz;
+	vec3 normalSample = texture(textureNormal, frag_in.uv).xyz;
 	normal = frag_in.normal;
 
 	position = frag_in.position;
 
-	light = texture2D(textureLight, frag_in.uv);
+	light = texture(textureLight, frag_in.uv);
 }

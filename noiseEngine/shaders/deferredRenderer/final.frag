@@ -5,9 +5,10 @@ uniform sampler2D textureNormal;
 uniform sampler2D texturePosition;
 uniform sampler2D textureLight;
 uniform sampler2D textureLights;
-uniform sampler2D reflectionTexture;
+uniform samplerCube textureReflection;
 
 uniform vec2 inverseResolution;
+uniform vec3 cameraPosition;
 
 layout (location = 0) out vec4 color;
 
@@ -47,18 +48,27 @@ vec3 fxaaBlur(vec3 c, vec3 cNW, vec3 cNE, vec3 cSW, vec3 cSE, sampler2D textureC
 	}
 }
 
+float pow16(float f){
+	f *= f;
+	f *= f;
+	f *= f;
+	f *= f;
+	return f;
+}
+
 void main(){
-	vec4 colorSample = texture2D(textureColor, frag_in.uv);
-	vec4 colorSampleNW = texture2D(textureColor, frag_in.uvNW);
-	vec4 colorSampleNE = texture2D(textureColor, frag_in.uvNE);
-	vec4 colorSampleSW = texture2D(textureColor, frag_in.uvSW);
-	vec4 colorSampleSE = texture2D(textureColor, frag_in.uvSE);
+	vec4 colorSample = texture(textureColor, frag_in.uv);
+	vec4 colorSampleNW = texture(textureColor, frag_in.uvNW);
+	vec4 colorSampleNE = texture(textureColor, frag_in.uvNE);
+	vec4 colorSampleSW = texture(textureColor, frag_in.uvSW);
+	vec4 colorSampleSE = texture(textureColor, frag_in.uvSE);
 
 	//samples
 	vec3 fxaaColorSample = fxaaBlur(colorSample.rgb, colorSampleNW.rgb, colorSampleNE.rgb, colorSampleSW.rgb, colorSampleSE.rgb, textureColor);
-	vec3 normalSample = texture2D(textureNormal, frag_in.uv).xyz;
-	vec2 lightSample = texture2D(textureLight, frag_in.uv).xy;
-	vec3 lightsSample = texture2D(textureLights, frag_in.uv).xyz;
+	vec3 normalSample = texture(textureNormal, frag_in.uv).xyz;
+	vec2 lightSample = texture(textureLight, frag_in.uv).xy;
+	vec3 lightsSample = texture(textureLights, frag_in.uv).xyz;
+	vec3 positionSample = texture(texturePosition, frag_in.uv).xyz;
 
 	//sunlight
 	vec3 sunLightDirection = normalize(vec3(-1.0, -1.0, -1.0));
@@ -66,7 +76,19 @@ void main(){
 	vec3 sunColor = vec3(1.0, 1.0, 0.9);
 	vec3 sunLight = sunColor * bright;
 
-	color.rgb = fxaaColorSample * (sunLight + lightsSample) * lightSample.x;
+	//specular + reflections
+	vec3 viewDirection = normalize(cameraPosition - positionSample);
+	vec3 sunReflectionDirection = reflect(sunLightDirection, normalSample);
+	vec3 viewReflectionDirection = reflect(viewDirection, normalSample);
 
-	//color.rgb = (sunLight + lightsSample) * lightSample.x;
+	vec4 skyColor = texture(textureReflection, viewReflectionDirection);
+
+	//float specularIntensity = max(dot(viewDirection, sunReflectionDirection), 0.0);
+	//specularIntensity = pow16(specularIntensity) * lightSample.y;
+
+	//final
+	color.rgb = fxaaColorSample * (sunLight + lightsSample) * lightSample.x;// + specularIntensity * sunLight;
+	color = mix(color, skyColor, lightSample.y);
+
+	//color.rgb = (sunLight + lightsSample) * lightSample.x + specularIntensity * sunLight;
 }
