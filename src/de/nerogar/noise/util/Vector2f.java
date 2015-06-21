@@ -74,6 +74,13 @@ public class Vector2f implements Vectorf<Vector2f> {
 		return this;
 	}
 
+	public Vector2f set(float x, float y) {
+		this.x = x;
+		this.y = y;
+		isValueDirty = true;
+		return this;
+	}
+
 	public Vector2f setX(float x) {
 		this.x = x;
 		isValueDirty = true;

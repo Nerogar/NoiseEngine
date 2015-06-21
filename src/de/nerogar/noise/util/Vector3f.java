@@ -71,7 +71,7 @@ public class Vector3f implements Vectorf<Vector3f> {
 		return z;
 	}
 
-	//set	
+	//set
 	@Override
 	public Vector3f set(int component, float f) {
 		switch (component) {
@@ -85,6 +85,14 @@ public class Vector3f implements Vectorf<Vector3f> {
 			z = f;
 			break;
 		}
+		isValueDirty = true;
+		return this;
+	}
+
+	public Vector3f set(float x, float y, float z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 		isValueDirty = true;
 		return this;
 	}
