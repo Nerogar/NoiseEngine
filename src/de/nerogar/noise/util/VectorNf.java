@@ -129,6 +129,15 @@ public class VectorNf implements Vectorf<VectorNf> {
 	}
 
 	@Override
+	public void reflect(Vectorf<?> v) {
+		float dot = 2.0f * dot(v);
+
+		for (int i = 0; i < getComponentCount(); i++) {
+			set(i, get(i) - dot * v.get(0));
+		}
+	}
+
+	@Override
 	public VectorNf normalize() {
 		return setValue(1f);
 	}

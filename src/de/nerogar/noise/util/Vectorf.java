@@ -36,6 +36,14 @@ public interface Vectorf<T extends Vectorf<T>> {
 	//tools
 	public abstract float dot(Vectorf<?> v);
 
+	/**
+	 * Reflect this vector at the plane with the normal v.
+	 * v has to be normalized.
+	 * 
+	 * @param v the normal of the plane for reflection
+	 */
+	public void reflect(Vectorf<?> v);
+
 	public abstract T normalize();
 
 	public abstract T normalized();

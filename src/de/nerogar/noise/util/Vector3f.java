@@ -220,6 +220,16 @@ public class Vector3f implements Vectorf<Vector3f> {
 	}
 
 	@Override
+	public void reflect(Vectorf<?> v) {
+		float dot = 2.0f * dot(v);
+
+		set(
+				getX() - dot * v.get(0),
+				getY() - dot * v.get(1),
+				getZ() - dot * v.get(2));
+	}
+
+	@Override
 	public Vector3f normalize() {
 		return setValue(1f);
 	}

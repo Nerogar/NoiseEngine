@@ -176,6 +176,15 @@ public class Vector2f implements Vectorf<Vector2f> {
 	}
 
 	@Override
+	public void reflect(Vectorf<?> v) {
+		float dot = 2.0f * dot(v);
+
+		set(
+				getX() - dot * v.get(0),
+				getY() - dot * v.get(1));
+	}
+
+	@Override
 	public Vector2f normalize() {
 		return setValue(1f);
 	}
