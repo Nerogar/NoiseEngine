@@ -3,8 +3,13 @@ package de.nerogar.noise;
 import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
 import static org.lwjgl.glfw.GLFW.*;
 
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.ALContext;
+
 public class Noise {
 	private static boolean initialized = false;
+
+	private static ALContext alContext;
 
 	public static void init() {
 		if (!initialized) {
@@ -27,6 +32,8 @@ public class Noise {
 
 			sleepThread.setDaemon(true);
 			sleepThread.start();
+
+			alContext = ALContext.create();
 		}
 
 		initialized = true;
@@ -34,5 +41,6 @@ public class Noise {
 
 	public static void cleanup() {
 		glfwTerminate();
+		AL.destroy(alContext);
 	}
 }
