@@ -74,7 +74,7 @@ public class GLWindow implements IRenderTarget {
 		glfwMakeContextCurrent(windowPointer);
 		glContext = GLContext.createFromCurrent();
 
-		setSwapInterval(swapInterval);
+		setSwapInterval(swapInterval > 0 ? swapInterval : 0);
 
 		windowFocusCallback = new GLFWWindowFocusCallback() {
 			@Override
