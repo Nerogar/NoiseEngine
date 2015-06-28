@@ -7,6 +7,13 @@ import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALContext;
 
 public class Noise {
+
+	/**
+	 * the location of default engine ressources.<br>
+	 * set the system property "noise.ressourceDir" to change the location
+	 */
+	public static final String RESSOURCE_DIR = System.getProperty("noise.ressourceDir", "noiseEngine/");
+
 	private static boolean initialized = false;
 
 	private static ALContext alContext;

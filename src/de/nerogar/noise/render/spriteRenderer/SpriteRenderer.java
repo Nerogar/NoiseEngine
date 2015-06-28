@@ -46,7 +46,7 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 		Matrix4fUtils.setOrthographicProjection(projectionMatrix, 0.0f, width, height, 0.0f, depth, 0.0f);
 		projectionMatrixUpdated = true;
 
-		shader = new Shader("noiseEngine/shaders/spriteRenderer/sprite.vert", "noiseEngine/shaders/spriteRenderer/sprite.frag");
+		shader = ShaderLoader.loadShader("<spriteRenderer/sprite.vert>", "<spriteRenderer/sprite.frag>");
 	}
 
 	@Override

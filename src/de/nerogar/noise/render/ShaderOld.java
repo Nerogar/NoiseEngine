@@ -2,8 +2,8 @@ package de.nerogar.noise.render;
 
 import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL32.*;
 
+import java.io.*;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
@@ -13,29 +13,33 @@ import org.lwjgl.BufferUtils;
 
 import de.nerogar.noise.util.Logger;
 
-public class Shader {
+public class ShaderOld {
 
 	private int shaderHandle;
 
-	private int vertexShaderHandle;
-	private int geometryShaderHandle;
-	private int fragmentShaderHandle;
-
-	private String vertexShader;
-	private String geometryShader;
-	private String fragmentShader;
+	private String vertexShaderFile, vertexShader;
+	private String fragmentShaderFile, fragmentShader;
+	private int vertexShaderHandle, fragmentShaderHandle;
 
 	private Map<String, Integer> uniformCache;
 
 	private boolean active;
 	private boolean compiled;
 
-	private String name;
-
-	public Shader(String name) {
-		this.name = name;
+	/**
+	 * Creates a shader program with a fragment and a vertex shader
+	 *  
+	 * @param vertexShaderFile vertex shader file path
+	 * @param fragmentShaderFile fragment shader file path
+	 */
+	public ShaderOld(String vertexShaderFile, String fragmentShaderFile) {
+		this.vertexShaderFile = vertexShaderFile;
+		this.fragmentShaderFile = fragmentShaderFile;
 
 		uniformCache = new HashMap<String, Integer>();
+
+		reloadFiles();
+		reCompile();
 	}
 
 	//---[uniforms]---
@@ -124,68 +128,48 @@ public class Shader {
 
 	//---[end uniforms]---
 
-	public void setVertexShader(String shader) {
-		this.vertexShader = shader;
+	protected int getShaderHandle() {
+		return shaderHandle;
 	}
 
-	public void setGeometryShader(String shader) {
-		this.geometryShader = shader;
-	}
-
-	public void setFragmentShader(String shader) {
-		this.fragmentShader = shader;
-	}
-
-	public void compile() {
+	public void reCompile() {
 		if (compiled) {
 			cleanup();
 		}
 
 		shaderHandle = glCreateProgram();
-
 		vertexShaderHandle = glCreateShader(GL_VERTEX_SHADER);
-		if (geometryShader != null) geometryShaderHandle = glCreateShader(GL_GEOMETRY_SHADER);
 		fragmentShaderHandle = glCreateShader(GL_FRAGMENT_SHADER);
 
 		boolean compileError = false;
 
-		if (!compileError) {
-			glShaderSource(vertexShaderHandle, vertexShader);
-			glCompileShader(vertexShaderHandle);
-
-			compileError |= getCompileStatus(vertexShaderHandle, "Vertex shader");
-		}
-
-		if (geometryShader != null && !compileError) {
-			glShaderSource(geometryShaderHandle, geometryShader);
-			glCompileShader(geometryShaderHandle);
-
-			compileError |= getCompileStatus(geometryShaderHandle, "Geometry shader");
+		glShaderSource(vertexShaderHandle, vertexShader);
+		glCompileShader(vertexShaderHandle);
+		if (glGetShaderi(vertexShaderHandle, GL_COMPILE_STATUS) == GL_FALSE) {
+			Logger.log(Logger.ERROR, "Vertex shader wasn't able to be compiled correctly. Error log:\n" + glGetShaderInfoLog(vertexShaderHandle, 1024));
+			compileError = true;
 		}
 
 		if (!compileError) {
 			glShaderSource(fragmentShaderHandle, fragmentShader);
 			glCompileShader(fragmentShaderHandle);
-
-			compileError |= getCompileStatus(fragmentShaderHandle, "Fragment shader");
+			if (glGetShaderi(fragmentShaderHandle, GL_COMPILE_STATUS) == GL_FALSE) {
+				Logger.log(Logger.ERROR, "Fragment shader wasn't able to be compiled correctly. Error log:\n" + glGetShaderInfoLog(fragmentShaderHandle, 1024));
+			}
 		}
 
 		if (!compileError) {
 			glAttachShader(shaderHandle, vertexShaderHandle);
-			if (geometryShader != null) glAttachShader(shaderHandle, geometryShaderHandle);
 			glAttachShader(shaderHandle, fragmentShaderHandle);
 
 			glLinkProgram(shaderHandle);
 			if (glGetProgrami(shaderHandle, GL_LINK_STATUS) == GL_FALSE) {
-				int errorSize = glGetProgrami(shaderHandle, GL_INFO_LOG_LENGTH);
-
-				Logger.log(Logger.ERROR, "Shader program wasn't linked correctly. Error log:\n" + glGetProgramInfoLog(shaderHandle, errorSize));
+				Logger.log(Logger.ERROR, "Shader program wasn't linked correctly. Error log:\n" + glGetProgramInfoLog(shaderHandle, 1024));
 				compileError = true;
 			}
 		}
 
 		glDeleteShader(vertexShaderHandle);
-		glDeleteShader(geometryShaderHandle);
 		glDeleteShader(fragmentShaderHandle);
 
 		if (!compileError) {
@@ -193,17 +177,42 @@ public class Shader {
 		} else {
 			cleanup();
 		}
-
 	}
 
-	private boolean getCompileStatus(int shaderHandle, String shaderName) {
-		if (glGetShaderi(shaderHandle, GL_COMPILE_STATUS) == GL_FALSE) {
-			int errorSize = glGetShaderi(shaderHandle, GL_INFO_LOG_LENGTH);
-			Logger.log(Logger.ERROR, shaderName + " wasn't able to be compiled correctly. Error log:\n" + glGetShaderInfoLog(vertexShaderHandle, errorSize));
-			return false;
+	private String readFile(String filename) {
+		filename = filename.replaceAll("\\\\", "/"); //replace \ with /
+
+		String folder = filename.replaceAll("[^/]*$", "");
+
+		StringBuilder text = new StringBuilder();
+
+		try {
+			BufferedReader fileReader = new BufferedReader(new FileReader(filename));
+			String line;
+			while ((line = fileReader.readLine()) != null) {
+				line = line.trim();
+				if (line.startsWith("#include ")) {
+					line = folder + line.substring(9);
+
+					text.append(readFile(line));
+
+				} else {
+					text.append(line).append("\n");
+				}
+			}
+			fileReader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
-		return false;
+		Logger.log(Logger.INFO, "loaded shader: " + filename);
+
+		return text.toString();
+	}
+
+	public void reloadFiles() {
+		vertexShader = readFile(vertexShaderFile);
+		fragmentShader = readFile(fragmentShaderFile);
 	}
 
 	public void activate() {
@@ -211,7 +220,7 @@ public class Shader {
 			active = true;
 			glUseProgram(shaderHandle);
 		} else if (!compiled) {
-			//Logger.log(Logger.DEBUG, "Shader is not compiled. " + toString());
+			//System.err.println("Shader is not compiled. " + toString());
 		}
 	}
 
@@ -230,7 +239,7 @@ public class Shader {
 
 	@Override
 	public String toString() {
-		return "[" + shaderHandle + ", " + name + "]";
+		return "[" + shaderHandle + "; " + vertexShaderFile + "; " + fragmentShaderFile + "]";
 	}
 
 	@Override

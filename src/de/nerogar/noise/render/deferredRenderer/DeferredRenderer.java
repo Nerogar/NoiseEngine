@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL11.*;
 
 import java.util.*;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.*;
 
@@ -107,7 +108,7 @@ public class DeferredRenderer {
 
 		vboMap = new HashMap<DeferredContainer, VboContainer>();
 		lightContainer = new LightContainer();
-		Mesh sphere = WavefrontLoader.loadObject("noiseEngine/meshes/icoSphere.obj");
+		Mesh sphere = WavefrontLoader.loadObject(Noise.RESSOURCE_DIR + "meshes/icoSphere.obj");
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexArray(), sphere.getPositionArray());
 
 		gBuffer = new FrameBufferObject(width, height, true,
@@ -179,20 +180,20 @@ public class DeferredRenderer {
 
 	//TODO: remove
 	public void loadShaders() {
-		gBufferShader = new Shader("noiseEngine/shaders/deferredRenderer/gBuffer.vert", "noiseEngine/shaders/deferredRenderer/gBuffer.frag");
+		gBufferShader = ShaderLoader.loadShader("<deferredRenderer/gBuffer.vert>", "<deferredRenderer/gBuffer.frag>");
 		gBufferShader.activate();
 		gBufferShader.setUniform1i("textureColor", 0);
 		gBufferShader.setUniform1i("textureNormal", 1);
 		gBufferShader.setUniform1i("textureLight", 2);
 		gBufferShader.deactivate();
 
-		lightShader = new Shader("noiseEngine/shaders/deferredRenderer/lights.vert", "noiseEngine/shaders/deferredRenderer/lights.frag");
+		lightShader = ShaderLoader.loadShader("<deferredRenderer/lights.vert>", "<deferredRenderer/lights.frag>");
 		lightShader.activate();
 		lightShader.setUniform1i("textureNormal", 1);
 		lightShader.setUniform1i("texturePosition", 2);
 		lightShader.deactivate();
 
-		finalShader = new Shader("noiseEngine/shaders/deferredRenderer/final.vert", "noiseEngine/shaders/deferredRenderer/final.frag");
+		finalShader = ShaderLoader.loadShader("<deferredRenderer/final.vert>", "<deferredRenderer/final.frag>");
 		finalShader.activate();
 		finalShader.setUniform1i("textureColor", 0);
 		finalShader.setUniform1i("textureNormal", 1);
