@@ -74,16 +74,6 @@ public class ShaderLoader {
 					text.append("#line 1\n");
 					text.append(readFile(nextFilename));
 					text.append("#line " + (lineNumber + 1) + "\n");
-
-					/*if (line.startsWith("<")) {
-						line = line.substring(1, line.indexOf(">"));
-
-						text.append(readFile(Noise.RESSOURCE_DIR + "shaders/" + line));
-					} else {
-						line = folder + "/" + line;
-
-						text.append(readFile(line));
-					}*/
 				} else {
 					text.append(line).append("\n");
 				}
