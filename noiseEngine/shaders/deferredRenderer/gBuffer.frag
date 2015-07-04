@@ -20,7 +20,7 @@ void main(){
 	color = texture(textureColor, frag_in.uv);
 
 	vec3 normalSample = texture(textureNormal, frag_in.uv).xyz;
-	normal = frag_in.normal;
+	normal = normalize(frag_in.normal);
 
 	position = frag_in.position;
 

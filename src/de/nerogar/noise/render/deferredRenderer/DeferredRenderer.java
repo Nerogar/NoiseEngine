@@ -104,7 +104,15 @@ public class DeferredRenderer {
 
 	private TextureCubeMap reflectionTexture;
 
+	private Color sunLightColor;
+	private Vector3f sunLightDirection;
+	private float minAmbientBrightness;
+
 	public DeferredRenderer(int width, int height) {
+
+		sunLightColor = new Color(1.0f, 1.0f, 0.9f, 0.0f);
+		sunLightDirection = new Vector3f(-1.0f).setValue(1.5f);
+		minAmbientBrightness = 0.3f;
 
 		vboMap = new HashMap<DeferredContainer, VboContainer>();
 		lightContainer = new LightContainer();
@@ -115,7 +123,7 @@ public class DeferredRenderer {
 				Texture2D.DataType.BGRA_8_8_8_8I,
 				Texture2D.DataType.BGRA_32_32_32F,
 				Texture2D.DataType.BGRA_16_16_16F,
-				Texture2D.DataType.BGRA_8_8I);
+				Texture2D.DataType.BGRA_8_8_8I);
 
 		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
 
@@ -154,25 +162,28 @@ public class DeferredRenderer {
 	}
 
 	private void rebuildLightVbo() {
-		List<Light> lights = lightContainer.getLights();
+		Set<Light> lights = lightContainer.getLights();
 
 		float[] position = new float[lights.size() * 3];
 		float[] color = new float[lights.size() * 3];
 		float[] reach = new float[lights.size()];
 		float[] intensity = new float[lights.size()];
 
-		for (int i = 0; i < lights.size(); i++) {
-			position[i * 3 + 0] = lights.get(i).position.getX();
-			position[i * 3 + 1] = lights.get(i).position.getY();
-			position[i * 3 + 2] = lights.get(i).position.getZ();
+		int i = 0;
+		for (Light light : lights) {
+			position[i * 3 + 0] = light.position.getX();
+			position[i * 3 + 1] = light.position.getY();
+			position[i * 3 + 2] = light.position.getZ();
 
-			color[i * 3 + 0] = lights.get(i).color.getR();
-			color[i * 3 + 1] = lights.get(i).color.getG();
-			color[i * 3 + 2] = lights.get(i).color.getB();
+			color[i * 3 + 0] = light.color.getR();
+			color[i * 3 + 1] = light.color.getG();
+			color[i * 3 + 2] = light.color.getB();
 
-			reach[i] = lights.get(i).reach;
+			reach[i] = light.reach;
 
-			intensity[i] = lights.get(i).intensity;
+			intensity[i] = light.intensity;
+
+			i++;
 		}
 
 		lightVbo.setInstanceData(lights.size(), new int[] { 3, 3, 1, 1 }, position, color, reach, intensity);
@@ -182,9 +193,9 @@ public class DeferredRenderer {
 	public void loadShaders() {
 		gBufferShader = ShaderLoader.loadShader("<deferredRenderer/gBuffer.vert>", "<deferredRenderer/gBuffer.frag>");
 		gBufferShader.activate();
-		gBufferShader.setUniform1i("textureColor", 0);
-		gBufferShader.setUniform1i("textureNormal", 1);
-		gBufferShader.setUniform1i("textureLight", 2);
+		gBufferShader.setUniform1i("textureColor_N", 0);
+		gBufferShader.setUniform1i("textureNormal_N", 1);
+		gBufferShader.setUniform1i("textureLight_N", 2);
 		gBufferShader.deactivate();
 
 		lightShader = ShaderLoader.loadShader("<deferredRenderer/lights.vert>", "<deferredRenderer/lights.frag>");
@@ -236,21 +247,34 @@ public class DeferredRenderer {
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		gBufferShader.activate();
-		gBufferShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
-		gBufferShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
+		//gBufferShader.activate();
+		//gBufferShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
+		//gBufferShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
+
+		Shader currentShader = gBufferShader;
 
 		for (VboContainer container : vboMap.values()) {
 			container.rebuildInstanceData(camera.getViewFrustum());
+
+			if (container.container.getSurfaceShader() == null) {
+				currentShader = gBufferShader;
+			} else {
+				currentShader = container.container.getSurfaceShader();
+			}
+			currentShader.activate();
+
+			currentShader.setUniformMat4f("viewMatrix_N", camera.getViewMatrix().asBuffer());
+			currentShader.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
 
 			container.container.getColorTexture().bind(0);
 			container.container.getNormalTexture().bind(1);
 			container.container.getLightTexture().bind(2);
 
 			container.vbo.render();
+			currentShader.deactivate();
 		}
 
-		gBufferShader.deactivate();
+		currentShader.deactivate();
 		glDisable(GL_DEPTH_TEST);
 
 		//bind gBuffer textures
@@ -288,12 +312,31 @@ public class DeferredRenderer {
 		finalFrameBuffer.bind();
 		finalShader.activate();
 		finalShader.setUniform3f("cameraPosition", camera.getX(), camera.getY(), camera.getZ());
+		finalShader.setUniform3f("sunLightColor", sunLightColor.getR(), sunLightColor.getG(), sunLightColor.getB());
+		finalShader.setUniform3f("sunLightDirection", sunLightDirection.getX(), sunLightDirection.getY(), sunLightDirection.getZ());
+		finalShader.setUniform1f("minAmbientBrightness", minAmbientBrightness);
 		fullscreenQuad.render();
 		finalShader.deactivate();
 	}
 
-	public FrameBufferObject getRenderTarget() {
-		return finalFrameBuffer;
+	public Texture2D getColorOutput() {
+		return finalFrameBuffer.getTextureAttachment(0);
+	}
+
+	public Texture2D getDepthBuffer() {
+		return gBuffer.getTextureAttachment(-1);
+	}
+
+	public Texture2D getPositionBuffer() {
+		return gBuffer.getTextureAttachment(2);
+	}
+
+	public Texture2D getNormalBuffer() {
+		return gBuffer.getTextureAttachment(1);
+	}
+
+	public Texture2D getLightBuffer() {
+		return lightFrameBuffer.getTextureAttachment(0);
 	}
 
 }

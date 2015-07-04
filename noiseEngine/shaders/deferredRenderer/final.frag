@@ -10,6 +10,10 @@ uniform samplerCube textureReflection;
 uniform vec2 inverseResolution;
 uniform vec3 cameraPosition;
 
+uniform vec3 sunLightColor;
+uniform vec3 sunLightDirection;
+uniform float minAmbientBrightness;
+
 layout (location = 0) out vec4 color;
 
 in DATA
@@ -66,29 +70,30 @@ void main(){
 	//samples
 	vec3 fxaaColorSample = fxaaBlur(colorSample.rgb, colorSampleNW.rgb, colorSampleNE.rgb, colorSampleSW.rgb, colorSampleSE.rgb, textureColor);
 	vec3 normalSample = texture(textureNormal, frag_in.uv).xyz;
-	vec2 lightSample = texture(textureLight, frag_in.uv).xy;
+	vec4 lightSample = texture(textureLight, frag_in.uv);
 	vec3 lightsSample = texture(textureLights, frag_in.uv).xyz;
 	vec3 positionSample = texture(texturePosition, frag_in.uv).xyz;
 
 	//sunlight
-	vec3 sunLightDirection = normalize(vec3(-1.0, -1.0, -1.0));
-	float bright = max(-dot(normalSample, sunLightDirection), 0.3) * 1.5;
-	vec3 sunColor = vec3(1.0, 1.0, 0.9);
-	vec3 sunLight = sunColor * bright;
+	float sunBright = max(-dot(normalSample, sunLightDirection), minAmbientBrightness);
+	vec3 sunLight = sunLightColor * sunBright;
 
 	//specular + reflections
 	vec3 viewDirection = normalize(cameraPosition - positionSample);
 	vec3 sunReflectionDirection = reflect(sunLightDirection, normalSample);
 	vec3 viewReflectionDirection = reflect(viewDirection, normalSample);
 
-	vec4 skyColor = texture(textureReflection, viewReflectionDirection);
+	vec4 skyReflectColor = texture(textureReflection, viewReflectionDirection);
 
-	//float specularIntensity = max(dot(viewDirection, sunReflectionDirection), 0.0);
-	//specularIntensity = pow16(specularIntensity) * lightSample.y;
+	//specular
+	float specularIntensity = max(dot(viewDirection, normalize(sunReflectionDirection)), 0.0);
+	//specularIntensity = pow16(specularIntensity) * lightSample.b;
+	specularIntensity = pow16(specularIntensity) * lightSample.b;
 
 	//final
-	color.rgb = fxaaColorSample * (sunLight + lightsSample) * lightSample.x;// + specularIntensity * sunLight;
-	color = mix(color, skyColor, lightSample.y);
+	color.rgb = fxaaColorSample * (sunLight + lightsSample) * lightSample.x + specularIntensity * sunLightColor;
+	color = mix(color, skyReflectColor, lightSample.y);
 
 	//color.rgb = (sunLight + lightsSample) * lightSample.x + specularIntensity * sunLight;
+	//color.rgb = specularIntensity * sunLightColor;
 }

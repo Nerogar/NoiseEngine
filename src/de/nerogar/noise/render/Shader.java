@@ -49,6 +49,13 @@ public class Shader {
 		return location;
 	}
 
+	private boolean checkUniformActiveState() {
+		/*if (!active) {
+			Logger.log(Logger.WARNING, "Tried to set uniform while shader was not active!");
+		}*/
+		return active;
+	}
+
 	//float
 	public void setUniformf(String name, float[] values) {
 		FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(values.length);
@@ -58,68 +65,98 @@ public class Shader {
 	}
 
 	public void setUniformf(String name, FloatBuffer floatBuffer) {
-		glUniform1fv(getUniformLocation(name), floatBuffer);
+		if (checkUniformActiveState()) {
+			glUniform1fv(getUniformLocation(name), floatBuffer);
+		}
 	}
 
 	public void setUniform1f(String name, float f0) {
-		glUniform1f(getUniformLocation(name), f0);
+		if (checkUniformActiveState()) {
+			glUniform1f(getUniformLocation(name), f0);
+		}
 	}
 
 	public void setUniform2f(String name, float f0, float f1) {
-		glUniform2f(getUniformLocation(name), f0, f1);
+		if (checkUniformActiveState()) {
+			glUniform2f(getUniformLocation(name), f0, f1);
+		}
 	}
 
 	public void setUniform3f(String name, float f0, float f1, float f2) {
-		glUniform3f(getUniformLocation(name), f0, f1, f2);
+		if (checkUniformActiveState()) {
+			glUniform3f(getUniformLocation(name), f0, f1, f2);
+		}
 	}
 
 	public void setUniform4f(String name, float f0, float f1, float f2, float f3) {
-		glUniform4f(getUniformLocation(name), f0, f1, f2, f3);
+		if (checkUniformActiveState()) {
+			glUniform4f(getUniformLocation(name), f0, f1, f2, f3);
+		}
 	}
 
 	public void setUniformMat2f(String name, FloatBuffer buffer) {
-		glUniformMatrix2fv(getUniformLocation(name), true, buffer);
+		if (checkUniformActiveState()) {
+			glUniformMatrix2fv(getUniformLocation(name), true, buffer);
+		}
 	}
 
 	public void setUniformMat3f(String name, FloatBuffer buffer) {
-		glUniformMatrix3fv(getUniformLocation(name), true, buffer);
+		if (checkUniformActiveState()) {
+			glUniformMatrix3fv(getUniformLocation(name), true, buffer);
+		}
 	}
 
 	public void setUniformMat4f(String name, FloatBuffer buffer) {
-		glUniformMatrix4fv(getUniformLocation(name), true, buffer);
+		if (checkUniformActiveState()) {
+			glUniformMatrix4fv(getUniformLocation(name), true, buffer);
+		}
 	}
 
 	//int
 	public void setUniformi(String name, int[] values) {
-		IntBuffer intBuffer = BufferUtils.createIntBuffer(values.length);
-		intBuffer.put(values);
-		intBuffer.flip();
-		setUniformi(name, intBuffer);
+		if (checkUniformActiveState()) {
+			IntBuffer intBuffer = BufferUtils.createIntBuffer(values.length);
+			intBuffer.put(values);
+			intBuffer.flip();
+			setUniformi(name, intBuffer);
+		}
 	}
 
 	public void setUniformi(String name, IntBuffer intBuffer) {
-		glUniform1iv(getUniformLocation(name), intBuffer);
+		if (checkUniformActiveState()) {
+			glUniform1iv(getUniformLocation(name), intBuffer);
+		}
 	}
 
 	public void setUniform1i(String name, int i0) {
-		glUniform1i(getUniformLocation(name), i0);
+		if (checkUniformActiveState()) {
+			glUniform1i(getUniformLocation(name), i0);
+		}
 	}
 
 	public void setUniform2i(String name, int i0, int i1) {
-		glUniform2i(getUniformLocation(name), i0, i1);
+		if (checkUniformActiveState()) {
+			glUniform2i(getUniformLocation(name), i0, i1);
+		}
 	}
 
 	public void setUniform3i(String name, int i0, int i1, int i2) {
-		glUniform3i(getUniformLocation(name), i0, i1, i2);
+		if (checkUniformActiveState()) {
+			glUniform3i(getUniformLocation(name), i0, i1, i2);
+		}
 	}
 
 	public void setUniform4i(String name, int i0, int i1, int i2, int i3) {
-		glUniform4i(getUniformLocation(name), i0, i1, i2, i3);
+		if (checkUniformActiveState()) {
+			glUniform4i(getUniformLocation(name), i0, i1, i2, i3);
+		}
 	}
 
 	//boolean
 	public void setUniform1bool(String name, boolean b0) {
-		glUniform1i(getUniformLocation(name), b0 ? 1 : 0);
+		if (checkUniformActiveState()) {
+			glUniform1i(getUniformLocation(name), b0 ? 1 : 0);
+		}
 	}
 
 	//---[end uniforms]---

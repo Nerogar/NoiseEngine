@@ -2,7 +2,7 @@ package de.nerogar.noise.util;
 
 public class Vector3f implements Vectorf<Vector3f> {
 
-	private static final float SQRT_3 = 1.7320508075f;
+	private static final float SQRT_3 = (float) Math.sqrt(3.0);
 
 	private float x;
 	private float y;
@@ -120,7 +120,7 @@ public class Vector3f implements Vectorf<Vector3f> {
 		x = xyz;
 		y = xyz;
 		z = xyz;
-		setValueCache(xyz * SQRT_3);
+		setValueCache(Math.abs(xyz) * SQRT_3);
 		return this;
 	}
 

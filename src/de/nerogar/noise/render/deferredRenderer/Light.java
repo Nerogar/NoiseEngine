@@ -10,21 +10,11 @@ public class Light {
 	public float reach;
 	public float intensity;
 
-	private boolean dead;
-
 	public Light(Vector3f position, Color color, float reach, float intensity) {
 		this.position = position;
 		this.color = color;
 		this.reach = reach;
 		this.intensity = intensity;
-	}
-
-	public void kill() {
-		dead = true;
-	}
-
-	public boolean dead() {
-		return dead;
 	}
 
 }

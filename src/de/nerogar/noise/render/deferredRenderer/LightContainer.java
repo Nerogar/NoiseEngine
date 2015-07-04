@@ -1,27 +1,25 @@
 package de.nerogar.noise.render.deferredRenderer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class LightContainer {
 
-	private List<Light> lights;
+	private Set<Light> lights;
 
 	public LightContainer() {
-		lights = new ArrayList<Light>();
+		lights = new HashSet<Light>();
 	}
 
 	public void addLight(Light light) {
 		lights.add(light);
 	}
 
-	public void update(float timeDelta) {
-		for (int i = lights.size() - 1; i >= 0; i--) {
-			if (lights.get(i).dead()) lights.remove(i);
-		}
+	public void removeLight(Light light) {
+		lights.remove(light);
 	}
 
-	public List<Light> getLights() {
+	public Set<Light> getLights() {
 		return lights;
 	}
 

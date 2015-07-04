@@ -2,6 +2,8 @@ package de.nerogar.noise.util;
 
 public class Vector2f implements Vectorf<Vector2f> {
 
+	private static final float SQRT_2 = (float) Math.sqrt(2.0);
+	
 	private float x;
 	private float y;
 	private float value;
@@ -14,8 +16,7 @@ public class Vector2f implements Vectorf<Vector2f> {
 	}
 
 	public Vector2f(float xy) {
-		setX(xy);
-		setY(xy);
+		set(xy);
 	}
 
 	public Vector2f() {
@@ -97,6 +98,7 @@ public class Vector2f implements Vectorf<Vector2f> {
 	public Vector2f set(float xy) {
 		setX(xy);
 		setY(xy);
+		setValueCache(Math.abs(xy) * SQRT_2);
 		return this;
 	}
 
@@ -208,13 +210,16 @@ public class Vector2f implements Vectorf<Vector2f> {
 	@Override
 	public Vector2f setValue(float value) {
 		multiply(value / getValue());
-		this.value = value;
-		isValueDirty = false;
+		setValueCache(value);
 		return this;
 	}
 
 	private void recalculateValue() {
-		this.value = (float) Math.sqrt(getX() * getX() + getY() * getY());
+		setValueCache((float) Math.sqrt(getSquaredValue()));
+	}
+	
+	private void setValueCache(float value) {
+		this.value = value;
 		isValueDirty = false;
 	}
 

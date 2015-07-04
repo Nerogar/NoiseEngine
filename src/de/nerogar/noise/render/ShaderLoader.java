@@ -6,14 +6,47 @@ import java.util.Map;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.Logger;
 
+/**
+ * Utility class for easy shader loading. Different preprocessor statements are defined:
+ * <p>
+ * <ul>
+ * <li>{@code #include fileID}	(Includes the specified file at this position. fileID is a file id (see below))
+ * <li>{@code #parameter foo}	(takes "foo" as the key for looking up the file path in the parameter list.)
+ * </ul>
+ * 
+ * File IDs:
+ * <ol>
+ * <li>{@code foo/bar.glsl}		(specifies a file relatife to the calling file)
+ * <li>{@code (foo/bar.glsl)}	(specifies a file relative to the program execution path)
+ * <li>{@code <foo/bar.glsl>}	(specifies a file from the default noise engine shader library)
+ * </ol>
+ */
 public class ShaderLoader {
 
 	private static final Map<String, String> EMPTY_PARAMETERS = null;
 
+	/**
+	 * Loads a shader from files.
+	 * All file paths are {@link ShaderLoader file IDs}.
+	 * 
+	 * @param vertexShaderFile path to the vertex shader
+	 * @param fragmentShaderFile path to the fragment shader
+	 * @return the new shader
+	 */
 	public static Shader loadShader(String vertexShaderFile, String fragmentShaderFile) {
 		return loadShader(vertexShaderFile, fragmentShaderFile, EMPTY_PARAMETERS);
 	}
 
+	/**
+	 * Loads a shader from files.
+	 * All file paths are {@link ShaderLoader file IDs}.
+	 * More info on parameters {@link ShaderLoader here}.
+	 * 
+	 * @param vertexShaderFile path to the vertex shader
+	 * @param fragmentShaderFile path to the fragment shader
+	 * @param parameters a map containing all parameters
+	 * @return the new shader
+	 */
 	public static Shader loadShader(String vertexShaderFile, String fragmentShaderFile, Map<String, String> parameters) {
 		String vertexShader = readFile(decodeFilename(null, vertexShaderFile), parameters);
 		String fragmentShader = readFile(decodeFilename(null, fragmentShaderFile), parameters);
@@ -26,10 +59,30 @@ public class ShaderLoader {
 		return shader;
 	}
 
+	/**
+	 * Loads a shader from files.
+	 * All file paths are {@link ShaderLoader file IDs}.
+	 * 
+	 * @param vertexShaderFile path to the vertex shader
+	 * @param geometryShaderFile path to the geometry shader
+	 * @param fragmentShaderFile path to the fragment shader
+	 * @return the new shader
+	 */
 	public static Shader loadShader(String vertexShaderFile, String geometryShaderFile, String fragmentShaderFile) {
 		return loadShader(vertexShaderFile, geometryShaderFile, fragmentShaderFile, EMPTY_PARAMETERS);
 	}
 
+	/**
+	 * Loads a shader from files.
+	 * All file paths are {@link ShaderLoader file IDs}.
+	 * More info on parameters {@link ShaderLoader here}.
+	 * 
+	 * @param vertexShaderFile path to the vertex shader
+	 * @param geometryShaderFile path to the geometry shader
+	 * @param fragmentShaderFile path to the fragment shader
+	 * @param parameters a map containing all parameters
+	 * @return the new shader
+	 */
 	public static Shader loadShader(String vertexShaderFile, String geometryShaderFile, String fragmentShaderFile, Map<String, String> parameters) {
 		String vertexShader = readFile(decodeFilename(null, vertexShaderFile), parameters);
 		String geometryShader = readFile(decodeFilename(null, geometryShaderFile), parameters);
@@ -49,6 +102,11 @@ public class ShaderLoader {
 			id = id.substring(1, id.indexOf(">"));
 
 			return Noise.RESSOURCE_DIR + "shaders/" + id;
+		}
+		if (id.startsWith("(")) {
+			id = id.substring(1, id.indexOf(")"));
+
+			return id;
 		} else {
 			if (parent != null) {
 				id = parent + "/" + id;
