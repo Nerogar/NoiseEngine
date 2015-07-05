@@ -121,6 +121,9 @@ public class PerspectiveCamera {
 	}
 
 	public ViewFrustum getViewFrustum() {
+		if (viewMatrixDirty) setViewMatrix();
+		if (projectionMatrixDirty) setProjectionMatrix();
+
 		return frustum;
 	}
 
