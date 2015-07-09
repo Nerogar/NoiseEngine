@@ -19,8 +19,6 @@ public class PerspectiveCamera {
 
 	private Vector3f directionAt;
 	private Vector3f directionUp;
-	private static Vector3f directionAtGlobal = new Vector3f(0.0f, 0.0f, -1.0f);
-	private static Vector3f directionUpGlobal = new Vector3f(0.0f, 1.0f, 0.0f);
 
 	private float fov;
 	private float aspect;
@@ -91,13 +89,11 @@ public class PerspectiveCamera {
 	}
 
 	private void setDirections() {
-		directionAt.set(directionAtGlobal);
-		directionToViewSpace(directionAt);
-		directionAt.reflect(directionAtGlobal);
-
-		directionUp.set(directionUpGlobal);
-		directionToViewSpace(directionUp);
-		directionUp.reflect(directionUpGlobal);
+		directionAt.set(0.0f, 0.0f, -1.0f);
+		directionToWorldSpace(directionAt);
+		
+		directionUp.set(0.0f, 1.0f, 0.0f);
+		directionToWorldSpace(directionUp);
 	}
 
 	public Matrix4f getViewMatrix() {
@@ -305,6 +301,31 @@ public class PerspectiveCamera {
 		direction.setZ(newZ);
 	}
 
+	/**
+	 * Transform a direction in world space to view space.
+	 * 
+	 * @param direction the direction to transform
+	 */
+	protected void directionToWorldSpace(Vector3f direction) {
+		float newX, newY, newZ;
+
+		newX = direction.getX() * getViewMatrix().get(0, 0);
+		newY = direction.getX() * viewMatrix.get(1, 0);
+		newZ = direction.getX() * viewMatrix.get(2, 0);
+
+		newX += direction.getY() * viewMatrix.get(0, 1);
+		newY += direction.getY() * viewMatrix.get(1, 1);
+		newZ += direction.getY() * viewMatrix.get(2, 1);
+
+		newX += direction.getZ() * viewMatrix.get(0, 2);
+		newY += direction.getZ() * viewMatrix.get(1, 2);
+		newZ += direction.getZ() * viewMatrix.get(2, 2);
+
+		direction.setX(newX);
+		direction.setY(newY);
+		direction.setZ(newZ);
+	}
+	
 	public Vector3f getDirectionAt() {
 		if (viewMatrixDirty) setViewMatrix();
 
