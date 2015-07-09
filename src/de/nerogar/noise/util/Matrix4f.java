@@ -254,14 +254,10 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	public FloatBuffer asBuffer() {
-		if (buffer == null) createBuffer();
+		if (buffer == null) buffer = BufferUtils.createFloatBuffer(4 * 4);
 		if (isBufferDirty) updateBuffer();
 
 		return buffer;
-	}
-
-	private void createBuffer() {
-		buffer = BufferUtils.createFloatBuffer(4 * 4);
 	}
 
 	private void updateBuffer() {
@@ -270,6 +266,28 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 		buffer.flip();
 
 		isBufferDirty = false;
+	}
+
+	@Override
+	public Matrix4f transpose() {
+		for (int i = 0; i < 4; i++) {
+			for (int j = i + 1; j < 4; j++) {
+				float temp = get(i, j);
+				set(i, j, get(j, i));
+				set(j, i, temp);
+			}
+		}
+		return this;
+	}
+
+	@Override
+	public Matrix4f transposed() {
+		return new Matrix4f(new float[]{
+				get(0, 0), get(0, 1), get(0, 2), get(0, 3),
+				get(1, 0), get(1, 1), get(1, 2), get(1, 3),
+				get(2, 0), get(2, 1), get(2, 2), get(2, 3),
+				get(3, 0), get(3, 1), get(3, 2), get(3, 3)
+		});
 	}
 
 	@Override

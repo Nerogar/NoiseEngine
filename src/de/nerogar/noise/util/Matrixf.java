@@ -43,5 +43,9 @@ public interface Matrixf<T extends Matrixf<T>> {
 
 	//tools
 	public abstract T clone();
+	
+	public abstract T transpose();
+	
+	public abstract T transposed();
 
 }

@@ -199,6 +199,30 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
+	public MatrixNf transpose() {
+		for (int i = 0; i < componentCount; i++) {
+			for (int j = i + 1; j < componentCount; j++) {
+				float temp = get(i, j);
+				set(i, j, get(j, i));
+				set(j, i, temp);
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public MatrixNf transposed() {
+		float[] newMatrix = new float[components.length];
+
+		for (int i = 0; i < componentCount; i++) {
+			for (int j = 0; j < componentCount; j++) {
+				newMatrix[i + j * componentCount] = get(j, i);
+			}
+		}
+		return new MatrixNf(newMatrix, componentCount);
+	}
+
+	@Override
 	public MatrixNf clone() {
 		return new MatrixNf(Arrays.copyOf(components, components.length), componentCount);
 	}
