@@ -24,7 +24,9 @@ public class GLWindow implements IRenderTarget {
 	private int windowWidth, windowHeight;
 	private int swapInterval;
 	private boolean resizable;
+	/**true if the mouse should be hidden*/
 	private boolean hideMouse;
+	/**true if the mouse is currently hidden*/
 	private boolean mouseHidden;
 
 	private GLContext glContext;
@@ -79,10 +81,8 @@ public class GLWindow implements IRenderTarget {
 		windowFocusCallback = new GLFWWindowFocusCallback() {
 			@Override
 			public void invoke(long window, int focused) {
-				if (focused == GL_TRUE && hideMouse) {
-					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-					mouseHidden = false;
-				}
+				glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				mouseHidden = false;
 			}
 		};
 
