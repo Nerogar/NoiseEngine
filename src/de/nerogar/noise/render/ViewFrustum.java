@@ -6,8 +6,11 @@ public class ViewFrustum {
 
 	private PerspectiveCamera camera;
 
-	private float farWidth;
-	private float farHeight;
+	private float halfFarWidth;
+	private float halfFarHeight;
+
+	private float leftRightFactor;
+	private float topBottomFactor;
 
 	private float inverseFar;
 
@@ -18,23 +21,41 @@ public class ViewFrustum {
 	public void setPlanes(PerspectiveCamera camera) {
 		this.camera = camera;
 
-		farHeight = (float) (Math.tan(Math.toRadians(camera.getFOV()) / 2.0)) * camera.getFar();
-		farWidth = (float) (Math.tan(Math.toRadians(camera.getFOV()) / 2.0)) * camera.getFar() * camera.getAspect();
+		halfFarWidth = (float) (Math.tan(Math.toRadians(camera.getFOV()) / 2.0)) * camera.getFar() * camera.getAspect();
+		halfFarHeight = (float) (Math.tan(Math.toRadians(camera.getFOV()) / 2.0)) * camera.getFar();
+
+		float fovSides = (float) Math.atan(Math.tan(Math.toRadians(camera.getFOV() / 2.0)) * camera.getAspect());
+
+		System.out.println("fov:      " + Math.toRadians(camera.getFOV() / 2.0));
+		System.out.println("fovSides: " + fovSides);
+
+		leftRightFactor = (float) (Math.cos(fovSides));
+		topBottomFactor = (float) (Math.cos(Math.toRadians(camera.getFOV() / 2.0)));
 
 		inverseFar = 1.0f / camera.getFar();
 	}
 
 	public float getPointDistance(Vector3f point) {
+		float x = point.getX();
+		float y = point.getY();
+		float z = point.getZ();
+
 		camera.pointToViewSpace(point);
 
-		float near = point.getZ() - camera.getNear(); //near
-		float far = -camera.getFar() - point.getZ(); //far
+		float near = point.getZ() - camera.getNear();
+		float far = -camera.getFar() - point.getZ();
 
-		float left = farWidth * point.getZ() * inverseFar - point.getX(); //left
-		float right = point.getX() + farWidth * point.getZ() * inverseFar; //right
+		float left = leftRightFactor * (halfFarWidth * point.getZ() * inverseFar - point.getX());
+		float right = leftRightFactor * (halfFarWidth * point.getZ() * inverseFar + point.getX());
 
-		float bottom = farHeight * point.getZ() * inverseFar - point.getY(); //bottom
-		float top = point.getY() + farHeight * point.getZ() * inverseFar; //top
+		float bottom = topBottomFactor * (halfFarHeight * point.getZ() * inverseFar - point.getY());
+		float top = topBottomFactor * (halfFarHeight * point.getZ() * inverseFar + point.getY());
+
+		//		System.out.println(topBottomFactor);
+		//		System.out.println("left     " + left);
+		//		System.out.println("right    " + right);
+		//		System.out.println("bottom   " + bottom);
+		//		System.out.println("top      " + top);
 
 		float max = near;
 		if (far > max) max = far;
@@ -42,6 +63,8 @@ public class ViewFrustum {
 		if (right > max) max = right;
 		if (bottom > max) max = bottom;
 		if (top > max) max = top;
+
+		point.set(x, y, z);
 
 		return max;
 	}
