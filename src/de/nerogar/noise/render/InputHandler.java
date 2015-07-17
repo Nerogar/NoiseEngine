@@ -8,12 +8,12 @@ import static org.lwjgl.glfw.GLFW.*;
 public final class InputHandler {
 
 	public class KeyboardKeyEvent {
-		public int key;
-		public int scancode;
-		public int action;
-		public int mods;
+		public final int key;
+		public final int scancode;
+		public final int action;
+		public final int mods;
 
-		public boolean procssed = false;
+		private boolean processed = false;
 
 		public KeyboardKeyEvent(int key, int scancode, int action, int mods) {
 			this.key = key;
@@ -21,22 +21,31 @@ public final class InputHandler {
 			this.action = action;
 			this.mods = mods;
 		}
+
+		public void setProcessed() {
+			processed = true;
+		}
 	}
 
 	public class MouseButtonEvent {
-		public int button;
-		public int action;
-		public int mods;
+		public final int button;
+		public final int action;
+		public final int mods;
 
-		public boolean procssed = false;
+		private boolean processed = false;
 
 		public MouseButtonEvent(int button, int action, int mods) {
 			this.button = button;
 			this.action = action;
 			this.mods = mods;
 		}
+
+		public void setProcessed() {
+			processed = true;
+		}
 	}
 
+	private GLWindow window;
 	private long windowPointer;
 
 	private double cursorXpos, cursorYpos;
@@ -48,12 +57,17 @@ public final class InputHandler {
 	private List<KeyboardKeyEvent> keyboardKeyEvents;
 	private List<MouseButtonEvent> mouseButtonEvents;
 
-	protected InputHandler(long windowPointer) {
+	protected InputHandler(GLWindow window, long windowPointer) {
+		this.window = window;
 		this.windowPointer = windowPointer;
 
 		inputText = new StringBuilder();
 		keyboardKeyEvents = new ArrayList<InputHandler.KeyboardKeyEvent>();
 		mouseButtonEvents = new ArrayList<InputHandler.MouseButtonEvent>();
+	}
+
+	public GLWindow getWindow() {
+		return window;
 	}
 
 	//---[mouse]---
@@ -102,13 +116,13 @@ public final class InputHandler {
 	}
 
 	/**
-	 * @return A list of all MouseButtonEvents. Set the processed flag to true, if that event was used.
+	 * @return A list of all MouseButtonEvents. Call setProcessed() on events you use.
 	 */
 	public List<MouseButtonEvent> getMouseButtonEvents() {
 		List<MouseButtonEvent> events = new ArrayList<InputHandler.MouseButtonEvent>();
 
 		for (MouseButtonEvent event : mouseButtonEvents) {
-			if (!event.procssed) events.add(event);
+			if (!event.processed) events.add(event);
 		}
 
 		return events;
@@ -117,6 +131,15 @@ public final class InputHandler {
 	protected void setScrollWheelDelta(double scrollDeltaX, double scrollDeltaY) {
 		this.scrollDeltaX = scrollDeltaX;
 		this.scrollDeltaY = scrollDeltaY;
+	}
+
+	public void resetDeltaValues() {
+		scrollDeltaX = 0;
+		scrollDeltaY = 0;
+
+		cursorDeltaX = 0;
+		cursorDeltaY = 0;
+
 	}
 
 	//---[keyboard]---
@@ -129,13 +152,13 @@ public final class InputHandler {
 	}
 
 	/**
-	 * @return A list of all KeyboardKeyEvent. Set the processed flag to true, if that event was used.
+	 * @return A list of all KeyboardKeyEvent. Call setProcessed() on events you use.
 	 */
 	public List<KeyboardKeyEvent> getKeyboardKeyEvents() {
 		List<KeyboardKeyEvent> events = new ArrayList<InputHandler.KeyboardKeyEvent>();
 
 		for (KeyboardKeyEvent event : keyboardKeyEvents) {
-			if (!event.procssed) events.add(event);
+			if (!event.processed) events.add(event);
 		}
 
 		return events;

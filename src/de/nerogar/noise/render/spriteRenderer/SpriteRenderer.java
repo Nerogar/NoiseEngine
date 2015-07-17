@@ -128,7 +128,7 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 			indices[i * 6 + 5] = i * 4 + 0;
 		}
 
-		container.vbo = new VertexBufferObjectIndexed(componentCount, indices, pos, uv);
+		container.vbo = new VertexBufferObjectIndexed(componentCount, indices.length, container.spriteList.size() * 4, indices, pos, uv);
 
 		container.dirty = false;
 	}
@@ -163,7 +163,7 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 			texture.bind(0);
 			container.vbo.render();
 		}
-		
+
 		Texture2D.unbind(0);
 
 		shader.deactivate();

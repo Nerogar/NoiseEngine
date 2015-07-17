@@ -18,16 +18,14 @@ public class SoundOGG extends Sound {
 	protected int[] alBufferHandles;
 	protected ShortBuffer sampleBuffer;
 
-	private boolean stream;
-
 	private long decoderPointer;
 
 	private IntBuffer processedBuffer;
 
+	private boolean decodingStopped;
+
 	public SoundOGG(ByteBuffer vorbisData) {
 		super();
-
-		this.stream = true;
 
 		IntBuffer error = BufferUtils.createIntBuffer(1);
 		decoderPointer = stb_vorbis_open_memory(vorbisData, error, null);
@@ -60,10 +58,20 @@ public class SoundOGG extends Sound {
 		processedBuffer = BufferUtils.createIntBuffer(alBufferHandles.length);
 	}
 
-	private void stream(int alBuffer) {
+	private boolean stream(int alBuffer) {
 		int decoded = stb_vorbis_get_samples_short_interleaved(decoderPointer, channels, sampleBuffer);
 
 		//System.out.println(alBuffer + " -> " + decoded + " (samples)");
+
+		if (decoded == 0) {
+
+			if (loop) {
+				stb_vorbis_seek_start(decoderPointer);
+			} else {
+				decodingStopped = true;
+			}
+			return false;
+		}
 
 		alBufferData(alBuffer, format, sampleBuffer, sampleRate);
 		checkError();
@@ -75,26 +83,31 @@ public class SoundOGG extends Sound {
 		boolean isPLaying = alGetSourcei(alSourceHandle, AL_SOURCE_STATE) == AL_PLAYING;
 		if (playing && !isPLaying) alSourcePlay(alSourceHandle);
 
+		return true;
 	}
 
 	@Override
 	public void update() {
-		if (!stream || cleaned) return;
+		if (cleaned) return;
 
 		int processed = alGetSourcei(alSourceHandle, AL_BUFFERS_PROCESSED);
 
 		processedBuffer.limit(processed);
 		alSourceUnqueueBuffers(alSourceHandle, processedBuffer);
 
-		for (int i = 0; i < processedBuffer.limit(); i++) {
+		if (!decodingStopped) {
+			for (int i = 0; i < processedBuffer.limit(); i++) {
 
-			int alBuffer = processedBuffer.get(i);
+				int alBuffer = processedBuffer.get(i);
 
-			//System.out.println(alBuffer + " (unque)");
+				//System.out.println(alBuffer + " (unque)");
 
-			checkError();
+				checkError();
 
-			stream(alBuffer);
+				stream(alBuffer);
+			}
+		} else {
+			if (alGetSourcei(alSourceHandle, AL_SOURCE_STATE) == AL_STOPPED) cleanup();
 		}
 	}
 

@@ -9,6 +9,10 @@ layout (location = 1) in vec2 uv;
 out DATA
 {
 	vec2 uv;
+	vec2 uvNW;
+	vec2 uvNE;
+	vec2 uvSW;
+	vec2 uvSE;
 } vert_out;
 
 void main(){
@@ -17,4 +21,8 @@ void main(){
 	vec3 pixelOffset = vec3(inverseResolution, 0.0);
 
 	vert_out.uv = uv;
+	vert_out.uvNW = uv + vec2(1.0, -1.0) * inverseResolution;
+	vert_out.uvNE = uv + vec2(1.0, 1.0) * inverseResolution;
+	vert_out.uvSW = uv + vec2(-1.0, -1.0) * inverseResolution;
+	vert_out.uvSE = uv + vec2(-1.0, 1.0) * inverseResolution;
 }

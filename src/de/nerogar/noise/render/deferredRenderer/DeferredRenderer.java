@@ -10,33 +10,40 @@ import de.nerogar.noise.util.*;
 
 public class DeferredRenderer {
 
-	private class VboContainer {
+	private static class VboContainer {
 		public DeferredContainer container;
 		public List<DeferredRenderable> renderables;
 		public VertexBufferObjectInstanced vbo;
 
-		private ArrayList<Matrix4f> instanceMatrices;
-		private float[] modelMatrix1;
-		private float[] modelMatrix2;
-		private float[] modelMatrix3;
-		private float[] modelMatrix4;
+		private ArrayList<Matrix4f> instanceModelMatrices;
+		private ArrayList<Matrix4f> instanceNormalMatrices;
+		private float[] modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
+		private float[] normalMatrix1, normalMatrix2, normalMatrix3;
+
+		private static final int[] instanceComponentCounts = new int[] { 4, 4, 4, 4, 3, 3, 3 };
 
 		public VboContainer(DeferredContainer container) {
 			this.container = container;
 			renderables = new ArrayList<DeferredRenderable>();
 
-			instanceMatrices = new ArrayList<Matrix4f>();
+			instanceModelMatrices = new ArrayList<Matrix4f>();
+			instanceNormalMatrices = new ArrayList<Matrix4f>();
 
-			vbo = new VertexBufferObjectInstanced(new int[] { 3, 2, 3 },
+			vbo = new VertexBufferObjectInstanced(new int[] { 3, 2, 3, 3, 3 },
+					container.getMesh().getIndexCount(),
+					container.getMesh().getVertexCount(),
 					container.getMesh().getIndexArray(),
 					container.getMesh().getPositionArray(),
 					container.getMesh().getUVArray(),
-					container.getMesh().getNormalArray());
+					container.getMesh().getNormalArray(),
+					container.getMesh().getTangentArray(),
+					container.getMesh().getBitangentArray());
 		}
 
 		public void rebuildInstanceData(ViewFrustum frustum) {
 
-			instanceMatrices.clear();
+			instanceModelMatrices.clear();
+			instanceNormalMatrices.clear();
 
 			Vector3f point = new Vector3f();
 
@@ -46,64 +53,89 @@ public class DeferredRenderer {
 				point.setZ(renderables.get(i).getRenderProperties().getZ());
 
 				if (frustum.getPointDistance(point) < renderables.get(i).getContainer().getMesh().getboundingRadius() * renderables.get(i).getRenderProperties().getMaxScaleComponent()) {
-					instanceMatrices.add(renderables.get(i).getRenderProperties().getModelMatrix());
+					instanceModelMatrices.add(renderables.get(i).getRenderProperties().getModelMatrix());
+					instanceNormalMatrices.add(renderables.get(i).getRenderProperties().getNormalMatrix());
 				}
 			}
 
 			//if arrays are too short, resize them
-			if (modelMatrix1 == null || modelMatrix1.length < instanceMatrices.size() * 4) {
-				modelMatrix1 = new float[instanceMatrices.size() * 4];
-				modelMatrix2 = new float[instanceMatrices.size() * 4];
-				modelMatrix3 = new float[instanceMatrices.size() * 4];
-				modelMatrix4 = new float[instanceMatrices.size() * 4];
+			if (modelMatrix1 == null || modelMatrix1.length < instanceModelMatrices.size() * 4) {
+				modelMatrix1 = new float[instanceModelMatrices.size() * 4];
+				modelMatrix2 = new float[instanceModelMatrices.size() * 4];
+				modelMatrix3 = new float[instanceModelMatrices.size() * 4];
+				modelMatrix4 = new float[instanceModelMatrices.size() * 4];
+
+				normalMatrix1 = new float[instanceModelMatrices.size() * 3];
+				normalMatrix2 = new float[instanceModelMatrices.size() * 3];
+				normalMatrix3 = new float[instanceModelMatrices.size() * 3];
 			}
 
-			for (int i = 0; i < instanceMatrices.size(); i++) {
-				Matrix4f mat = instanceMatrices.get(i);
+			for (int i = 0; i < instanceModelMatrices.size(); i++) {
+				Matrix4f modelMat = instanceModelMatrices.get(i);
+				Matrix4f normalMat = instanceNormalMatrices.get(i);
 
-				modelMatrix1[i * 4 + 0] = mat.get(0, 0);
-				modelMatrix1[i * 4 + 1] = mat.get(0, 1);
-				modelMatrix1[i * 4 + 2] = mat.get(0, 2);
-				modelMatrix1[i * 4 + 3] = mat.get(0, 3);
+				modelMatrix1[i * 4 + 0] = modelMat.get(0, 0);
+				modelMatrix1[i * 4 + 1] = modelMat.get(0, 1);
+				modelMatrix1[i * 4 + 2] = modelMat.get(0, 2);
+				modelMatrix1[i * 4 + 3] = modelMat.get(0, 3);
 
-				modelMatrix2[i * 4 + 0] = mat.get(1, 0);
-				modelMatrix2[i * 4 + 1] = mat.get(1, 1);
-				modelMatrix2[i * 4 + 2] = mat.get(1, 2);
-				modelMatrix2[i * 4 + 3] = mat.get(1, 3);
+				modelMatrix2[i * 4 + 0] = modelMat.get(1, 0);
+				modelMatrix2[i * 4 + 1] = modelMat.get(1, 1);
+				modelMatrix2[i * 4 + 2] = modelMat.get(1, 2);
+				modelMatrix2[i * 4 + 3] = modelMat.get(1, 3);
 
-				modelMatrix3[i * 4 + 0] = mat.get(2, 0);
-				modelMatrix3[i * 4 + 1] = mat.get(2, 1);
-				modelMatrix3[i * 4 + 2] = mat.get(2, 2);
-				modelMatrix3[i * 4 + 3] = mat.get(2, 3);
+				modelMatrix3[i * 4 + 0] = modelMat.get(2, 0);
+				modelMatrix3[i * 4 + 1] = modelMat.get(2, 1);
+				modelMatrix3[i * 4 + 2] = modelMat.get(2, 2);
+				modelMatrix3[i * 4 + 3] = modelMat.get(2, 3);
 
-				modelMatrix4[i * 4 + 0] = mat.get(3, 0);
-				modelMatrix4[i * 4 + 1] = mat.get(3, 1);
-				modelMatrix4[i * 4 + 2] = mat.get(3, 2);
-				modelMatrix4[i * 4 + 3] = mat.get(3, 3);
+				modelMatrix4[i * 4 + 0] = modelMat.get(3, 0);
+				modelMatrix4[i * 4 + 1] = modelMat.get(3, 1);
+				modelMatrix4[i * 4 + 2] = modelMat.get(3, 2);
+				modelMatrix4[i * 4 + 3] = modelMat.get(3, 3);
+
+				normalMatrix1[i * 3 + 0] = normalMat.get(0, 0);
+				normalMatrix1[i * 3 + 1] = normalMat.get(0, 1);
+				normalMatrix1[i * 3 + 2] = normalMat.get(0, 2);
+
+				normalMatrix2[i * 3 + 0] = normalMat.get(1, 0);
+				normalMatrix2[i * 3 + 1] = normalMat.get(1, 1);
+				normalMatrix2[i * 3 + 2] = normalMat.get(1, 2);
+
+				normalMatrix3[i * 3 + 0] = normalMat.get(2, 0);
+				normalMatrix3[i * 3 + 1] = normalMat.get(2, 1);
+				normalMatrix3[i * 3 + 2] = normalMat.get(2, 2);
 			}
 
-			int[] instanceComponentCounts = { 4, 4, 4, 4 };
-			vbo.setInstanceData(instanceMatrices.size(), instanceComponentCounts, modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4);
+			vbo.setInstanceData(instanceModelMatrices.size(), instanceComponentCounts,
+					modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
+					normalMatrix1, normalMatrix2, normalMatrix3);
 		}
 	}
 
 	private Map<DeferredContainer, VboContainer> vboMap;
+	private VertexBufferObjectIndexed fullscreenQuad;
 
+	//gBuffer
 	private Shader gBufferShader;
 	private FrameBufferObject gBuffer;
 
+	//lights
+	private LightContainer lightContainer;
+	private VertexBufferObjectInstanced lightVbo;
 	private Shader lightShader;
 	private FrameBufferObject lightFrameBuffer;
 
-	private LightContainer lightContainer;
-	private VertexBufferObjectInstanced lightVbo;
+	//final pass
 	private Shader finalShader;
 	private FrameBufferObject finalFrameBuffer;
 
-	private VertexBufferObjectIndexed fullscreenQuad;
+	//filter
+	private Shader filterShader;
+	private FrameBufferObject filterFrameBuffer;
 
+	//settings
 	private TextureCubeMap reflectionTexture;
-
 	private Color sunLightColor;
 	private Vector3f sunLightDirection;
 	private float minAmbientBrightness;
@@ -117,20 +149,25 @@ public class DeferredRenderer {
 		vboMap = new HashMap<DeferredContainer, VboContainer>();
 		lightContainer = new LightContainer();
 		Mesh sphere = WavefrontLoader.loadObject(Noise.RESSOURCE_DIR + "meshes/icoSphere.obj");
-		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexArray(), sphere.getPositionArray());
+		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
 		gBuffer = new FrameBufferObject(width, height, true,
-				Texture2D.DataType.BGRA_8_8_8_8I,
-				Texture2D.DataType.BGRA_32_32_32F,
-				Texture2D.DataType.BGRA_16_16_16F,
-				Texture2D.DataType.BGRA_8_8_8I);
+				Texture2D.DataType.BGRA_8_8_8_8I, //color
+				Texture2D.DataType.BGRA_32_32_32F, //position
+				Texture2D.DataType.BGRA_16_16_16F, //normal
+				Texture2D.DataType.BGRA_8_8_8_8I //light
+		);
 
 		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
 
 		finalFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
 
+		filterFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+
 		fullscreenQuad = new VertexBufferObjectIndexed(
 				new int[] { 2, 2 },
+				6,
+				4,
 				new int[] { 0, 1, 2, 2, 3, 0 },
 				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f },
 				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f }
@@ -155,11 +192,26 @@ public class DeferredRenderer {
 	public void removeObject(DeferredRenderable object) {
 		VboContainer container = vboMap.get(object.getContainer());
 		container.renderables.remove(object);
+
+		if (container.renderables.size() == 0) {
+			container.vbo.cleanup();
+			vboMap.remove(object.getContainer());
+		}
+	}
+
+	public void clear() {
+		for (VboContainer container : vboMap.values()) {
+			container.vbo.cleanup();
+		}
+
+		vboMap.clear();
 	}
 
 	public LightContainer getLightContainer() {
 		return lightContainer;
 	}
+
+	private static final int[] lightInstanceComponents = new int[] { 3, 3, 1, 1 };
 
 	private void rebuildLightVbo() {
 		Set<Light> lights = lightContainer.getLights();
@@ -186,7 +238,7 @@ public class DeferredRenderer {
 			i++;
 		}
 
-		lightVbo.setInstanceData(lights.size(), new int[] { 3, 3, 1, 1 }, position, color, reach, intensity);
+		lightVbo.setInstanceData(lights.size(), lightInstanceComponents, position, color, reach, intensity);
 	}
 
 	//TODO: remove
@@ -214,12 +266,19 @@ public class DeferredRenderer {
 		finalShader.setUniform1i("textureReflection", 5);
 		finalShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
 		finalShader.deactivate();
+
+		filterShader = ShaderLoader.loadShader("<deferredRenderer/filter.vert>", "<deferredRenderer/filter.frag>");
+		filterShader.activate();
+		filterShader.setUniform1i("textureColor", 0);
+		filterShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
+		filterShader.deactivate();
 	}
 
 	public void setFrameBufferResolution(int width, int height) {
 		gBuffer.setResolution(width, height);
 		lightFrameBuffer.setResolution(width, height);
 		finalFrameBuffer.setResolution(width, height);
+		filterFrameBuffer.setResolution(width, height);
 
 		lightShader.activate();
 		lightShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
@@ -228,10 +287,26 @@ public class DeferredRenderer {
 		finalShader.activate();
 		finalShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		finalShader.deactivate();
+
+		filterShader.activate();
+		filterShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
+		filterShader.deactivate();
 	}
 
 	public void setReflectionTexture(TextureCubeMap reflectionTexture) {
 		this.reflectionTexture = reflectionTexture;
+	}
+
+	public void setSunLightColor(Color sunLightColor) {
+		this.sunLightColor = sunLightColor;
+	}
+
+	public void setSunLightDirection(Vector3f sunLightDirection) {
+		this.sunLightDirection = sunLightDirection;
+	}
+
+	public void setMinAmbientBrightness(float minAmbientBrightness) {
+		this.minAmbientBrightness = minAmbientBrightness;
 	}
 
 	public void render(PerspectiveCamera camera) {
@@ -317,9 +392,21 @@ public class DeferredRenderer {
 		finalShader.setUniform1f("minAmbientBrightness", minAmbientBrightness);
 		fullscreenQuad.render();
 		finalShader.deactivate();
+
+		//filter
+		finalFrameBuffer.getTextureAttachment(0).bind(0);
+		filterFrameBuffer.bind();
+		filterShader.activate();
+		fullscreenQuad.render();
+		filterShader.deactivate();
 	}
 
 	public Texture2D getColorOutput() {
+		return filterFrameBuffer.getTextureAttachment(0);
+		//return finalFrameBuffer.getTextureAttachment(0);
+	}
+
+	public Texture2D getColorBuffer() {
 		return finalFrameBuffer.getTextureAttachment(0);
 	}
 
@@ -337,6 +424,23 @@ public class DeferredRenderer {
 
 	public Texture2D getLightBuffer() {
 		return lightFrameBuffer.getTextureAttachment(0);
+	}
+
+	public void cleanup() {
+		clear();
+
+		gBuffer.cleanup();
+		lightFrameBuffer.cleanup();
+		finalFrameBuffer.cleanup();
+		filterFrameBuffer.cleanup();
+
+		gBufferShader.cleanup();
+		lightShader.cleanup();
+		finalShader.cleanup();
+		filterShader.cleanup();
+
+		fullscreenQuad.cleanup();
+		lightVbo.cleanup();
 	}
 
 }

@@ -22,7 +22,7 @@ public class TextureCubeMap {
 	};
 
 	private int id;
-	private String[] filename;
+	private String[] filenames;
 	private String name;
 	private int width;
 	private int height;
@@ -35,6 +35,10 @@ public class TextureCubeMap {
 		this.height = height;
 
 		createTexture(colorBuffer);
+	}
+
+	protected void setFilenames(String[] filenames) {
+		this.filenames = filenames;
 	}
 
 	protected void createTexture(IntBuffer[] colorBuffer) {
@@ -72,7 +76,7 @@ public class TextureCubeMap {
 	}
 
 	public String getFilename() {
-		return filename[0];
+		return filenames[0];
 	}
 
 	public void setWidth(int width) {
@@ -103,7 +107,7 @@ public class TextureCubeMap {
 
 	public void cleanup() {
 		glDeleteTextures(id);
-		Texture2DLoader.unloadTexture(filename[0]);
+		Texture2DLoader.unloadTexture(filenames[0]);
 		initialized = false;
 	}
 

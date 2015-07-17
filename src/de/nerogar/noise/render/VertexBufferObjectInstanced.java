@@ -23,7 +23,6 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	private int indexBufferHandle;
 	private int instanceBufferHandle;
 
-	private int vertexCount;
 	private int indexCount;
 	private int totalComponents;
 	private int[] componentCounts;
@@ -33,7 +32,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	private int totalComponentsInstance;
 	private int[] componentCountsInstance;
 	private int[] incrementalComponentCountsInstance;
-	
+
 	private float[] attribArrayInstance;
 	private ByteBuffer instanceBuffer;
 
@@ -41,31 +40,37 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 
 	/**
 	 * @param componentCounts an array containing all component counts
+	 * @param indexCount number of vertices specified in indexArray
+	 * @param vertexCount number of vertices specified in attributes
 	 * @param indexArary an array containing the index data
 	 * @param attributes arays containing all components to use for this VBO
 	 * 
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
-	public VertexBufferObjectInstanced(int[] componentCounts, int[] indexArary, float[]... attributes) {
-		this(TRIANGLES, componentCounts, indexArary, attributes);
+	public VertexBufferObjectInstanced(int[] componentCounts, int indexCount, int vertexCount, int[] indexArary, float[]... attributes) {
+		this(TRIANGLES, componentCounts, indexCount, vertexCount, indexArary, attributes);
 	}
 
 	/**
 	 * @param renderType type of rendered primitives. Either {@link VertexBufferObject#POINTS POINTS},
 	 * {@link VertexBufferObject#TRIANGLES TRIANGLES} or {@link VertexBufferObject#LINES LINES}
 	 * @param componentCounts an array containing all component counts
+	 * @param indexCount number of vertices specified in indexArray
+	 * @param vertexCount number of vertices specified in attributes
 	 * @param indexArary an array containing the index data
 	 * @param attributes arays containing all components to use for this VBO
 	 * 
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
-	public VertexBufferObjectInstanced(int renderType, int[] componentCounts, int[] indexArary, float[]... attributes) {
+	public VertexBufferObjectInstanced(int renderType, int[] componentCounts, int indexCount, int vertexCount, int[] indexArary, float[]... attributes) {
 		if (componentCounts.length != attributes.length) throw new ArrayIndexOutOfBoundsException();
 
 		this.renderType = renderType;
+		this.componentCounts = componentCounts;
+		this.indexCount = indexCount;
+
 		glContextVaoHandles = new HashMap<Long, Integer>();
 		glContextInstanceDataDirty = new HashMap<Long, Boolean>();
-		this.componentCounts = componentCounts;
 
 		//create Buffer
 		incrementalComponentCounts = new int[componentCounts.length];
@@ -75,13 +80,6 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			incrementalComponentCounts[i] = totalComponents;
 			totalComponents += componentCounts[i];
 		}
-
-		if (attributes.length > 0) {
-			vertexCount = attributes[0].length / componentCounts[0];
-		} else {
-			vertexCount = 0;
-		}
-		indexCount = indexArary.length;
 
 		float[] attribArray = new float[totalComponents * vertexCount];
 
@@ -190,7 +188,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			instanceCount = 0;
 		}
 
-		if (attribArrayInstance == null || attribArrayInstance.length < totalComponentsInstance * instanceCount){
+		if (attribArrayInstance == null || attribArrayInstance.length < totalComponentsInstance * instanceCount) {
 			attribArrayInstance = new float[totalComponentsInstance * instanceCount];
 			instanceBuffer = BufferUtils.createByteBuffer(attribArrayInstance.length * Float.BYTES);
 		}

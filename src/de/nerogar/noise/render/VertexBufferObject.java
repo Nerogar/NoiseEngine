@@ -20,6 +20,5 @@ public abstract class VertexBufferObject {
 	public abstract void render();
 
 	public abstract void cleanup();
-	
-	
+
 }

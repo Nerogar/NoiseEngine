@@ -71,7 +71,7 @@ public class GLWindow implements IRenderTarget {
 
 		windowPointer = glfwCreateWindow(width, height, title, monitor == null ? NULL : monitor.getPointer(), parentWindow == null ? NULL : parentWindow.windowPointer);
 		glfwSetInputMode(windowPointer, GLFW_STICKY_KEYS, GL_TRUE);
-		inputHandler = new InputHandler(windowPointer);
+		inputHandler = new InputHandler(this, windowPointer);
 
 		glfwMakeContextCurrent(windowPointer);
 		glContext = GLContext.createFromCurrent();
@@ -104,7 +104,7 @@ public class GLWindow implements IRenderTarget {
 		cursorPosCallback = new GLFWCursorPosCallback() {
 			@Override
 			public void invoke(long window, double xpos, double ypos) {
-				inputHandler.setCursorPosition(xpos, ypos);
+				inputHandler.setCursorPosition(xpos, (double) getHeight() - ypos);
 			}
 		};
 
@@ -235,6 +235,8 @@ public class GLWindow implements IRenderTarget {
 			window.inputHandler.resetInputText();
 			window.inputHandler.resetKeyboardKeyEvents();
 			window.inputHandler.resetMouseButtonEvents();
+			window.inputHandler.resetDeltaValues();
+			
 			glfwSwapBuffers(window.windowPointer);
 		}
 

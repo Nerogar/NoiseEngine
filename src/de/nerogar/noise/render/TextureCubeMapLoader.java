@@ -63,8 +63,10 @@ public class TextureCubeMapLoader {
 		}
 
 		retTexture = new TextureCubeMap(filename[0], image[0].getWidth(), image[0].getHeight(), buffer);
+		retTexture.setFilenames(filename);
 
 		textureMap.put(filename[0], retTexture);
+
 		return retTexture;
 
 	}

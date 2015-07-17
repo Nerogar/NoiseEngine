@@ -1,28 +1,34 @@
 #version 330 core
 
-uniform sampler2D textureColor;
-uniform sampler2D textureNormal;
-uniform sampler2D textureLight;
+uniform sampler2D textureColor_N;
+uniform sampler2D textureNormal_N;
+uniform sampler2D textureLight_N;
 
-layout (location = 0) out vec4 color;
-layout (location = 1) out vec4 normal;
-layout (location = 2) out vec4 position;
-layout (location = 3) out vec4 light; //ambient, reflection
+layout (location = 0) out vec4 color_out_N;
+layout (location = 1) out vec4 normal_out_N;
+layout (location = 2) out vec4 position_out_N;
+layout (location = 3) out vec4 light_out_N; //ambient, reflection
 
-in DATA
+in DATA_N
 {
 	vec4 position;
-	vec4 normal;
+	vec3 normal;
+	vec3 tangent;
+	vec3 bitangent;
 	vec2 uv;
-} frag_in;
+} frag_in_N;
+
+void mainSurface(inout vec4 color, in vec2 uv, inout vec4 position, inout vec3 normal, inout float displace, inout vec4 light);
 
 void main(){
-	color = texture(textureColor, frag_in.uv);
+	color_out_N = texture(textureColor_N, frag_in_N.uv);
 
-	vec3 normalSample = texture(textureNormal, frag_in.uv).xyz;
-	normal = normalize(frag_in.normal);
+	vec3 normalSample = texture(textureNormal_N, frag_in_N.uv).xyz;
+	mat3 worldSpaceMat = mat3(frag_in_N.tangent, frag_in_N.bitangent, frag_in_N.normal);
+	normalSample = normalSample * 2.0 - 1.0;
+	normal_out_N.xyz = normalize(worldSpaceMat * normalSample);
 
-	position = frag_in.position;
+	position_out_N = frag_in_N.position;
 
-	light = texture(textureLight, frag_in.uv);
+	light_out_N = texture(textureLight_N, frag_in_N.uv);
 }

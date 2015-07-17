@@ -21,10 +21,10 @@ import de.nerogar.noise.render.*;
  * <li> red: ambient light
  * <li> green: reflection factor
  * <li> blue: specular factor
- * <li> alpha: not defined
+ * <li> alpha: specular power in logarithmic scale (0, 1)->(1, 128) or (power = 2 ^ (alpha * 7))
  * </ul>
  * 
- * the shader parameter has to be a surface shader created by {@link DeferredContainer#createSurfaceShader(String) DeferredContainer.createSurfaceShader}
+ * the shader parameter has to be a surface shader created by {@link DeferredContainer#createSurfaceShader(String, String) DeferredContainer.createSurfaceShader}
  */
 public class DeferredContainer {
 
@@ -63,16 +63,32 @@ public class DeferredContainer {
 		return colorTexture;
 	}
 
+	public void setColorTexture(Texture2D colorTexture) {
+		this.colorTexture = colorTexture;
+	}
+
 	public Texture2D getNormalTexture() {
 		return normalTexture;
+	}
+
+	public void setNormalTexture(Texture2D normalTexture) {
+		this.normalTexture = normalTexture;
 	}
 
 	public Texture2D getLightTexture() {
 		return lightTexture;
 	}
 
+	public void setLightTexture(Texture2D lightTexture) {
+		this.lightTexture = lightTexture;
+	}
+
 	public Shader getSurfaceShader() {
 		return shader;
+	}
+
+	public void setSurfaceShader(Shader shader) {
+		this.shader = shader;
 	}
 
 	/**

@@ -17,8 +17,9 @@ public class PerspectiveCamera {
 	private boolean viewMatrixDirty = true;
 	private Matrix4f viewMatrix;
 
-	private Vector3f directionAt;
+	private Vector3f directionRight;
 	private Vector3f directionUp;
+	private Vector3f directionAt;
 
 	private float fov;
 	private float aspect;
@@ -37,8 +38,9 @@ public class PerspectiveCamera {
 		rollMatrix = new Matrix4f();
 		viewMatrix = new Matrix4f();
 
-		directionAt = new Vector3f();
+		directionRight = new Vector3f();
 		directionUp = new Vector3f();
+		directionAt = new Vector3f();
 
 		projectionMatrix = new Matrix4f();
 
@@ -89,11 +91,14 @@ public class PerspectiveCamera {
 	}
 
 	private void setDirections() {
-		directionAt.set(0.0f, 0.0f, -1.0f);
-		directionToWorldSpace(directionAt);
-		
+		directionRight.set(1.0f, 0.0f, 0.0f);
+		directionToWorldSpace(directionRight);
+
 		directionUp.set(0.0f, 1.0f, 0.0f);
 		directionToWorldSpace(directionUp);
+
+		directionAt.set(0.0f, 0.0f, -1.0f);
+		directionToWorldSpace(directionAt);
 	}
 
 	public Matrix4f getViewMatrix() {
@@ -325,17 +330,23 @@ public class PerspectiveCamera {
 		direction.setY(newY);
 		direction.setZ(newZ);
 	}
-	
-	public Vector3f getDirectionAt() {
+
+	public Vector3f getDirectionRight() {
 		if (viewMatrixDirty) setViewMatrix();
 
-		return directionAt;
+		return directionRight;
 	}
 
 	public Vector3f getDirectionUp() {
 		if (viewMatrixDirty) setViewMatrix();
 
 		return directionUp;
+	}
+
+	public Vector3f getDirectionAt() {
+		if (viewMatrixDirty) setViewMatrix();
+
+		return directionAt;
 	}
 
 	@Override

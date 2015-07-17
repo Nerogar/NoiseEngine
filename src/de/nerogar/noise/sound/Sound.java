@@ -5,13 +5,6 @@ import de.nerogar.noise.util.Logger;
 
 public abstract class Sound {
 
-	/*
-	 * volume AL_GAIN
-	 * pitch AL_PITCH
-	 * 
-	 * 
-	 */
-
 	protected int alSourceHandle;
 
 	protected float volume;
@@ -19,6 +12,7 @@ public abstract class Sound {
 	protected float x, y, z;
 
 	protected boolean playing;
+	protected boolean loop;
 
 	protected int channels;
 	protected int sampleRate;
@@ -55,6 +49,14 @@ public abstract class Sound {
 		this.sampleRate = sampleRate;
 		this.samples = samples;
 		this.format = format;
+	}
+
+	public boolean getLoop() {
+		return loop;
+	}
+
+	public void setLoop(boolean loop) {
+		this.loop = loop;
 	}
 
 	public float getVolume() {

@@ -71,6 +71,20 @@ public class FrameBufferObject implements IRenderTarget {
 		else return textures[slot];
 	}
 
+	public Texture2D detachTextureAttachement(int slot) {
+		Texture2D tempTexture;
+		if (slot == -1) {
+			tempTexture = depthTexture;
+			depthTexture = null;
+			useDepthTexture = false;
+		} else {
+			tempTexture = textures[slot];
+			textures[slot] = null;
+		}
+
+		return tempTexture;
+	}
+
 	@Override
 	public void setResolution(int width, int height) {
 		this.width = width;
@@ -147,7 +161,7 @@ public class FrameBufferObject implements IRenderTarget {
 		}
 
 		for (Texture2D texture : textures) {
-			texture.cleanup();
+			if (texture != null) texture.cleanup();
 		}
 
 		glDeleteFramebuffers(framebufferID);

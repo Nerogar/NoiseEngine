@@ -18,6 +18,8 @@ public class Timer {
 			double sum = 0;
 			for (int i = 0; i < TIME_COUNT; i++) {
 				sum += times[i];
+				
+				times[i] *= 0.99; //dampen times
 			}
 			return sum * 0.1 * 1.1; //never underestimate sleep times
 		}

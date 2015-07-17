@@ -219,6 +219,15 @@ public class Vector3f implements Vectorf<Vector3f> {
 		return x * v.get(0) + y * v.get(1) + z * v.get(2);
 	}
 
+	public Vector3f cross(Vector3f v) {
+		set(
+				y * v.getZ() - z * v.getY(),
+				z * v.getX() - x * v.getZ(),
+				x * v.getY() - y * v.getX());
+
+		return this;
+	}
+
 	@Override
 	public void reflect(Vectorf<?> v) {
 		float dot = 2.0f * dot(v);

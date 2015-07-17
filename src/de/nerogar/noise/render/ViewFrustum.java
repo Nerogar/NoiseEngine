@@ -26,9 +26,6 @@ public class ViewFrustum {
 
 		float fovSides = (float) Math.atan(Math.tan(Math.toRadians(camera.getFOV() / 2.0)) * camera.getAspect());
 
-		System.out.println("fov:      " + Math.toRadians(camera.getFOV() / 2.0));
-		System.out.println("fovSides: " + fovSides);
-
 		leftRightFactor = (float) (Math.cos(fovSides));
 		topBottomFactor = (float) (Math.cos(Math.toRadians(camera.getFOV() / 2.0)));
 
@@ -50,12 +47,6 @@ public class ViewFrustum {
 
 		float bottom = topBottomFactor * (halfFarHeight * point.getZ() * inverseFar - point.getY());
 		float top = topBottomFactor * (halfFarHeight * point.getZ() * inverseFar + point.getY());
-
-		//		System.out.println(topBottomFactor);
-		//		System.out.println("left     " + left);
-		//		System.out.println("right    " + right);
-		//		System.out.println("bottom   " + bottom);
-		//		System.out.println("top      " + top);
 
 		float max = near;
 		if (far > max) max = far;

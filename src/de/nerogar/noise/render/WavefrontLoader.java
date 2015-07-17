@@ -16,7 +16,8 @@ public class WavefrontLoader {
 		}
 
 		public boolean equals(int vertex, int texCoord, int normal) {
-			return this.vertex == vertex && this.texCoord == texCoord && this.normal == normal;
+			//return this.vertex == vertex && this.texCoord == texCoord && this.normal == normal;
+			return false;
 		}
 	}
 
@@ -86,9 +87,9 @@ public class WavefrontLoader {
 						vertexLoop: for (int i = 0; i < lineSubSplit.length; i++) {
 							if (lineSubSplit[i].length != 3) throw new RuntimeException("Unreadable wavefront file.");
 
-							int f1 = Integer.parseInt(lineSubSplit[i][0]);
-							int f2 = Integer.parseInt(lineSubSplit[i][1]);
-							int f3 = Integer.parseInt(lineSubSplit[i][2]);
+							int f1 = Integer.parseInt(lineSubSplit[i][0]) - 1;
+							int f2 = Integer.parseInt(lineSubSplit[i][1]) - 1;
+							int f3 = Integer.parseInt(lineSubSplit[i][2]) - 1;
 
 							//find existing tuple
 							for (int tupleIndex = 0; tupleIndex < vertexTuples.size(); tupleIndex++) {
@@ -126,34 +127,30 @@ public class WavefrontLoader {
 		float[] texCoordsFinal = new float[vertexTuples.size() * 2];
 		int[] indices = new int[faces.size() * 3];
 
-		float boundingRadius = 0;
-
 		for (int i = 0; i < vertexTuples.size(); i++) {
 			VertexTuple tuple = vertexTuples.get(i);
 
-			verticesFinal[i * 3 + 0] = vertices.get(tuple.vertex - 1)[0];
-			verticesFinal[i * 3 + 1] = vertices.get(tuple.vertex - 1)[1];
-			verticesFinal[i * 3 + 2] = vertices.get(tuple.vertex - 1)[2];
+			verticesFinal[i * 3 + 0] = vertices.get(tuple.vertex)[0];
+			verticesFinal[i * 3 + 1] = vertices.get(tuple.vertex)[1];
+			verticesFinal[i * 3 + 2] = vertices.get(tuple.vertex)[2];
 
-			normalsFinal[i * 3 + 0] = normals.get(tuple.normal - 1)[0];
-			normalsFinal[i * 3 + 1] = normals.get(tuple.normal - 1)[1];
-			normalsFinal[i * 3 + 2] = normals.get(tuple.normal - 1)[2];
+			normalsFinal[i * 3 + 0] = normals.get(tuple.normal)[0];
+			normalsFinal[i * 3 + 1] = normals.get(tuple.normal)[1];
+			normalsFinal[i * 3 + 2] = normals.get(tuple.normal)[2];
 
-			texCoordsFinal[i * 2 + 0] = texCoords.get(tuple.texCoord - 1)[0];
-			texCoordsFinal[i * 2 + 1] = texCoords.get(tuple.texCoord - 1)[1];
-
-			float tempBoundingSize = verticesFinal[i * 3 + 0] * verticesFinal[i * 3 + 0] + verticesFinal[i * 3 + 1] * verticesFinal[i * 3 + 1] + verticesFinal[i * 3 + 2] * verticesFinal[i * 3 + 2];
-
-			if (tempBoundingSize > boundingRadius) boundingRadius = tempBoundingSize;
+			texCoordsFinal[i * 2 + 0] = texCoords.get(tuple.texCoord)[0];
+			texCoordsFinal[i * 2 + 1] = texCoords.get(tuple.texCoord)[1];
 		}
 
 		for (int i = 0; i < faces.size(); i++) {
-			indices[i * 3 + 0] = faces.get(i)[0];
-			indices[i * 3 + 1] = faces.get(i)[1];
-			indices[i * 3 + 2] = faces.get(i)[2];
+			int[] face = faces.get(i);
+
+			indices[i * 3 + 0] = face[0];
+			indices[i * 3 + 1] = face[1];
+			indices[i * 3 + 2] = face[2];
 		}
 
-		object = new Mesh(indices, verticesFinal, texCoordsFinal, normalsFinal, boundingRadius);
+		object = new Mesh(indices.length, vertexTuples.size(), indices, verticesFinal, texCoordsFinal, normalsFinal);
 
 		meshMap.put(filename, object);
 

@@ -61,7 +61,7 @@ public class Texture2D {
 
 		/**4 components, 16 bit each, half floating point precision*/
 		BGRA_16_16_16_16F(GL_RGBA16F, GL_BGRA, GL_HALF_FLOAT),
-		
+
 		/**1 components, 32 bit, floating point precision*/
 		BGRA_32F(GL_R32F, GL_BGRA, GL_FLOAT),
 
@@ -90,7 +90,6 @@ public class Texture2D {
 	}
 
 	private int id;
-	private String filename;
 	private String name;
 	private int width;
 	private int height;
@@ -153,10 +152,6 @@ public class Texture2D {
 		return name;
 	}
 
-	public String getFilename() {
-		return filename;
-	}
-
 	protected void setWidth(int width) {
 		this.width = width;
 	}
@@ -191,7 +186,7 @@ public class Texture2D {
 
 	public void cleanup() {
 		glDeleteTextures(id);
-		Texture2DLoader.unloadTexture(filename);
+		Texture2DLoader.unloadTexture(name);
 		initialized = false;
 	}
 
