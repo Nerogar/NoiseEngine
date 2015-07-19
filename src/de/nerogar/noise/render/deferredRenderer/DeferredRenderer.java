@@ -403,26 +403,29 @@ public class DeferredRenderer {
 
 	public Texture2D getColorOutput() {
 		return filterFrameBuffer.getTextureAttachment(0);
-		//return finalFrameBuffer.getTextureAttachment(0);
-	}
-
-	public Texture2D getColorBuffer() {
-		return finalFrameBuffer.getTextureAttachment(0);
 	}
 
 	public Texture2D getDepthBuffer() {
 		return gBuffer.getTextureAttachment(-1);
 	}
 
-	public Texture2D getPositionBuffer() {
-		return gBuffer.getTextureAttachment(2);
+	public Texture2D getColorBuffer() {
+		return gBuffer.getTextureAttachment(0);
 	}
 
 	public Texture2D getNormalBuffer() {
 		return gBuffer.getTextureAttachment(1);
 	}
 
+	public Texture2D getPositionBuffer() {
+		return gBuffer.getTextureAttachment(2);
+	}
+
 	public Texture2D getLightBuffer() {
+		return gBuffer.getTextureAttachment(3);
+	}
+
+	public Texture2D getLightsBuffer() {
 		return lightFrameBuffer.getTextureAttachment(0);
 	}
 

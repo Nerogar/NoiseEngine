@@ -144,8 +144,9 @@ public class Mesh {
 
 		}
 
-		//System.out.println(Arrays.toString(normalArray));
-		//System.out.println(Arrays.toString(tangentArray));
+		float maxError = 0;
+		float avgError = 0;
+		float minError = 0;
 
 		//normalize tangent and bitangent
 		for (int i = 0; i < vertexCount; i++) {
@@ -154,6 +155,7 @@ public class Mesh {
 
 			//make tangent orthogonal and store
 			normal.set(normalArray[i * 3], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
+
 			tangent.subtract(normal.multiply(normal.dot(tangent)));
 			tangent.normalize();
 			tangentArray[i * 3 + 0] = tangent.getX();
@@ -171,11 +173,27 @@ public class Mesh {
 			normal.set(normalArray[i * 3], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
 			tangent.set(tangentArray[i * 3], tangentArray[i * 3 + 1], tangentArray[i * 3 + 2]);
 
-			if (Math.abs(normal.dot(tangent)) > 1.0e-3f) Logger.log(Logger.WARNING, "Could not calculate tangent space: " + normal.dot(tangent));
-			if (Math.abs(tangent.dot(bitangent)) > 1.0e-3f) Logger.log(Logger.WARNING, "Could not calculate tangent space: " + tangent.dot(bitangent));
-			if (Math.abs(bitangent.dot(normal)) > 1.0e-3f) Logger.log(Logger.WARNING, "Could not calculate tangent space: " + bitangent.dot(normal));
+			float error1 = Math.abs(normal.dot(tangent));
+			float error2 = Math.abs(tangent.dot(bitangent));
+			float error3 = Math.abs(bitangent.dot(normal));
 
+			maxError = Math.max(maxError, error1);
+			maxError = Math.max(maxError, error2);
+			maxError = Math.max(maxError, error3);
+
+			minError = Math.min(minError, error1);
+			minError = Math.min(minError, error2);
+			minError = Math.min(minError, error3);
+
+			avgError += error1 + error2 + error3;
 		}
+
+		avgError /= (float) vertexCount;
+
+		if (maxError > 1.0e-3f) {
+			Logger.log(Logger.WARNING, "Problem calculating mesh tangent space: (minError:" + minError + ", avgError:" + avgError + ", maxError:" + maxError + ")");
+		}
+
 	}
 
 	private void calcBoundingRadius() {
