@@ -8,22 +8,27 @@ public class WavefrontLoader {
 
 	private static class VertexTuple {
 		public int vertex, normal, texCoord;
+		public boolean uvDirection;
 
-		public VertexTuple(int vertex, int texCoord, int normal) {
+		public VertexTuple(int vertex, int texCoord, int normal, boolean uvDirection) {
 			this.vertex = vertex;
 			this.texCoord = texCoord;
 			this.normal = normal;
+			this.uvDirection = uvDirection;
 		}
 
-		public boolean equals(int vertex, int texCoord, int normal) {
-			//return this.vertex == vertex && this.texCoord == texCoord && this.normal == normal;
-			return false;
+		public boolean equals(int vertex, int texCoord, int normal, boolean uvDirection) {
+			return this.vertex == vertex && this.texCoord == texCoord && this.normal == normal && this.uvDirection == uvDirection;
+			//return false;
 		}
 	}
 
 	private static HashMap<String, Mesh> meshMap = new HashMap<String, Mesh>();
 
 	public static Mesh loadObject(String filename) {
+
+		System.out.println(filename);
+
 		Mesh object = meshMap.get(filename);
 		if (object != null) return object;
 
@@ -84,7 +89,9 @@ public class WavefrontLoader {
 
 						int[] tupleIndices = new int[3];
 
-						vertexLoop: for (int i = 0; i < lineSubSplit.length; i++) {
+						boolean uvDirection = calcUVDirection(texCoords, Integer.parseInt(lineSubSplit[0][1]) - 1, Integer.parseInt(lineSubSplit[1][1]) - 1, Integer.parseInt(lineSubSplit[2][1]) - 1);
+
+						vertexLoop: for (int i = 0; i < 3; i++) {
 							if (lineSubSplit[i].length != 3) throw new RuntimeException("Unreadable wavefront file.");
 
 							int f1 = Integer.parseInt(lineSubSplit[i][0]) - 1;
@@ -95,14 +102,14 @@ public class WavefrontLoader {
 							for (int tupleIndex = 0; tupleIndex < vertexTuples.size(); tupleIndex++) {
 								VertexTuple tuple = vertexTuples.get(tupleIndex);
 
-								if (tuple.equals(f1, f2, f3)) {
+								if (tuple.equals(f1, f2, f3, uvDirection)) {
 									tupleIndices[i] = tupleIndex;
 									continue vertexLoop;
 								}
 							}
 
 							//if no tuple was found
-							vertexTuples.add(new VertexTuple(f1, f2, f3));
+							vertexTuples.add(new VertexTuple(f1, f2, f3, uvDirection));
 							tupleIndices[i] = vertexTuples.size() - 1;
 						}
 
@@ -155,5 +162,19 @@ public class WavefrontLoader {
 		meshMap.put(filename, object);
 
 		return object;
+	}
+
+	private static boolean calcUVDirection(ArrayList<float[]> texCoords, int uIndex, int vIndex, int wIndex) {
+		float ux = texCoords.get(vIndex)[0] - texCoords.get(uIndex)[0];
+		float uy = texCoords.get(vIndex)[1] - texCoords.get(uIndex)[1];
+		float vx = texCoords.get(wIndex)[0] - texCoords.get(vIndex)[0];
+		float vy = texCoords.get(wIndex)[1] - texCoords.get(vIndex)[1];
+
+		float orthx = -uy;
+		float orthy = ux;
+
+		float dot = orthx * vx + orthy * vy;
+
+		return dot < 0;
 	}
 }
