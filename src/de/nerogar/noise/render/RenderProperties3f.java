@@ -72,22 +72,27 @@ public class RenderProperties3f implements RenderProperties {
 
 	private void setPositionMatrix() {
 		Matrix4fUtils.setPositionMatrix(positionMatrix, x, y, z);
+		positionMatrixDirty = false;
 	}
 
 	private void setScaleMatrix() {
 		Matrix4fUtils.setScaleMatrix(scaleMatrix, scaleX, scaleY, scaleZ);
+		scaleMatrixDirty = false;
 	}
 
 	private void setYawMatrix() {
 		Matrix4fUtils.setYawMatrix(yawMatrix, yaw);
+		yawMatrixDirty = false;
 	}
 
 	private void setPitchMatrix() {
 		Matrix4fUtils.setPitchMatrix(pitchMatrix, pitch);
+		pitchMatrixDirty = false;
 	}
 
 	private void setRollMatrix() {
 		Matrix4fUtils.setRollMatrix(rollMatrix, roll);
+		rollMatrixDirty = false;
 	}
 
 	private void setModelMatrix() {
@@ -105,13 +110,21 @@ public class RenderProperties3f implements RenderProperties {
 		//model matrix
 		modelMatrix.set(scaleMatrix).multiplyLeft(tempMatrix);
 
-		//normal matrix (scale^-1 * rotations^t)^t
-		scaleMatrix.set(0, 0, 1f / scaleMatrix.get(0, 0));
-		scaleMatrix.set(1, 1, 1f / scaleMatrix.get(1, 1));
-		scaleMatrix.set(2, 2, 1f / scaleMatrix.get(2, 2));
-		tempMatrix.transpose();
-		normalMatrix.set(scaleMatrix).multiplyRight(tempMatrix);
-		normalMatrix.transpose();
+		//normal matrix (rotations * scale^-1)
+		float sX = scaleMatrix.get(0, 0);
+		float sY = scaleMatrix.get(1, 1);
+		float sZ = scaleMatrix.get(2, 2);
+
+		scaleMatrix.set(0, 0, 1f / sX);
+		scaleMatrix.set(1, 1, 1f / sY);
+		scaleMatrix.set(2, 2, 1f / sZ);
+
+		normalMatrix.set(tempMatrix).multiplyRight(scaleMatrix);
+
+		//reset scale matrix
+		scaleMatrix.set(0, 0, sX);
+		scaleMatrix.set(1, 1, sY);
+		scaleMatrix.set(2, 2, sZ);
 
 		modelMatrixDirty = false;
 	}

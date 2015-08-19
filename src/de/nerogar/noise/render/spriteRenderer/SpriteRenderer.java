@@ -164,8 +164,6 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 			container.vbo.render();
 		}
 
-		Texture2D.unbind(0);
-
 		shader.deactivate();
 
 		glDisable(GL_DEPTH_TEST);

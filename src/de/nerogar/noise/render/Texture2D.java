@@ -10,18 +10,7 @@ import java.nio.ByteBuffer;
 
 import de.nerogar.noise.util.Logger;
 
-public class Texture2D {
-
-	private static int[] texturePositions = {
-			GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, GL_TEXTURE3,
-			GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7,
-			GL_TEXTURE8, GL_TEXTURE9, GL_TEXTURE10, GL_TEXTURE11,
-			GL_TEXTURE12, GL_TEXTURE13, GL_TEXTURE14, GL_TEXTURE15,
-			GL_TEXTURE16, GL_TEXTURE17, GL_TEXTURE18, GL_TEXTURE19,
-			GL_TEXTURE20, GL_TEXTURE21, GL_TEXTURE22, GL_TEXTURE23,
-			GL_TEXTURE24, GL_TEXTURE25, GL_TEXTURE26, GL_TEXTURE27,
-			GL_TEXTURE28, GL_TEXTURE29, GL_TEXTURE30, GL_TEXTURE31,
-	};
+public class Texture2D extends Texture {
 
 	public enum InterpolationType {
 		LINEAR(GL_LINEAR, GL_LINEAR),
@@ -134,7 +123,7 @@ public class Texture2D {
 
 		id = glGenTextures();
 
-		bind();
+		bind(0);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolationType.openglConstantMin);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolationType.openglConstantMin);
@@ -168,22 +157,14 @@ public class Texture2D {
 		return height;
 	}
 
-	public void bind() {
-		glBindTexture(GL_TEXTURE_2D, id);
-	}
-
+	@Override
 	public void bind(int slot) {
 		glActiveTexture(texturePositions[slot]);
 		glBindTexture(GL_TEXTURE_2D, id);
-		glActiveTexture(texturePositions[0]);
+		//glActiveTexture(texturePositions[0]);
 	}
 
-	public static void unbind(int slot) {
-		glActiveTexture(texturePositions[slot]);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glActiveTexture(texturePositions[0]);
-	}
-
+	@Override
 	public void cleanup() {
 		glDeleteTextures(id);
 		Texture2DLoader.unloadTexture(name);

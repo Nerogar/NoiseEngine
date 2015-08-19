@@ -12,6 +12,7 @@ import org.lwjgl.BufferUtils;
 
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
+import de.nerogar.noise.util.Logger;
 
 public class Texture2DLoader {
 
@@ -43,6 +44,9 @@ public class Texture2DLoader {
 		}
 
 		textureMap.put(filename, retTexture);
+
+		Logger.log(Logger.INFO, "loaded texture: " + filename);
+
 		return retTexture;
 	}
 

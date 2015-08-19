@@ -13,7 +13,7 @@ public interface IRenderer<RenderableT extends IRenderable> {
 	 * @param object the object you want to add to the scene
 	 */
 	public void addObject(RenderableT object);
-	
+
 	/**
 	 * Remove an object from the renderer.
 	 * 
@@ -21,7 +21,6 @@ public interface IRenderer<RenderableT extends IRenderable> {
 	 */
 	public void removeObject(RenderableT object);
 
-	
 	/**
 	 * Set the resolution of the FrameBufferObject this renderer renders to.
 	 * 
@@ -29,7 +28,7 @@ public interface IRenderer<RenderableT extends IRenderable> {
 	 * @param height the new height
 	 */
 	public void setFrameBufferResolution(int width, int height);
-	
+
 	/**
 	 * Renders into the FrameBufferObject returned by getRenderTarget().
 	 * 
@@ -46,5 +45,5 @@ public interface IRenderer<RenderableT extends IRenderable> {
 	 * Rebuilds objects like VertexBufferObjects. Depending on the implementation this can be slow.
 	 */
 	public void rebuild();
-	
+
 }

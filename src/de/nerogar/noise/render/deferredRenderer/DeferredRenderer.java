@@ -153,8 +153,8 @@ public class DeferredRenderer {
 
 		gBuffer = new FrameBufferObject(width, height, true,
 				Texture2D.DataType.BGRA_8_8_8_8I, //color
-				Texture2D.DataType.BGRA_32_32_32F, //position
 				Texture2D.DataType.BGRA_16_16_16F, //normal
+				Texture2D.DataType.BGRA_32_32_32F, //position
 				Texture2D.DataType.BGRA_8_8_8_8I //light
 		);
 
@@ -341,11 +341,10 @@ public class DeferredRenderer {
 			currentShader.setUniformMat4f("viewMatrix_N", camera.getViewMatrix().asBuffer());
 			currentShader.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
 
-			container.container.getColorTexture().bind(0);
-			container.container.getNormalTexture().bind(1);
-			container.container.getLightTexture().bind(2);
+			container.container.bindTextures();
 
 			container.vbo.render();
+
 			currentShader.deactivate();
 		}
 

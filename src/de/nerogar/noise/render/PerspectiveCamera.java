@@ -257,7 +257,7 @@ public class PerspectiveCamera {
 	 * 
 	 * @param point the point to transform
 	 */
-	protected void pointToViewSpace(Vector3f point) {
+	public void pointToViewSpace(Vector3f point) {
 		float newX, newY, newZ;
 
 		newX = point.getX() * getViewMatrix().get(0, 0);
@@ -286,7 +286,7 @@ public class PerspectiveCamera {
 	 * 
 	 * @param direction the direction to transform
 	 */
-	protected void directionToViewSpace(Vector3f direction) {
+	public void directionToViewSpace(Vector3f direction) {
 		float newX, newY, newZ;
 
 		newX = direction.getX() * getViewMatrix().get(0, 0);
@@ -311,7 +311,7 @@ public class PerspectiveCamera {
 	 * 
 	 * @param direction the direction to transform
 	 */
-	protected void directionToWorldSpace(Vector3f direction) {
+	public void directionToWorldSpace(Vector3f direction) {
 		float newX, newY, newZ;
 
 		newX = direction.getX() * getViewMatrix().get(0, 0);

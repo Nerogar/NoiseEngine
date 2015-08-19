@@ -329,7 +329,7 @@ public class PhysicsSpace<T extends Vectorf<T>> {
 		glTranslatef(offset.get(0), offset.get(1), offset.get(2));
 
 		//glEnable(GL_TEXTURE_2D);
-		if (debugTexture != null) debugTexture.bind();
+		if (debugTexture != null) debugTexture.bind(0);
 		glBegin(GL_QUADS);
 
 		//top

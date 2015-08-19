@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.nerogar.noise.util.Logger;
+
 public class WavefrontLoader {
 
 	private static class VertexTuple {
@@ -17,17 +19,35 @@ public class WavefrontLoader {
 			this.uvDirection = uvDirection;
 		}
 
-		public boolean equals(int vertex, int texCoord, int normal, boolean uvDirection) {
-			return this.vertex == vertex && this.texCoord == texCoord && this.normal == normal && this.uvDirection == uvDirection;
-			//return false;
+		@Override
+		public int hashCode() {
+			int hash = 1;
+			hash = hash * 17 + vertex;
+			hash = hash * 19 + texCoord;
+			hash = hash * 23 + normal;
+
+			return hash;
 		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof VertexTuple) {
+				VertexTuple otherTuple = (VertexTuple) obj;
+
+				return this.vertex == otherTuple.vertex
+						&& this.texCoord == otherTuple.texCoord
+						&& this.normal == otherTuple.normal
+						&& this.uvDirection == otherTuple.uvDirection;
+			}
+
+			return false;
+		}
+
 	}
 
 	private static HashMap<String, Mesh> meshMap = new HashMap<String, Mesh>();
 
 	public static Mesh loadObject(String filename) {
-
-		System.out.println(filename);
 
 		Mesh object = meshMap.get(filename);
 		if (object != null) return object;
@@ -37,6 +57,8 @@ public class WavefrontLoader {
 		ArrayList<float[]> texCoords = new ArrayList<float[]>();
 
 		ArrayList<VertexTuple> vertexTuples = new ArrayList<VertexTuple>();
+		HashMap<VertexTuple, Integer> vertexTupleMap = new HashMap<WavefrontLoader.VertexTuple, Integer>();
+
 		ArrayList<int[]> faces = new ArrayList<int[]>();
 
 		try {
@@ -98,19 +120,19 @@ public class WavefrontLoader {
 							int f2 = Integer.parseInt(lineSubSplit[i][1]) - 1;
 							int f3 = Integer.parseInt(lineSubSplit[i][2]) - 1;
 
-							//find existing tuple
-							for (int tupleIndex = 0; tupleIndex < vertexTuples.size(); tupleIndex++) {
-								VertexTuple tuple = vertexTuples.get(tupleIndex);
+							VertexTuple newTuple = new VertexTuple(f1, f2, f3, uvDirection);
 
-								if (tuple.equals(f1, f2, f3, uvDirection)) {
-									tupleIndices[i] = tupleIndex;
-									continue vertexLoop;
-								}
+							//find existing tuple
+							Integer tupleIndex = vertexTupleMap.get(newTuple);
+							if (tupleIndex != null) {
+								tupleIndices[i] = tupleIndex;
+								continue vertexLoop;
 							}
 
 							//if no tuple was found
-							vertexTuples.add(new VertexTuple(f1, f2, f3, uvDirection));
+							vertexTuples.add(newTuple);
 							tupleIndices[i] = vertexTuples.size() - 1;
+							vertexTupleMap.put(newTuple, vertexTuples.size() - 1);
 						}
 
 						faces.add(tupleIndices);
@@ -160,6 +182,8 @@ public class WavefrontLoader {
 		object = new Mesh(indices.length, vertexTuples.size(), indices, verticesFinal, texCoordsFinal, normalsFinal);
 
 		meshMap.put(filename, object);
+
+		Logger.log(Logger.INFO, "loaded .obj file: " + filename);
 
 		return object;
 	}

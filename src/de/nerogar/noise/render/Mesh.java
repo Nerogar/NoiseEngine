@@ -188,9 +188,9 @@ public class Mesh {
 			avgError += error1 + error2 + error3;
 		}
 
-		avgError /= (float) vertexCount;
+		avgError /= (float) vertexCount * 3f;
 
-		if (maxError > 1.0e-3f) {
+		if (maxError > 1.0e-3f || Float.isNaN(maxError)) {
 			Logger.log(Logger.WARNING, "Problem calculating mesh tangent space: (minError:" + minError + ", avgError:" + avgError + ", maxError:" + maxError + ")");
 		}
 

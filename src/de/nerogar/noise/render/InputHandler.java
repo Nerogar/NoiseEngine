@@ -164,7 +164,7 @@ public final class InputHandler {
 		return events;
 	}
 
-	public boolean getIsKeyDown(int key) {
+	public boolean isKeyDown(int key) {
 		return glfwGetKey(windowPointer, key) == GLFW_PRESS;
 	}
 
