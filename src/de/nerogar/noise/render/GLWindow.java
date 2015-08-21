@@ -81,8 +81,10 @@ public class GLWindow implements IRenderTarget {
 		windowFocusCallback = new GLFWWindowFocusCallback() {
 			@Override
 			public void invoke(long window, int focused) {
-				glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-				mouseHidden = false;
+				if (focused == GL_FALSE) {
+					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					mouseHidden = false;
+				}
 			}
 		};
 
@@ -104,7 +106,9 @@ public class GLWindow implements IRenderTarget {
 		cursorPosCallback = new GLFWCursorPosCallback() {
 			@Override
 			public void invoke(long window, double xpos, double ypos) {
-				inputHandler.setCursorPosition(xpos, (double) getHeight() - ypos);
+				if (!hideMouse || mouseHidden) {
+					inputHandler.setCursorPosition(xpos, (double) getHeight() - ypos);
+				}
 			}
 		};
 
@@ -125,7 +129,12 @@ public class GLWindow implements IRenderTarget {
 		mouseButtonCallback = new GLFWMouseButtonCallback() {
 			@Override
 			public void invoke(long window, int button, int action, int mods) {
-				if (hideMouse && !mouseHidden) glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				if (hideMouse && !mouseHidden) {
+					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					mouseHidden = true;
+
+					return;
+				}
 
 				inputHandler.addMouseButtonEvent(button, action, mods);
 			}
@@ -236,7 +245,7 @@ public class GLWindow implements IRenderTarget {
 			window.inputHandler.resetKeyboardKeyEvents();
 			window.inputHandler.resetMouseButtonEvents();
 			window.inputHandler.resetDeltaValues();
-			
+
 			glfwSwapBuffers(window.windowPointer);
 		}
 
