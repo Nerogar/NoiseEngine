@@ -1,15 +1,17 @@
 package de.nerogar.noise.render;
 
+import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glViewport;
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glDrawBuffers;
 import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
-import static org.lwjgl.glfw.GLFW.*;
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
 import de.nerogar.noise.util.Logger;
@@ -27,41 +29,41 @@ public class FrameBufferObject implements IRenderTarget {
 			GL_COLOR_ATTACHMENT14, GL_COLOR_ATTACHMENT15,
 	};
 
+	private static final int MAX_COLOR_ATTACHEMENTS = GL11.glGetInteger(GL_MAX_COLOR_ATTACHMENTS);
+
 	private boolean initialized;
 
 	private long glContext;
 
-	private int framebufferID; //, colorTextureID, normalTextureID, depthTextureID;
+	private int framebufferID;
 
 	private int width, height;
 
-	private boolean useDepthTexture;
 	private Texture2D depthTexture;
 	private Texture2D[] textures;
 
 	public FrameBufferObject(int width, int height, boolean useDepthTexture, Texture2D.DataType... textures) {
-		this.useDepthTexture = useDepthTexture;
 		glContext = glfwGetCurrentContext();
 		createTextures(textures);
-		if (useDepthTexture) activateDepthTexture();
+		if (useDepthTexture) createDepthTexture();
 
 		setResolution(width, height);
 	}
 
 	private void createTextures(Texture2D.DataType[] textures) {
-		this.textures = new Texture2D[textures.length];
+		this.textures = new Texture2D[MAX_COLOR_ATTACHEMENTS];
 
 		for (int i = 0; i < textures.length; i++) {
 			this.textures[i] = new Texture2D("", 0, 0, null, InterpolationType.NEAREST, textures[i]);
 		}
 	}
 
-	private void activateDepthTexture() {
+	private void createDepthTexture() {
 		depthTexture = new Texture2D("depth", 0, 0, null, InterpolationType.NEAREST, DataType.DEPTH);
 	}
 
 	/**
-	 * Retruns the specified texture attachment.
+	 * Returns the specified texture attachment.
 	 * 
 	 * @param slot the slot of the texture, -1 for depth texture
 	 * @return the texture
@@ -73,16 +75,30 @@ public class FrameBufferObject implements IRenderTarget {
 
 	public Texture2D detachTextureAttachement(int slot) {
 		Texture2D tempTexture;
+
 		if (slot == -1) {
 			tempTexture = depthTexture;
 			depthTexture = null;
-			useDepthTexture = false;
 		} else {
 			tempTexture = textures[slot];
 			textures[slot] = null;
 		}
 
+		setResolution(width, height);
+
 		return tempTexture;
+	}
+
+	public void attachTexture(int slot, Texture2D texture) {
+		if (slot == -1) {
+			if (depthTexture != null) throw new IllegalArgumentException("depthTexture is already set");
+			depthTexture = texture;
+		} else {
+			if (textures[slot] != null) throw new IllegalArgumentException("texture at slot " + slot + " is already set");
+			textures[slot] = texture;
+		}
+
+		setResolution(width, height);
 	}
 
 	@Override
@@ -99,18 +115,25 @@ public class FrameBufferObject implements IRenderTarget {
 
 		for (int i = 0; i < textures.length; i++) {
 			Texture2D texture = textures[i];
-			texture.setWidth(width);
-			texture.setHeight(height);
-			texture.createTexture(null);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, glColorAttachments[i], GL_TEXTURE_2D, texture.getID(), 0);
+
+			if (texture != null) {
+				texture.setWidth(width);
+				texture.setHeight(height);
+				texture.createTexture(null);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, glColorAttachments[i], GL_TEXTURE_2D, texture.getID(), 0);
+			} else {
+				glFramebufferTexture2D(GL_FRAMEBUFFER, glColorAttachments[i], GL_TEXTURE_2D, 0, 0);
+			}
 		}
 
-		if (useDepthTexture) {
+		if (depthTexture != null) {
 			depthTexture.setWidth(width);
 			depthTexture.setHeight(height);
 			depthTexture.createTexture(null);
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture.getID(), 0);
+		} else {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 		}
 
 		setDrawBuffers();
@@ -130,7 +153,7 @@ public class FrameBufferObject implements IRenderTarget {
 	private void setDrawBuffers() {
 		int[] indices = new int[textures.length];
 		for (int i = 0; i < indices.length; i++) {
-			indices[i] = glColorAttachments[i];
+			indices[i] = textures[i] == null ? GL11.GL_NONE : glColorAttachments[i];
 		}
 		IntBuffer indexBuffer = BufferUtils.createIntBuffer(indices.length);
 		indexBuffer.put(indices);
@@ -156,7 +179,7 @@ public class FrameBufferObject implements IRenderTarget {
 	}
 
 	public void cleanup() {
-		if (useDepthTexture) {
+		if (depthTexture != null) {
 			depthTexture.cleanup();
 		}
 
