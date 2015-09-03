@@ -44,6 +44,8 @@ public class FrameBufferObject implements IRenderTarget {
 
 	public FrameBufferObject(int width, int height, boolean useDepthTexture, Texture2D.DataType... textures) {
 		glContext = glfwGetCurrentContext();
+		framebufferID = glGenFramebuffers();
+
 		createTextures(textures);
 		if (useDepthTexture) createDepthTexture();
 
@@ -108,9 +110,6 @@ public class FrameBufferObject implements IRenderTarget {
 
 		glfwMakeContextCurrent(glContext);
 
-		if (initialized) cleanup();
-
-		framebufferID = glGenFramebuffers();
 		glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 
 		for (int i = 0; i < textures.length; i++) {

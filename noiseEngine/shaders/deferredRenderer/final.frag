@@ -5,6 +5,7 @@ uniform sampler2D textureNormal;
 uniform sampler2D texturePosition;
 uniform sampler2D textureLight;
 uniform sampler2D textureLights;
+uniform sampler2D textureEffects;
 uniform samplerCube textureReflection;
 
 uniform vec2 inverseResolution;
@@ -28,6 +29,7 @@ void main(){
 	vec4 lightSample = texture(textureLight, frag_in.uv);
 	vec3 lightsSample = texture(textureLights, frag_in.uv).xyz;
 	vec3 positionSample = texture(texturePosition, frag_in.uv).xyz;
+	vec4 effectsSample = texture(textureEffects, frag_in.uv);
 
 	//sunlight
 	float sunBright = max(-dot(normalSample, sunLightDirection), minAmbientBrightness);
@@ -47,6 +49,9 @@ void main(){
 	//final
 	color.rgb = colorSample * (sunLight + lightsSample) * lightSample.x + specularIntensity * sunLightColor;
 	color = mix(color, skyReflectColor, lightSample.y);
+
+	//effects
+	color = mix(color, effectsSample, effectsSample.a);
 
 	//color.rgb = (sunLight + lightsSample) * lightSample.x + specularIntensity * sunLight;
 	//color.rgb = specularIntensity * sunLightColor;

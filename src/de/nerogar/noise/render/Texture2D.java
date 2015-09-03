@@ -115,13 +115,12 @@ public class Texture2D extends Texture {
 		this.interpolationType = interpolationType;
 		this.dataType = dataType;
 
+		id = glGenTextures();
 		createTexture(colorBuffer);
 	}
 
 	protected void createTexture(ByteBuffer colorBuffer) {
-		if (initialized) cleanup();
-
-		id = glGenTextures();
+		//if (initialized) cleanup();
 
 		bind(0);
 

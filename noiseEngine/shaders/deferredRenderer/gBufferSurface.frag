@@ -35,4 +35,6 @@ void main(){
 	light_out_N = texture(textureLight_N, frag_in_N.uv);
 
 	mainSurface(color_out_N, frag_in_N.uv, position_out_N, normal_out_N.xyz, normal_out_N.w, light_out_N);
+
+	if(color_out_N.a == 0.0) discard;
 }

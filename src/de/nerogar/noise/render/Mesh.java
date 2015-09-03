@@ -74,7 +74,7 @@ public class Mesh {
 		return bitangentArray;
 	}
 
-	public float getboundingRadius() {
+	public float getBoundingRadius() {
 		return boundingRadius;
 	}
 

@@ -23,6 +23,8 @@ void mainSurface(inout vec4 color, in vec2 uv, inout vec4 position, inout vec3 n
 void main(){
 	color_out_N = texture(textureColor_N, frag_in_N.uv);
 
+	if(color_out_N.a == 0.0) discard;
+
 	vec3 normalSample = texture(textureNormal_N, frag_in_N.uv).xyz;
 	mat3 worldSpaceMat = mat3(frag_in_N.tangent, frag_in_N.bitangent, frag_in_N.normal);
 	normalSample = normalSample * 2.0 - 1.0;

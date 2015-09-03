@@ -48,11 +48,13 @@ public class DeferredRenderer {
 			Vector3f point = new Vector3f();
 
 			for (int i = 0; i < renderables.size(); i++) {
+				if (!renderables.get(i).getRenderProperties().isVisible()) continue;
+
 				point.setX(renderables.get(i).getRenderProperties().getX());
 				point.setY(renderables.get(i).getRenderProperties().getY());
 				point.setZ(renderables.get(i).getRenderProperties().getZ());
 
-				if (frustum.getPointDistance(point) < renderables.get(i).getContainer().getMesh().getboundingRadius() * renderables.get(i).getRenderProperties().getMaxScaleComponent()) {
+				if (frustum.getPointDistance(point) < renderables.get(i).getContainer().getMesh().getBoundingRadius() * renderables.get(i).getRenderProperties().getMaxScaleComponent()) {
 					instanceModelMatrices.add(renderables.get(i).getRenderProperties().getModelMatrix());
 					instanceNormalMatrices.add(renderables.get(i).getRenderProperties().getNormalMatrix());
 				}
@@ -126,6 +128,10 @@ public class DeferredRenderer {
 	private Shader lightShader;
 	private FrameBufferObject lightFrameBuffer;
 
+	//effects
+	private EffectContainer effectContainer;
+	private FrameBufferObject effectFrameBuffer;
+
 	//final pass
 	private Shader finalShader;
 	private FrameBufferObject finalFrameBuffer;
@@ -137,17 +143,22 @@ public class DeferredRenderer {
 	//settings
 	private TextureCubeMap reflectionTexture;
 	private Color sunLightColor;
+	private Vector3f sunLightDirectionInternal;
 	private Vector3f sunLightDirection;
+	private float sunLightBrightness;
 	private float minAmbientBrightness;
 
 	public DeferredRenderer(int width, int height) {
 
 		sunLightColor = new Color(1.0f, 1.0f, 0.9f, 0.0f);
-		sunLightDirection = new Vector3f(-1.0f).setValue(1.5f);
+		sunLightDirectionInternal = new Vector3f(-1.0f);
+		sunLightBrightness = 1.5f;
+		recalcSunLight();
 		minAmbientBrightness = 0.3f;
 
 		vboMap = new HashMap<DeferredContainer, VboContainer>();
 		lightContainer = new LightContainer();
+		effectContainer = new EffectContainer();
 		Mesh sphere = WavefrontLoader.loadObject(Noise.RESSOURCE_DIR + "meshes/icoSphere.obj");
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
@@ -159,6 +170,9 @@ public class DeferredRenderer {
 		);
 
 		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
+
+		effectFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+		effectFrameBuffer.attachTexture(-1, gBuffer.getTextureAttachment(-1));
 
 		finalFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
 
@@ -189,6 +203,12 @@ public class DeferredRenderer {
 		vboMap.put(object.getContainer(), container);
 	}
 
+	public void addAllObjects(Collection<DeferredRenderable> objects) {
+		for (DeferredRenderable object : objects) {
+			addObject(object);
+		}
+	}
+
 	public void removeObject(DeferredRenderable object) {
 		VboContainer container = vboMap.get(object.getContainer());
 		container.renderables.remove(object);
@@ -196,6 +216,12 @@ public class DeferredRenderer {
 		if (container.renderables.size() == 0) {
 			container.vbo.cleanup();
 			vboMap.remove(object.getContainer());
+		}
+	}
+
+	public void removeAllObjects(Collection<DeferredRenderable> objects) {
+		for (DeferredRenderable object : objects) {
+			removeObject(object);
 		}
 	}
 
@@ -211,34 +237,38 @@ public class DeferredRenderer {
 		return lightContainer;
 	}
 
+	public EffectContainer getEffectContainer() {
+		return effectContainer;
+	}
+
 	private static final int[] lightInstanceComponents = new int[] { 3, 3, 1, 1 };
 
-	private void rebuildLightVbo() {
-		Set<Light> lights = lightContainer.getLights();
-
-		float[] position = new float[lights.size() * 3];
-		float[] color = new float[lights.size() * 3];
-		float[] reach = new float[lights.size()];
-		float[] intensity = new float[lights.size()];
+	private void rebuildLightVbo(PerspectiveCamera camera) {
+		float[] position = new float[lightContainer.size() * 3];
+		float[] color = new float[lightContainer.size() * 3];
+		float[] reach = new float[lightContainer.size()];
+		float[] intensity = new float[lightContainer.size()];
 
 		int i = 0;
-		for (Light light : lights) {
-			position[i * 3 + 0] = light.position.getX();
-			position[i * 3 + 1] = light.position.getY();
-			position[i * 3 + 2] = light.position.getZ();
+		for (Light light : lightContainer) {
+			if (camera.getViewFrustum().getPointDistance(light.position) < light.reach) {
+				position[i * 3 + 0] = light.position.getX();
+				position[i * 3 + 1] = light.position.getY();
+				position[i * 3 + 2] = light.position.getZ();
 
-			color[i * 3 + 0] = light.color.getR();
-			color[i * 3 + 1] = light.color.getG();
-			color[i * 3 + 2] = light.color.getB();
+				color[i * 3 + 0] = light.color.getR();
+				color[i * 3 + 1] = light.color.getG();
+				color[i * 3 + 2] = light.color.getB();
 
-			reach[i] = light.reach;
+				reach[i] = light.reach;
 
-			intensity[i] = light.intensity;
+				intensity[i] = light.intensity;
 
-			i++;
+				i++;
+			}
 		}
 
-		lightVbo.setInstanceData(lights.size(), lightInstanceComponents, position, color, reach, intensity);
+		lightVbo.setInstanceData(i, lightInstanceComponents, position, color, reach, intensity);
 	}
 
 	//TODO: remove
@@ -263,7 +293,8 @@ public class DeferredRenderer {
 		finalShader.setUniform1i("texturePosition", 2);
 		finalShader.setUniform1i("textureLight", 3);
 		finalShader.setUniform1i("textureLights", 4);
-		finalShader.setUniform1i("textureReflection", 5);
+		finalShader.setUniform1i("textureEffects", 5);
+		finalShader.setUniform1i("textureReflection", 6);
 		finalShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
 		finalShader.deactivate();
 
@@ -277,6 +308,7 @@ public class DeferredRenderer {
 	public void setFrameBufferResolution(int width, int height) {
 		gBuffer.setResolution(width, height);
 		lightFrameBuffer.setResolution(width, height);
+		effectFrameBuffer.setResolution(width, height);
 		finalFrameBuffer.setResolution(width, height);
 		filterFrameBuffer.setResolution(width, height);
 
@@ -302,31 +334,44 @@ public class DeferredRenderer {
 	}
 
 	public void setSunLightDirection(Vector3f sunLightDirection) {
-		this.sunLightDirection = sunLightDirection;
+		this.sunLightDirectionInternal = sunLightDirection;
+		recalcSunLight();
+	}
+
+	public void setSunLightBrightness(float sunLightBrightness) {
+		this.sunLightBrightness = sunLightBrightness;
+		recalcSunLight();
 	}
 
 	public void setMinAmbientBrightness(float minAmbientBrightness) {
 		this.minAmbientBrightness = minAmbientBrightness;
 	}
 
+	private void recalcSunLight() {
+		sunLightDirection = sunLightDirectionInternal.clone();
+		sunLightDirection.setValue(sunLightBrightness);
+	}
+
 	public void render(PerspectiveCamera camera) {
+		long time1 = System.nanoTime();
 
 		//render gBuffer
+		gBuffer.bind();
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		gBuffer.bind();
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		gBufferShader.activate();
+		gBufferShader.setUniformMat4f("viewMatrix_N", camera.getViewMatrix().asBuffer());
+		gBufferShader.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
+		gBufferShader.deactivate();
 
-		//gBufferShader.activate();
-		//gBufferShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
-		//gBufferShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
-
-		Shader currentShader = gBufferShader;
+		Shader currentShader;
 
 		for (VboContainer container : vboMap.values()) {
 			container.rebuildInstanceData(camera.getViewFrustum());
@@ -338,8 +383,10 @@ public class DeferredRenderer {
 			}
 			currentShader.activate();
 
-			currentShader.setUniformMat4f("viewMatrix_N", camera.getViewMatrix().asBuffer());
-			currentShader.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
+			if (currentShader != gBufferShader) {
+				currentShader.setUniformMat4f("viewMatrix_N", camera.getViewMatrix().asBuffer());
+				currentShader.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
+			}
 
 			container.container.bindTextures();
 
@@ -348,7 +395,6 @@ public class DeferredRenderer {
 			currentShader.deactivate();
 		}
 
-		currentShader.deactivate();
 		glDisable(GL_DEPTH_TEST);
 
 		//bind gBuffer textures
@@ -358,16 +404,16 @@ public class DeferredRenderer {
 		gBuffer.getTextureAttachment(3).bind(3);
 
 		//render lights
-		rebuildLightVbo();
+		lightFrameBuffer.bind();
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		rebuildLightVbo(camera);
 
 		glCullFace(GL_FRONT);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE);
-
-		lightFrameBuffer.bind();
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		lightShader.activate();
 		lightShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
@@ -377,13 +423,43 @@ public class DeferredRenderer {
 		lightShader.deactivate();
 
 		glDisable(GL_CULL_FACE);
-		glDisable(GL_BLEND);
 
 		lightFrameBuffer.getTextureAttachment(0).bind(4);
-		if (reflectionTexture != null) reflectionTexture.bind(5);
+		if (reflectionTexture != null) reflectionTexture.bind(6);
+
+		//render effects
+		effectFrameBuffer.bind();
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glBlendFunc(GL_ONE, GL_ONE);
+
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glDepthMask(false);
+
+		Vector3f point = new Vector3f();
+		for (Effect effect : effectContainer) {
+			if (!effect.getRenderProperties().isVisible()) continue;
+
+			point.setX(effect.getRenderProperties().getX());
+			point.setY(effect.getRenderProperties().getY());
+			point.setZ(effect.getRenderProperties().getZ());
+
+			if (camera.getViewFrustum().getPointDistance(point) < effect.getBoundingRadius() * effect.getRenderProperties().getMaxScaleComponent()) {
+				effect.render(camera.getViewMatrix(), camera.getProjectionMatrix());
+			}
+		}
+
+		glDepthMask(true);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+
+		effectFrameBuffer.getTextureAttachment(0).bind(5);
 
 		//final pass
 		finalFrameBuffer.bind();
+
 		finalShader.activate();
 		finalShader.setUniform3f("cameraPosition", camera.getX(), camera.getY(), camera.getZ());
 		finalShader.setUniform3f("sunLightColor", sunLightColor.getR(), sunLightColor.getG(), sunLightColor.getB());
@@ -398,6 +474,9 @@ public class DeferredRenderer {
 		filterShader.activate();
 		fullscreenQuad.render();
 		filterShader.deactivate();
+
+		long time2 = System.nanoTime();
+		System.out.println("deferred: " + ((double) (time2 - time1) / 1000000.0));
 	}
 
 	public Texture2D getColorOutput() {
@@ -426,6 +505,10 @@ public class DeferredRenderer {
 
 	public Texture2D getLightsBuffer() {
 		return lightFrameBuffer.getTextureAttachment(0);
+	}
+
+	public Texture2D getEffectsBuffer() {
+		return effectFrameBuffer.getTextureAttachment(0);
 	}
 
 	public void cleanup() {
