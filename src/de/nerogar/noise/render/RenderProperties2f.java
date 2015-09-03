@@ -7,6 +7,7 @@ public class RenderProperties2f implements RenderProperties {
 	private float roll;
 	private float x, y;
 	private float scaleX, scaleY;
+	private boolean isVisible;
 
 	private Matrix4f positionMatrix;
 	private Matrix4f scaleMatrix;
@@ -31,6 +32,8 @@ public class RenderProperties2f implements RenderProperties {
 
 		scaleX = 1.0f;
 		scaleY = 1.0f;
+
+		isVisible = true;
 
 		setPositionMatrix();
 		setScaleMatrix();
@@ -138,6 +141,16 @@ public class RenderProperties2f implements RenderProperties {
 		this.x = v.getX();
 		this.y = v.getY();
 		setPositionMatrix();
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		isVisible = visible;
+	}
+	
+	@Override
+	public boolean isVisible() {
+		return isVisible;
 	}
 
 }

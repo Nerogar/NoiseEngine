@@ -7,6 +7,7 @@ public class RenderProperties3f implements RenderProperties {
 	private float yaw, pitch, roll;
 	private float x, y, z;
 	private float scaleX, scaleY, scaleZ, maxScaleComponent;
+	private boolean isVisible;
 
 	private boolean positionMatrixDirty = true;
 	private Matrix4f positionMatrix;
@@ -51,6 +52,8 @@ public class RenderProperties3f implements RenderProperties {
 		scaleY = 1.0f;
 		scaleZ = 1.0f;
 		maxScaleComponent = 1.0f;
+
+		isVisible = true;
 
 		setPositionMatrix();
 		setScaleMatrix();
@@ -276,6 +279,16 @@ public class RenderProperties3f implements RenderProperties {
 
 	public float getMaxScaleComponent() {
 		return maxScaleComponent;
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		isVisible = visible;
+	}
+
+	@Override
+	public boolean isVisible() {
+		return isVisible;
 	}
 
 }

@@ -6,4 +6,7 @@ public interface RenderProperties {
 
 	public Matrix4f getModelMatrix();
 
+	public boolean isVisible();
+	
+	public void setVisible(boolean visible);
 }
