@@ -353,8 +353,6 @@ public class DeferredRenderer {
 	}
 
 	public void render(PerspectiveCamera camera) {
-		long time1 = System.nanoTime();
-
 		//render gBuffer
 		gBuffer.bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -474,9 +472,6 @@ public class DeferredRenderer {
 		filterShader.activate();
 		fullscreenQuad.render();
 		filterShader.deactivate();
-
-		long time2 = System.nanoTime();
-		System.out.println("deferred: " + ((double) (time2 - time1) / 1000000.0));
 	}
 
 	public Texture2D getColorOutput() {
