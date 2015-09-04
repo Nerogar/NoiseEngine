@@ -8,6 +8,8 @@ import static org.lwjgl.opengl.GL30.*;
 
 import java.nio.ByteBuffer;
 
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.debug.RessourceProfiler;
 import de.nerogar.noise.util.Logger;
 
 public class Texture2D extends Texture {
@@ -117,11 +119,11 @@ public class Texture2D extends Texture {
 
 		id = glGenTextures();
 		createTexture(colorBuffer);
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_COUNT);
 	}
 
 	protected void createTexture(ByteBuffer colorBuffer) {
-		//if (initialized) cleanup();
-
 		bind(0);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolationType.openglConstantMin);
@@ -130,6 +132,9 @@ public class Texture2D extends Texture {
 		glTexImage2D(GL_TEXTURE_2D, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer);
 
 		initialized = true;
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_UPLOAD_COUNT);
+		if (colorBuffer != null) Noise.getRessourceProfiler().addValue(RessourceProfiler.TEXTURE_UPLOAD_SIZE, colorBuffer.remaining());
 	}
 
 	public int getID() {
@@ -160,7 +165,8 @@ public class Texture2D extends Texture {
 	public void bind(int slot) {
 		glActiveTexture(texturePositions[slot]);
 		glBindTexture(GL_TEXTURE_2D, id);
-		//glActiveTexture(texturePositions[0]);
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_BINDS);
 	}
 
 	@Override
@@ -168,6 +174,8 @@ public class Texture2D extends Texture {
 		glDeleteTextures(id);
 		Texture2DLoader.unloadTexture(name);
 		initialized = false;
+
+		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.TEXTURE_COUNT);
 	}
 
 	@Override

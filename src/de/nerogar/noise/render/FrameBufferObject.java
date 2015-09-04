@@ -12,6 +12,8 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.debug.RessourceProfiler;
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
 import de.nerogar.noise.util.Logger;
@@ -50,6 +52,8 @@ public class FrameBufferObject implements IRenderTarget {
 		if (useDepthTexture) createDepthTexture();
 
 		setResolution(width, height);
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.FRAMEBUFFER_COUNT);
 	}
 
 	private void createTextures(Texture2D.DataType[] textures) {
@@ -167,6 +171,8 @@ public class FrameBufferObject implements IRenderTarget {
 		glfwMakeContextCurrent(glContext);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 		glViewport(0, 0, width, height);
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.FRAMEBUFFER_BINDS);
 	}
 
 	public static void bindDefault() {
@@ -188,6 +194,8 @@ public class FrameBufferObject implements IRenderTarget {
 
 		glDeleteFramebuffers(framebufferID);
 		initialized = false;
+
+		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.FRAMEBUFFER_COUNT);
 	}
 
 	@Override

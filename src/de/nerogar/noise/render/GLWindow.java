@@ -12,6 +12,7 @@ import java.util.List;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GLContext;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.Logger;
 
 public class GLWindow implements IRenderTarget {
@@ -250,6 +251,8 @@ public class GLWindow implements IRenderTarget {
 		}
 
 		glfwPollEvents();
+		Noise.getRessourceProfiler().reset();
+		Noise.getDebugWindow().update();
 	}
 
 	public void makeContextCurrent() {

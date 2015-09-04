@@ -4,8 +4,10 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL13.*;
 
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.debug.RessourceProfiler;
 import de.nerogar.noise.util.Logger;
 
 public class TextureCubeMap extends Texture {
@@ -18,24 +20,21 @@ public class TextureCubeMap extends Texture {
 
 	private boolean initialized;
 
-	protected TextureCubeMap(String name, int width, int height, IntBuffer[] colorBuffer) {
+	protected TextureCubeMap(String name, int width, int height, ByteBuffer[] colorBuffer) {
 		this.name = name;
 		this.width = width;
 		this.height = height;
 
 		createTexture(colorBuffer);
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_COUNT);
 	}
 
 	protected void setFilenames(String[] filenames) {
 		this.filenames = filenames;
 	}
 
-	protected void createTexture(IntBuffer[] colorBuffer) {
-		if (initialized) cleanup();
-
-		id = glGenTextures();
-		//glActiveTexture(GL_TEXTURE0);
-
+	protected void createTexture(ByteBuffer[] colorBuffer) {
 		bind(0);
 
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, colorBuffer[0]);
@@ -54,6 +53,11 @@ public class TextureCubeMap extends Texture {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 		initialized = true;
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_UPLOAD_COUNT);
+		for (ByteBuffer buff : colorBuffer) {
+			if (buff != null) Noise.getRessourceProfiler().addValue(RessourceProfiler.TEXTURE_UPLOAD_SIZE, buff.remaining());
+		}
 	}
 
 	public int getID() {
@@ -88,7 +92,8 @@ public class TextureCubeMap extends Texture {
 	public void bind(int slot) {
 		glActiveTexture(texturePositions[slot]);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, id);
-		//glActiveTexture(texturePositions[0]);
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_BINDS);
 	}
 
 	@Override
@@ -96,6 +101,8 @@ public class TextureCubeMap extends Texture {
 		glDeleteTextures(id);
 		Texture2DLoader.unloadTexture(filenames[0]);
 		initialized = false;
+
+		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.TEXTURE_COUNT);
 	}
 
 	@Override

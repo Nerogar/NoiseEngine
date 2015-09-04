@@ -6,6 +6,9 @@ import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALContext;
 
+import de.nerogar.noise.debug.DebugWindow;
+import de.nerogar.noise.debug.RessourceProfiler;
+
 public class Noise {
 
 	/**
@@ -14,14 +17,26 @@ public class Noise {
 	 */
 	public static final String RESSOURCE_DIR = System.getProperty("noise.ressourceDir", "noiseEngine/");
 
+	/**
+	 * true if the engine is in debug state.<br>
+	 * set the system property "noise.debug" to true/false to change the state
+	 */
+	public static final boolean DEBUG = Boolean.getBoolean("noise.debug");
+
 	private static boolean initialized = false;
 
 	private static ALContext alContext;
+
+	private static DebugWindow debugWindow;
+	private static RessourceProfiler ressourceProfiler;
 
 	public static void init() {
 		if (!initialized) {
 			glfwInit();
 			glfwSetErrorCallback(errorCallbackPrint(System.err));
+
+			ressourceProfiler = new RessourceProfiler();
+			debugWindow = new DebugWindow(ressourceProfiler);
 
 			//sleeping thread for timer precision on windows
 			Thread sleepThread = new Thread("sleeping thread") {
@@ -44,6 +59,14 @@ public class Noise {
 		}
 
 		initialized = true;
+	}
+
+	public static DebugWindow getDebugWindow() {
+		return debugWindow;
+	}
+
+	public static RessourceProfiler getRessourceProfiler() {
+		return ressourceProfiler;
 	}
 
 	public static void cleanup() {

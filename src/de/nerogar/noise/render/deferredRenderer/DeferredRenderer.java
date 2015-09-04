@@ -40,7 +40,7 @@ public class DeferredRenderer {
 					container.getMesh().getBitangentArray());
 		}
 
-		public void rebuildInstanceData(ViewFrustum frustum) {
+		public int rebuildInstanceData(ViewFrustum frustum) {
 
 			instanceModelMatrices.clear();
 			instanceNormalMatrices.clear();
@@ -112,6 +112,8 @@ public class DeferredRenderer {
 			vbo.setInstanceData(instanceModelMatrices.size(), instanceComponentCounts,
 					modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
 					normalMatrix1, normalMatrix2, normalMatrix3);
+
+			return instanceModelMatrices.size();
 		}
 	}
 
@@ -243,7 +245,7 @@ public class DeferredRenderer {
 
 	private static final int[] lightInstanceComponents = new int[] { 3, 3, 1, 1 };
 
-	private void rebuildLightVbo(PerspectiveCamera camera) {
+	private int rebuildLightVbo(PerspectiveCamera camera) {
 		float[] position = new float[lightContainer.size() * 3];
 		float[] color = new float[lightContainer.size() * 3];
 		float[] reach = new float[lightContainer.size()];
@@ -269,6 +271,8 @@ public class DeferredRenderer {
 		}
 
 		lightVbo.setInstanceData(i, lightInstanceComponents, position, color, reach, intensity);
+
+		return i;
 	}
 
 	//TODO: remove
@@ -372,7 +376,8 @@ public class DeferredRenderer {
 		Shader currentShader;
 
 		for (VboContainer container : vboMap.values()) {
-			container.rebuildInstanceData(camera.getViewFrustum());
+			int instanceCount = container.rebuildInstanceData(camera.getViewFrustum());
+			if (instanceCount == 0) continue;
 
 			if (container.container.getSurfaceShader() == null) {
 				currentShader = gBufferShader;
@@ -406,19 +411,23 @@ public class DeferredRenderer {
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		rebuildLightVbo(camera);
-
-		glCullFace(GL_FRONT);
-
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE);
 
-		lightShader.activate();
-		lightShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
-		lightShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
+		int lightCount = rebuildLightVbo(camera);
 
-		lightVbo.render();
-		lightShader.deactivate();
+		if (lightCount > 0) {
+			glCullFace(GL_FRONT);
+
+			glBlendFunc(GL_ONE, GL_ONE);
+
+			lightShader.activate();
+			lightShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
+			lightShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
+
+			lightVbo.render();
+			lightShader.deactivate();
+
+		}
 
 		glDisable(GL_CULL_FACE);
 

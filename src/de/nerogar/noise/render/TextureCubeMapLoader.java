@@ -3,7 +3,7 @@ package de.nerogar.noise.render;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -35,13 +35,13 @@ public class TextureCubeMapLoader {
 		if (retTexture != null) return retTexture;
 
 		BufferedImage[] image = new BufferedImage[6];
-		IntBuffer[] buffer = new IntBuffer[6];
+		ByteBuffer[] buffer = new ByteBuffer[6];
 
 		for (int i = 0; i < 6; i++) {
 			try {
 
 				image[i] = ImageIO.read(new File(filename[i]));
-				buffer[i] = BufferUtils.createIntBuffer(image[i].getWidth() * image[i].getHeight());
+				buffer[i] = BufferUtils.createByteBuffer(image[i].getWidth() * image[i].getHeight() * Integer.BYTES);
 
 				int[] pixels = image[i].getRGB(0, 0, image[i].getWidth(), image[i].getHeight(), null, 0, image[i].getWidth());
 
@@ -54,7 +54,7 @@ public class TextureCubeMapLoader {
 					}
 				}
 
-				buffer[i].put(pixels);
+				buffer[i].asIntBuffer().put(pixels);
 				buffer[i].rewind();
 			} catch (IOException e) {
 				e.printStackTrace();

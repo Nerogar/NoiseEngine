@@ -15,6 +15,8 @@ import java.util.HashMap;
 
 import org.lwjgl.BufferUtils;
 
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.debug.RessourceProfiler;
 import de.nerogar.noise.util.Logger;
 
 public class VertexBufferObjectInstanced extends VertexBufferObject {
@@ -91,15 +93,17 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			}
 		}
 
-		FloatBuffer buffer = BufferUtils.createFloatBuffer(attribArray.length);
-		buffer.put(attribArray);
+		FloatBuffer buffer = BufferUtils.createFloatBuffer(totalComponents * vertexCount);
+		buffer.put(attribArray, 0, totalComponents * vertexCount);
 		buffer.flip();
 
-		IntBuffer indexBuffer = BufferUtils.createIntBuffer(indexArary.length);
-		indexBuffer.put(indexArary);
+		IntBuffer indexBuffer = BufferUtils.createIntBuffer(indexCount);
+		indexBuffer.put(indexArary, 0, indexCount);
 		indexBuffer.flip();
 
 		initVAO(buffer, indexBuffer, null);
+
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_COUNT);
 	}
 
 	private int initVAO(FloatBuffer vboBuffer, IntBuffer indexBuffer, ByteBuffer instanceBuffer) {
@@ -139,7 +143,9 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		//instance data
 		if (instanceBufferHandle == 0) instanceBufferHandle = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, instanceBufferHandle);
-		if (instanceBuffer != null) glBufferData(GL_ARRAY_BUFFER, instanceCount * totalComponentsInstance * Float.BYTES, instanceBuffer, GL_STATIC_DRAW);
+		if (instanceBuffer != null) {
+			glBufferData(GL_ARRAY_BUFFER, instanceCount * totalComponentsInstance * Float.BYTES, instanceBuffer, GL_STATIC_DRAW);
+		}
 
 		if (componentCountsInstance != null) {
 			for (int i = 0; i < componentCountsInstance.length; i++) {
@@ -153,8 +159,21 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 
 		glBindVertexArray(0);
 		glContextInstanceDataDirty.put(currentContext, false);
-		return vaoHandle;
 
+		if (vboBuffer != null) {
+			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, vboBuffer.remaining() * Float.BYTES);
+		}
+		if (indexBuffer != null) {
+			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, indexBuffer.remaining() * Integer.BYTES);
+		}
+		if (instanceBuffer != null) {
+			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, instanceBuffer.remaining() * Float.BYTES);
+		}
+
+		return vaoHandle;
 	}
 
 	/**
@@ -182,12 +201,6 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			totalComponentsInstance += componentCountsInstance[i];
 		}
 
-		if (attributesInstance.length > 0) {
-			instanceCount = attributesInstance[0].length / componentCountsInstance[0];
-		} else {
-			instanceCount = 0;
-		}
-
 		if (attribArrayInstance == null || attribArrayInstance.length < totalComponentsInstance * instanceCount) {
 			attribArrayInstance = new float[totalComponentsInstance * instanceCount];
 			instanceBuffer = BufferUtils.createByteBuffer(attribArrayInstance.length * Float.BYTES);
@@ -205,7 +218,8 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		}
 
 		instanceBuffer.clear();
-		instanceBuffer.asFloatBuffer().put(attribArrayInstance);
+		instanceBuffer.asFloatBuffer().put(attribArrayInstance, 0, instanceCount * totalComponentsInstance);
+		instanceBuffer.limit(instanceCount * totalComponentsInstance * Float.BYTES);
 
 		for (Long l : glContextInstanceDataDirty.keySet()) {
 			glContextInstanceDataDirty.put(l, true);
@@ -230,6 +244,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		glDrawElementsInstanced(renderType, indexCount, GL_UNSIGNED_INT, 0, instanceCount);
 		glBindVertexArray(0);
 
+		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_CALLS);
 	}
 
 	@Override
@@ -248,6 +263,8 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		glfwMakeContextCurrent(currentContext);
 
 		deleted = true;
+
+		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.VBO_COUNT);
 	}
 
 	@Override
