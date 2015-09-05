@@ -24,24 +24,24 @@ public class RessourceProfiler extends Profiler {
 	public RessourceProfiler() {
 		super("ressource", 256);
 
-		registerName(TEXTURE_COUNT, "texture count");
-		registerName(TEXTURE_BINDS, "texture binds");
-		registerName(TEXTURE_UPLOAD_COUNT, "texture upload count");
-		registerName(TEXTURE_UPLOAD_SIZE, "texture upload size");
+		registerName(TEXTURE_COUNT, 100, "texture count");
+		registerName(TEXTURE_BINDS, 200, "texture binds");
+		registerName(TEXTURE_UPLOAD_COUNT, 10, "texture upload count");
+		registerName(TEXTURE_UPLOAD_SIZE, 20000000, "texture upload size");
 
-		registerName(VBO_COUNT, "vbo count");
-		registerName(VBO_CALLS, "vbo calls");
-		registerName(VBO_UPLOAD_COUNT, "vbo upload count");
-		registerName(VBO_UPLOAD_SIZE, "vbo upload size");
+		registerName(VBO_COUNT, 100, "vbo count");
+		registerName(VBO_CALLS, 80, "vbo calls");
+		registerName(VBO_UPLOAD_COUNT, 10, "vbo upload count");
+		registerName(VBO_UPLOAD_SIZE, 1000000, "vbo upload size");
 
 		//registerName(SOUND_COUNT, "sound count");
 
-		registerName(FRAMEBUFFER_COUNT, "framebuffer count");
-		registerName(FRAMEBUFFER_BINDS, "framebuffer binds");
+		registerName(FRAMEBUFFER_COUNT, 20, "framebuffer count");
+		registerName(FRAMEBUFFER_BINDS, 10, "framebuffer binds");
 
-		registerName(SHADER_COUNT, "shader count");
-		registerName(SHADER_BINDS, "shader binds");
-		registerName(SHADER_COMPILE_COUNT, "shader compile count");
+		registerName(SHADER_COUNT, 30, "shader count");
+		registerName(SHADER_BINDS, 50, "shader binds");
+		registerName(SHADER_COMPILE_COUNT, 10, "shader compile count");
 	}
 
 	@Override

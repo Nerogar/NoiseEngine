@@ -188,10 +188,6 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		this.componentCountsInstance = componentCountsInstance;
 		this.instanceCount = instanceCount;
 
-		Integer vaoHandle = glContextVaoHandles.get(glfwGetCurrentContext());
-
-		glBindVertexArray(vaoHandle);
-
 		//create instance buffer
 		incrementalComponentCountsInstance = new int[componentCountsInstance.length];
 		totalComponentsInstance = 0;

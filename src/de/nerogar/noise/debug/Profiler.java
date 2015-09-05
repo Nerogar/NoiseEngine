@@ -11,6 +11,7 @@ public class Profiler {
 	private int currentIndex;
 
 	private ArrayList<Integer> values;
+	private ArrayList<Integer> minMaxHistory;
 	private ArrayList<String> names;
 
 	private boolean running;
@@ -28,18 +29,21 @@ public class Profiler {
 		}
 
 		values = new ArrayList<Integer>();
+		minMaxHistory = new ArrayList<Integer>();
 		names = new ArrayList<String>();
 	}
 
-	protected void registerName(int id, String name) {
+	protected void registerName(int id, int maxValue, String name) {
 
 		//ensure size
 		while (names.size() < id + 1) {
 			values.add(0);
+			minMaxHistory.add(0);
 			names.add("");
 		}
 
 		names.set(id, name);
+		minMaxHistory.set(id, maxValue);
 	}
 
 	public void setValue(int id, int value) {
@@ -62,6 +66,10 @@ public class Profiler {
 		return names.size();
 	}
 
+	public int getHistoryLength() {
+		return history.size();
+	}
+
 	public String getName(int id) {
 		return names.get(id);
 	}
@@ -74,10 +82,30 @@ public class Profiler {
 		ArrayList<Integer> valueHistory = new ArrayList<Integer>();
 
 		for (int i = 0; i < history.size(); i++) {
-			valueHistory.add(history.get((i + currentIndex + 1) % history.size()).get(id));
+			List<Integer> timeSample = history.get((i + currentIndex + 1) % history.size());
+			if (timeSample.isEmpty()) {
+				valueHistory.add(0);
+			} else {
+				valueHistory.add(timeSample.get(id));
+			}
+
 		}
 
 		return valueHistory;
+	}
+
+	public int getMaxHistory(int id) {
+		int max = minMaxHistory.get(id);
+
+		for (int i = 0; i < history.size(); i++) {
+			List<Integer> timeSample = history.get((i + currentIndex + 1) % history.size());
+			if (!timeSample.isEmpty()) {
+				max = Math.max(max, timeSample.get(id));
+			}
+
+		}
+
+		return max;
 	}
 
 	public void setRunning(boolean running) {

@@ -192,6 +192,10 @@ public class GLWindow implements IRenderTarget {
 		return glfwWindowShouldClose(windowPointer) == GL_TRUE;
 	}
 
+	public boolean isClosed() {
+		return deleted;
+	}
+
 	public void setTitle(String title) {
 		this.title = title;
 		glfwSetWindowTitle(windowPointer, title);
@@ -269,6 +273,8 @@ public class GLWindow implements IRenderTarget {
 	public void cleanup() {
 		glfwDestroyWindow(windowPointer);
 		windows.remove(this);
+
+		deleted = true;
 	}
 
 	@Override
