@@ -1,8 +1,7 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
@@ -107,7 +106,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	}
 
 	private int initVAO(FloatBuffer vboBuffer, IntBuffer indexBuffer, ByteBuffer instanceBuffer) {
-		long currentContext = glfwGetCurrentContext();
+		long currentContext = GLWindow.getCurrentContext();
 		Integer oldVaoHandle = glContextVaoHandles.get(currentContext);
 		if (oldVaoHandle != null) glDeleteVertexArrays(oldVaoHandle);
 
@@ -228,7 +227,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 
 	@Override
 	public void render() {
-		long currentContext = glfwGetCurrentContext();
+		long currentContext = GLWindow.getCurrentContext();
 		Integer vaoHandle = glContextVaoHandles.get(currentContext);
 		Boolean instanceDataDirty = glContextInstanceDataDirty.get(currentContext);
 
@@ -245,18 +244,18 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 
 	@Override
 	public void cleanup() {
-		long currentContext = glfwGetCurrentContext();
+		long currentContext = GLWindow.getCurrentContext();
 		glDeleteBuffers(vboHandle);
 		glDeleteBuffers(indexBufferHandle);
 		glDeleteBuffers(instanceBufferHandle);
 
-		for (long context : glContextVaoHandles.keySet()) {
-			glfwMakeContextCurrent(context);
+		for (long glContext : glContextVaoHandles.keySet()) {
+			GLWindow.makeContextCurrent(glContext);
 
-			glDeleteVertexArrays(glContextVaoHandles.get(context));
+			glDeleteVertexArrays(glContextVaoHandles.get(glContext));
 		}
 
-		glfwMakeContextCurrent(currentContext);
+		GLWindow.makeContextCurrent(currentContext);
 
 		deleted = true;
 

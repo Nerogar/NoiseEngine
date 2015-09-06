@@ -18,6 +18,8 @@ import de.nerogar.noise.util.Logger;
 public class GLWindow implements IRenderTarget {
 
 	private static List<GLWindow> windows;
+	private static GLWindow currentWindow;
+	private static long currentGlContext;
 
 	private long windowPointer;
 
@@ -74,7 +76,7 @@ public class GLWindow implements IRenderTarget {
 		glfwSetInputMode(windowPointer, GLFW_STICKY_KEYS, GL_TRUE);
 		inputHandler = new InputHandler(this, windowPointer);
 
-		glfwMakeContextCurrent(windowPointer);
+		GLWindow.makeContextCurrent(windowPointer);
 		glContext = GLContext.createFromCurrent();
 
 		setSwapInterval(swapInterval > 0 ? swapInterval : 0);
@@ -92,10 +94,10 @@ public class GLWindow implements IRenderTarget {
 		frameBufferCallback = new GLFWFramebufferSizeCallback() {
 			@Override
 			public void invoke(long window, int newWidth, int newHeight) {
-				long currentContext = glfwGetCurrentContext();
-				glfwMakeContextCurrent(windowPointer);
+				long currentContext = GLWindow.getCurrentContext();
+				GLWindow.makeContextCurrent(windowPointer);
 				glViewport(0, 0, newWidth, newHeight);
-				glfwMakeContextCurrent(currentContext);
+				GLWindow.makeContextCurrent(currentContext);
 
 				windowWidth = newWidth;
 				windowHeight = newHeight;
@@ -156,6 +158,7 @@ public class GLWindow implements IRenderTarget {
 		glfwSetMouseButtonCallback(windowPointer, mouseButtonCallback);
 		glfwSetScrollCallback(windowPointer, scrollCallback);
 
+		bind();
 	}
 
 	@Override
@@ -241,6 +244,54 @@ public class GLWindow implements IRenderTarget {
 		}
 	}
 
+	public void makeContextCurrent() {
+		makeContextCurrent(windowPointer);
+	}
+
+	@Override
+	public void bind() {
+		GLWindow.makeContextCurrent(windowPointer);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, windowWidth, windowHeight);
+
+		currentWindow = this;
+	}
+
+	public void cleanup() {
+		glfwDestroyWindow(windowPointer);
+		windows.remove(this);
+
+		deleted = true;
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		if (!deleted) Logger.log(Logger.WARNING, "Window not cleaned up: " + title + ", @" + Long.toHexString(windowPointer));
+	}
+
+	public static GLWindow getCurrentWindow() {
+		return currentWindow;
+	}
+
+	public static long getCurrentContext() {
+		assert currentGlContext == glfwGetCurrentContext();
+
+		return currentGlContext;
+	}
+
+	public static void makeContextCurrent(long glContext) {
+		glfwMakeContextCurrent(glContext);
+		currentGlContext = glContext;
+	}
+
+	public static GLWindow getWindow(long glContext) {
+		for (GLWindow win : windows) {
+			if (win.getGLContext().getPointer() == glContext) return win;
+		}
+
+		return null;
+	}
+
 	/**
 	 * Updates all events and swaps buffers on all windows.
 	 */
@@ -257,29 +308,6 @@ public class GLWindow implements IRenderTarget {
 		glfwPollEvents();
 		Noise.getRessourceProfiler().reset();
 		Noise.getDebugWindow().update();
-	}
-
-	public void makeContextCurrent() {
-		glfwMakeContextCurrent(windowPointer);
-	}
-
-	@Override
-	public void bind() {
-		glfwMakeContextCurrent(windowPointer);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, windowWidth, windowHeight);
-	}
-
-	public void cleanup() {
-		glfwDestroyWindow(windowPointer);
-		windows.remove(this);
-
-		deleted = true;
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		if (!deleted) Logger.log(Logger.WARNING, "Window not cleaned up. pointer: " + title + ", @" + Long.toHexString(windowPointer));
 	}
 
 	static {

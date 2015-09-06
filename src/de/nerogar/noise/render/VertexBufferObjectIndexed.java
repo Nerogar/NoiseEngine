@@ -1,7 +1,5 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
@@ -95,7 +93,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 
 	private int initVAO(FloatBuffer vboBuffer, IntBuffer indexBuffer) {
 		int vaoHandle = glGenVertexArrays();
-		glContextVaoHandles.put(glfwGetCurrentContext(), vaoHandle);
+		glContextVaoHandles.put(GLWindow.getCurrentContext(), vaoHandle);
 
 		glBindVertexArray(vaoHandle);
 
@@ -141,7 +139,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 
 	@Override
 	public void render() {
-		Integer vaoHandle = glContextVaoHandles.get(glfwGetCurrentContext());
+		Integer vaoHandle = glContextVaoHandles.get(GLWindow.getCurrentContext());
 		if (vaoHandle == null) vaoHandle = initVAO(null, null);
 
 		glBindVertexArray(vaoHandle);
@@ -153,17 +151,17 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 
 	@Override
 	public void cleanup() {
-		long currentContext = glfwGetCurrentContext();
+		long currentContext = GLWindow.getCurrentContext();
 		glDeleteBuffers(vboHandle);
 		glDeleteBuffers(indexBufferHandle);
 
-		for (long context : glContextVaoHandles.keySet()) {
-			glfwMakeContextCurrent(context);
+		for (long glContext : glContextVaoHandles.keySet()) {
+			GLWindow.makeContextCurrent(glContext);
 
-			glDeleteVertexArrays(glContextVaoHandles.get(context));
+			glDeleteVertexArrays(glContextVaoHandles.get(glContext));
 		}
 
-		glfwMakeContextCurrent(currentContext);
+		GLWindow.makeContextCurrent(currentContext);
 
 		deleted = true;
 

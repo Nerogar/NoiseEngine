@@ -14,6 +14,7 @@ public class DebugWindow {
 	public GLWindow window;
 
 	private List<Profiler> profilerList;
+	private int activeProfiler;
 
 	private Matrix4f projectionMatrix;
 	private Shader shader;
@@ -23,16 +24,28 @@ public class DebugWindow {
 		profilerList = new ArrayList<Profiler>();
 
 		for (Profiler p : profiler) {
-			profilerList.add(p);
+			addProfiler(p);
 		}
+
+		activeProfiler = 0;
 
 		if (!Noise.DEBUG) return;
 
-		window = new GLWindow("debug", 500, 300, true, 0, null, null);
+		window = new GLWindow("debug", 800, 300, true, 0, null, null);
 
-		projectionMatrix = Matrix4fUtils.getOrthographicProjection(0f, 1f, 1.1f, -0.1f, 1, -1);
+		projectionMatrix = Matrix4fUtils.getOrthographicProjection(0f, 1.5f, 1.1f, -0.1f, 1, -1);
 		shader = ShaderLoader.loadShader("<debug/profiler.vert>", "<debug/profiler.frag>");
 		vertexList = new VertexList();
+	}
+
+	public void addProfiler(Profiler profiler) {
+		profilerList.add(profiler);
+	}
+
+	public void removeProfiler(Profiler profiler) {
+		profilerList.remove(profiler);
+
+		if (activeProfiler >= profilerList.size()) activeProfiler = 0;
 	}
 
 	public void update() {
@@ -40,30 +53,50 @@ public class DebugWindow {
 		if (window.isClosed()) return;
 		if (window.shouldClose()) window.cleanup();
 
-		Logger.log(Logger.DEBUG, Noise.getRessourceProfiler().toString());
+		int scrollDelta = (int) window.getInputHandler().getScrollDeltaY();
+		activeProfiler += scrollDelta;
+		activeProfiler = (activeProfiler + profilerList.size()) % profilerList.size();
 
-		Profiler prof = profilerList.get(0);
+		Profiler profiler = profilerList.get(activeProfiler);
+
+		Logger.log(Logger.DEBUG, profiler);
+		window.setTitle("Debug (Profiler: " + profiler.getName() + ")");
 
 		vertexList.clear();
-		for (int id = 0; id < prof.getPropertyCount(); id++) {
-			List<Integer> history = prof.getHistory(id);
-			int maxHistory = prof.getMaxHistory(id);
+		for (int id : profiler.getPropertyList()) {
+			List<Integer> history = profiler.getHistory(id);
+			int maxHistory = profiler.getMaxHistory(id);
+			Color color = profiler.getColor(id);
 
 			//vbo
 
-			int[] vertices = new int[prof.getHistoryLength()];
+			int lastValue = history.get(0);
+			int lastVertex = vertexList.addVertex(0f, (float)lastValue / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
 
-			for (int i = 0; i < prof.getHistoryLength(); i++) {
-				float x = (float) i / prof.getHistoryLength();
-				float y = (float) history.get(i) / maxHistory;
+			for (int i = 1; i < profiler.getHistoryLength() - 1; i++) {
 
-				vertices[i] = vertexList.addVertex(x, y, 0f, 0f, 0f, 1.0f, 0.0f, 0.0f);
+				int value = history.get(i);
+				int nextValue = history.get(i + 1);
+
+				if (value == lastValue && nextValue == lastValue) continue;
+
+				float x = (float) i / profiler.getHistoryLength();
+				float y = (float) value / maxHistory;
+				int vertex = vertexList.addVertex(x, y, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
+
+				vertexList.addIndex(lastVertex, vertex);
+
+				lastVertex = vertex;
+				lastValue = value;
 			}
 
-			for (int i = 0; i < vertices.length - 1; i++) {
-				vertexList.addIndex(vertices[i], vertices[i + 1]);
-			}
+			int vertex = vertexList.addVertex(1f, (float)history.get(history.size() - 1) / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
+			vertexList.addIndex(lastVertex, vertex);
+			
+			
 		}
+
+		long currentContext = GLWindow.getCurrentContext();
 		window.bind();
 
 		VertexBufferObjectIndexed vbo = new VertexBufferObjectIndexed(
@@ -84,5 +117,7 @@ public class DebugWindow {
 		shader.deactivate();
 
 		vbo.cleanup();
+
+		GLWindow.makeContextCurrent(currentContext);
 	}
 }

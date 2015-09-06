@@ -119,6 +119,7 @@ public class DeferredRenderer {
 
 	private Map<DeferredContainer, VboContainer> vboMap;
 	private VertexBufferObjectIndexed fullscreenQuad;
+	private DeferredRendererProfiler profiler;
 
 	//gBuffer
 	private Shader gBufferShader;
@@ -152,13 +153,24 @@ public class DeferredRenderer {
 
 	public DeferredRenderer(int width, int height) {
 
+		profiler = new DeferredRendererProfiler();
+		Noise.getDebugWindow().addProfiler(profiler);
+		vboMap = new HashMap<DeferredContainer, VboContainer>();
+		fullscreenQuad = new VertexBufferObjectIndexed(
+				new int[] { 2, 2 },
+				6,
+				4,
+				new int[] { 0, 1, 2, 2, 3, 0 },
+				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f },
+				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f }
+				);
+
 		sunLightColor = new Color(1.0f, 1.0f, 0.9f, 0.0f);
 		sunLightDirectionInternal = new Vector3f(-1.0f);
 		sunLightBrightness = 1.5f;
 		recalcSunLight();
 		minAmbientBrightness = 0.3f;
 
-		vboMap = new HashMap<DeferredContainer, VboContainer>();
 		lightContainer = new LightContainer();
 		effectContainer = new EffectContainer();
 		Mesh sphere = WavefrontLoader.loadObject(Noise.RESSOURCE_DIR + "meshes/icoSphere.obj");
@@ -180,15 +192,6 @@ public class DeferredRenderer {
 
 		filterFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
 
-		fullscreenQuad = new VertexBufferObjectIndexed(
-				new int[] { 2, 2 },
-				6,
-				4,
-				new int[] { 0, 1, 2, 2, 3, 0 },
-				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f },
-				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f }
-				);
-
 		loadShaders();
 		setFrameBufferResolution(width, height);
 	}
@@ -203,6 +206,8 @@ public class DeferredRenderer {
 		container.renderables.add(object);
 
 		vboMap.put(object.getContainer(), container);
+
+		profiler.incrementValue(DeferredRendererProfiler.OBJECT_COUNT);
 	}
 
 	public void addAllObjects(Collection<DeferredRenderable> objects) {
@@ -219,6 +224,8 @@ public class DeferredRenderer {
 			container.vbo.cleanup();
 			vboMap.remove(object.getContainer());
 		}
+
+		profiler.decrementValue(DeferredRendererProfiler.OBJECT_COUNT);
 	}
 
 	public void removeAllObjects(Collection<DeferredRenderable> objects) {
@@ -233,6 +240,8 @@ public class DeferredRenderer {
 		}
 
 		vboMap.clear();
+
+		profiler.setValue(DeferredRendererProfiler.OBJECT_COUNT, 0);
 	}
 
 	public LightContainer getLightContainer() {
@@ -396,6 +405,8 @@ public class DeferredRenderer {
 			container.vbo.render();
 
 			currentShader.deactivate();
+
+			profiler.addValue(DeferredRendererProfiler.OBJECT_RENDER_COUNT, instanceCount);
 		}
 
 		glDisable(GL_DEPTH_TEST);
@@ -427,6 +438,7 @@ public class DeferredRenderer {
 			lightVbo.render();
 			lightShader.deactivate();
 
+			profiler.addValue(DeferredRendererProfiler.LIGHT_RENDER_COUNT, lightCount);
 		}
 
 		glDisable(GL_CULL_FACE);
@@ -455,6 +467,7 @@ public class DeferredRenderer {
 
 			if (camera.getViewFrustum().getPointDistance(point) < effect.getBoundingRadius() * effect.getRenderProperties().getMaxScaleComponent()) {
 				effect.render(camera.getViewMatrix(), camera.getProjectionMatrix());
+				profiler.incrementValue(DeferredRendererProfiler.EFFECT_RENDER_COUNT);
 			}
 		}
 
@@ -481,6 +494,12 @@ public class DeferredRenderer {
 		filterShader.activate();
 		fullscreenQuad.render();
 		filterShader.deactivate();
+
+		profiler.addValue(DeferredRendererProfiler.LIGHT_COUNT, lightContainer.size());
+
+		profiler.addValue(DeferredRendererProfiler.EFFECT_COUNT, effectContainer.size());
+
+		profiler.reset();
 	}
 
 	public Texture2D getColorOutput() {
@@ -530,6 +549,8 @@ public class DeferredRenderer {
 
 		fullscreenQuad.cleanup();
 		lightVbo.cleanup();
+
+		Noise.getDebugWindow().removeProfiler(profiler);
 	}
 
 }

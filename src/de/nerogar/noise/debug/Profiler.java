@@ -1,7 +1,8 @@
 package de.nerogar.noise.debug;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
+import de.nerogar.noise.util.Color;
 
 public class Profiler {
 
@@ -10,16 +11,16 @@ public class Profiler {
 	private List<ArrayList<Integer>> history;
 	private int currentIndex;
 
-	private ArrayList<Integer> values;
-	private ArrayList<Integer> minMaxHistory;
 	private ArrayList<String> names;
+	private ArrayList<Integer> values;
+	private ArrayList<Color> colors;
+	private ArrayList<Integer> maxHistory;
 
-	private boolean running;
+	private List<Integer> propertyList;
 
-	public Profiler(String name, int historyLength) {
+	public Profiler(String name) {
 		this.name = name;
-
-		running = true;
+		int historyLength = 512;
 
 		history = new ArrayList<ArrayList<Integer>>();
 		currentIndex = historyLength - 1;
@@ -28,42 +29,52 @@ public class Profiler {
 			history.add(new ArrayList<Integer>());
 		}
 
-		values = new ArrayList<Integer>();
-		minMaxHistory = new ArrayList<Integer>();
 		names = new ArrayList<String>();
+		values = new ArrayList<Integer>();
+		colors = new ArrayList<Color>();
+		maxHistory = new ArrayList<Integer>();
+
+		propertyList = new ArrayList<Integer>();
 	}
 
-	protected void registerName(int id, int maxValue, String name) {
+	public String getName() {
+		return name;
+	}
+
+	protected void registerProperty(int id, Color color, String name) {
 
 		//ensure size
 		while (names.size() < id + 1) {
+			names.add(null);
 			values.add(0);
-			minMaxHistory.add(0);
-			names.add("");
+			colors.add(null);
+			maxHistory.add(0);
 		}
 
 		names.set(id, name);
-		minMaxHistory.set(id, maxValue);
+		colors.set(id, color);
+
+		propertyList.add(id);
 	}
 
 	public void setValue(int id, int value) {
-		if (running) values.set(id, value);
+		values.set(id, value);
 	}
 
 	public void incrementValue(int id) {
-		if (running) values.set(id, values.get(id) + 1);
+		values.set(id, values.get(id) + 1);
 	}
 
 	public void decrementValue(int id) {
-		if (running) values.set(id, values.get(id) - 1);
+		values.set(id, values.get(id) - 1);
 	}
 
 	public void addValue(int id, int newValue) {
-		if (running) values.set(id, values.get(id) + newValue);
+		values.set(id, values.get(id) + newValue);
 	}
 
-	public int getPropertyCount() {
-		return names.size();
+	public List<Integer> getPropertyList() {
+		return propertyList;
 	}
 
 	public int getHistoryLength() {
@@ -72,6 +83,10 @@ public class Profiler {
 
 	public String getName(int id) {
 		return names.get(id);
+	}
+
+	public Color getColor(int id) {
+		return colors.get(id);
 	}
 
 	public int getValue(int id) {
@@ -95,21 +110,7 @@ public class Profiler {
 	}
 
 	public int getMaxHistory(int id) {
-		int max = minMaxHistory.get(id);
-
-		for (int i = 0; i < history.size(); i++) {
-			List<Integer> timeSample = history.get((i + currentIndex + 1) % history.size());
-			if (!timeSample.isEmpty()) {
-				max = Math.max(max, timeSample.get(id));
-			}
-
-		}
-
-		return max;
-	}
-
-	public void setRunning(boolean running) {
-		this.running = running;
+		return maxHistory.get(id);
 	}
 
 	public void reset() {
@@ -122,6 +123,8 @@ public class Profiler {
 
 		for (int i = 0; i < names.size(); i++) {
 			values.add(history.get(currentIndex).get(i));
+
+			maxHistory.set(i, Math.max(maxHistory.get(i), values.get(i)));
 		}
 	}
 
@@ -130,10 +133,8 @@ public class Profiler {
 		StringBuilder sb = new StringBuilder("[Profiler: ").append(name).append("]\n");
 		ArrayList<Integer> currentValues = history.get(currentIndex);
 
-		for (int i = 0; i < names.size(); i++) {
-			if (names.get(i) != null && !names.get(i).isEmpty() && i < currentValues.size()) {
-				sb.append("\t").append(names.get(i)).append(": ").append(currentValues.get(i)).append("\n");
-			}
+		for (int id : propertyList) {
+			sb.append("\t").append(names.get(id)).append(": ").append(currentValues.get(id)).append("\n");
 		}
 
 		return sb.toString();

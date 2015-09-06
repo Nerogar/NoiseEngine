@@ -1,7 +1,5 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL20.glDrawBuffers;
@@ -45,7 +43,7 @@ public class FrameBufferObject implements IRenderTarget {
 	private Texture2D[] textures;
 
 	public FrameBufferObject(int width, int height, boolean useDepthTexture, Texture2D.DataType... textures) {
-		glContext = glfwGetCurrentContext();
+		glContext = GLWindow.getCurrentContext();
 		framebufferID = glGenFramebuffers();
 
 		createTextures(textures);
@@ -112,7 +110,7 @@ public class FrameBufferObject implements IRenderTarget {
 		this.width = width;
 		this.height = height;
 
-		glfwMakeContextCurrent(glContext);
+		GLWindow.makeContextCurrent(glContext);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 
@@ -168,7 +166,7 @@ public class FrameBufferObject implements IRenderTarget {
 	@Override
 	public void bind() {
 		if (!initialized) throw new IllegalStateException("RenderScene not initialized");
-		glfwMakeContextCurrent(glContext);
+		GLWindow.makeContextCurrent(glContext);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 		glViewport(0, 0, width, height);
 
