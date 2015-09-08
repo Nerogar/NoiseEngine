@@ -6,6 +6,8 @@ import de.nerogar.noise.util.*;
 
 public class PerspectiveCamera {
 
+	private static final float PI = (float) Math.PI;
+
 	private float yaw, pitch, roll;
 	private float x, y, z;
 
@@ -212,6 +214,33 @@ public class PerspectiveCamera {
 		this.y = y;
 		this.z = z;
 		setPositionMatrix();
+	}
+
+	public void setLookAt(float lookX, float lookY, float lookZ) {
+		float lookVecX = lookX - x;
+		float lookVecY = lookY - y;
+		float lookVecZ = lookZ - z;
+
+		if (lookVecZ == 0) {
+			setYaw(lookVecX > 0 ? PI / 2f : -PI / 2f);
+
+			System.out.println("1");
+		} else {
+			float sign = lookVecZ > 0 ? PI : 0;
+
+			setYaw((float) Math.atan(lookVecX / lookVecZ) + sign);
+
+			System.out.println(lookVecX + "    " + lookVecZ);
+		}
+
+		if (lookVecX == 0 && lookVecZ == 0) {
+			setPitch(lookVecY > 0 ? PI / 2f : -PI / 2f);
+		} else {
+			float lengthXZ = (float) Math.sqrt(lookVecX * lookVecX + lookVecZ * lookVecZ);
+
+			setPitch((float) Math.atan(lookVecY / lengthXZ));
+		}
+
 	}
 
 	public void setFOV(float fov) {
