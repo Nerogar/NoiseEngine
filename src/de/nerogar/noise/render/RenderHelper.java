@@ -1,19 +1,47 @@
 package de.nerogar.noise.render;
 
+import java.util.HashMap;
+
+import static org.lwjgl.opengl.GL11.*;
+
 import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Matrix4fUtils;
 
 public class RenderHelper {
 
-	private static VertexBufferObject fullscreenQuad;
-	private static Shader shader;
 	private static Matrix4f projectionMatrix;
 
+	//do this for an instance of RenderHelper per context later
+	private static HashMap<Long, VertexBufferObject> glContextVboMap;
+	private static HashMap<Long, Shader> glContextShaderMap;
+
 	public static void blitTexture(Texture2D texture) {
+		long currentContext = GLWindow.getCurrentContext();
+
+		VertexBufferObject vbo = glContextVboMap.get(currentContext);
+		Shader shader = glContextShaderMap.get(currentContext);
+
+		if (vbo == null && shader == null) {
+			vbo = createFullscreenQuad();
+			glContextVboMap.put(currentContext, vbo);
+
+			shader = getBlitShader();
+			glContextShaderMap.put(currentContext, shader);
+		}
+
 		shader.activate();
 		texture.bind(0);
-		fullscreenQuad.render();
+		vbo.render();
 		shader.deactivate();
+	}
+
+	public static void overlayTexture(Texture2D texture) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		blitTexture(texture);
+
+		glDisable(GL_BLEND);
 	}
 
 	private static VertexBufferObjectIndexed createFullscreenQuad() {
@@ -26,16 +54,21 @@ public class RenderHelper {
 		return new VertexBufferObjectIndexed(componentCounts, 6, 4, indices, pos, uv);
 	}
 
-	static {
-		fullscreenQuad = createFullscreenQuad();
-
-		projectionMatrix = Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
-
-		shader = ShaderLoader.loadShader("<renderHelper/fullscreenBlit.vert>", "<renderHelper/fullscreenBlit.frag>");
+	private static Shader getBlitShader() {
+		Shader shader = ShaderLoader.loadShader("<renderHelper/fullscreenBlit.vert>", "<renderHelper/fullscreenBlit.frag>");
 		shader.activate();
 		shader.setUniform1i("blitTexture", 0);
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
 		shader.deactivate();
+
+		return shader;
+	}
+
+	static {
+		glContextVboMap = new HashMap<Long, VertexBufferObject>();
+		glContextShaderMap = new HashMap<Long, Shader>();
+
+		projectionMatrix = Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
 	}
 
 }
