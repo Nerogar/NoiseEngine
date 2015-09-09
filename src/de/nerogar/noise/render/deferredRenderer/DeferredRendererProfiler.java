@@ -17,14 +17,14 @@ public class DeferredRendererProfiler extends Profiler {
 	public DeferredRendererProfiler() {
 		super("deferred renderer");
 
-		registerProperty(OBJECT_COUNT,			new Color(1.0f, 0.1f, 0.0f, 0.0f),	"object count");
-		registerProperty(OBJECT_RENDER_COUNT,	new Color(1.0f, 0.2f, 0.0f, 0.0f),	"object render count");
+		registerProperty(OBJECT_COUNT,			new Color(1.0f, 0.0f, 0.0f, 1.0f),	"object count");
+		registerProperty(OBJECT_RENDER_COUNT,	new Color(1.0f, 0.4f, 0.0f, 1.0f),	"object render count");
 
-		registerProperty(LIGHT_COUNT,			new Color(1.0f, 1.0f, 0.2f, 0.0f),	"light count");
-		registerProperty(LIGHT_RENDER_COUNT,	new Color(1.0f, 1.0f, 0.4f, 0.0f),	"light render count");
+		registerProperty(LIGHT_COUNT,			new Color(1.0f, 1.0f, 0.0f, 1.0f),	"light count");
+		registerProperty(LIGHT_RENDER_COUNT,	new Color(1.0f, 1.0f, 0.4f, 1.0f),	"light render count");
 
-		registerProperty(EFFECT_COUNT,			new Color(0.0f, 1.0f, 0.0f, 0.0f),	"effect count");
-		registerProperty(EFFECT_RENDER_COUNT,	new Color(0.3f, 1.0f, 0.3f, 0.0f),	"effect render count");
+		registerProperty(EFFECT_COUNT,			new Color(0.0f, 1.0f, 0.0f, 1.0f),	"effect count");
+		registerProperty(EFFECT_RENDER_COUNT,	new Color(0.0f, 1.0f, 0.5f, 1.0f),	"effect render count");
 	}
 
 	@Override

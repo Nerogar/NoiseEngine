@@ -26,22 +26,22 @@ public class RessourceProfiler extends Profiler {
 	public RessourceProfiler() {
 		super("ressource");
 
-		registerProperty(TEXTURE_COUNT,			new Color(0.2f, 0.0f, 1.0f, 0.0f),	"texture count");
-		registerProperty(TEXTURE_BINDS,			new Color(0.4f, 0.0f, 1.0f, 0.0f),	"texture binds");
-		registerProperty(TEXTURE_UPLOAD_COUNT,	new Color(0.0f, 0.2f, 1.0f, 0.0f),	"texture upload count");
-		registerProperty(TEXTURE_UPLOAD_SIZE,	new Color(0.0f, 0.4f, 1.0f, 0.0f),	"texture upload size");
+		registerProperty(TEXTURE_COUNT,			new Color(0.0f, 0.0f, 1.0f, 1.0f),	"texture count");
+		registerProperty(TEXTURE_BINDS,			new Color(0.2f, 0.0f, 1.0f, 1.0f),	"texture binds");
+		registerProperty(TEXTURE_UPLOAD_COUNT,	new Color(0.4f, 0.0f, 1.0f, 1.0f),	"texture upload count");
+		registerProperty(TEXTURE_UPLOAD_SIZE,	new Color(0.6f, 0.0f, 1.0f, 1.0f),	"texture upload size");
 
-		registerProperty(VBO_COUNT,				new Color(1.0f, 0.2f, 0.0f, 0.0f),	"vbo count");
-		registerProperty(VBO_CALLS,				new Color(1.0f, 0.4f, 0.0f, 0.0f),	"vbo calls");
-		registerProperty(VBO_UPLOAD_COUNT,		new Color(1.0f, 0.0f, 0.2f, 0.0f),	"vbo upload count");
-		registerProperty(VBO_UPLOAD_SIZE,		new Color(1.0f, 0.0f, 0.4f, 0.0f),	"vbo upload size");
+		registerProperty(VBO_COUNT,				new Color(0.0f, 0.8f, 0.2f, 1.0f),	"vbo count");
+		registerProperty(VBO_CALLS,				new Color(0.4f, 0.8f, 0.2f, 1.0f),	"vbo calls");
+		registerProperty(VBO_UPLOAD_COUNT,		new Color(0.6f, 0.6f, 0.2f, 1.0f),	"vbo upload count");
+		registerProperty(VBO_UPLOAD_SIZE,		new Color(0.6f, 0.4f, 0.2f, 1.0f),	"vbo upload size");
 
-		registerProperty(FRAMEBUFFER_COUNT,		new Color(1.0f, 0.8f, 0.0f, 0.0f),	"framebuffer count");
-		registerProperty(FRAMEBUFFER_BINDS,		new Color(1.0f, 1.0f, 0.0f, 0.0f),	"framebuffer binds");
+		registerProperty(FRAMEBUFFER_COUNT,		new Color(1.0f, 0.8f, 0.0f, 1.0f),	"framebuffer count");
+		registerProperty(FRAMEBUFFER_BINDS,		new Color(1.0f, 1.0f, 0.0f, 1.0f),	"framebuffer binds");
 
-		registerProperty(SHADER_COUNT,			new Color(0.5f, 0.5f, 1.0f, 0.0f),	"shader count");
-		registerProperty(SHADER_BINDS,			new Color(0.5f, 0.7f, 1.0f, 0.0f),	"shader binds");
-		registerProperty(SHADER_COMPILE_COUNT,	new Color(0.5f, 0.9f, 1.0f, 0.0f),	"shader compile count");
+		registerProperty(SHADER_COUNT,			new Color(0.5f, 0.5f, 1.0f, 1.0f),	"shader count");
+		registerProperty(SHADER_BINDS,			new Color(0.5f, 0.7f, 1.0f, 1.0f),	"shader binds");
+		registerProperty(SHADER_COMPILE_COUNT,	new Color(0.5f, 0.9f, 1.0f, 1.0f),	"shader compile count");
 	}
 
 	@Override

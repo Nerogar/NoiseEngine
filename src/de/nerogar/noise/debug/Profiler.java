@@ -48,7 +48,7 @@ public class Profiler {
 			names.add(null);
 			values.add(0);
 			colors.add(null);
-			maxHistory.add(0);
+			maxHistory.add(1);
 		}
 
 		names.set(id, name);
@@ -76,7 +76,7 @@ public class Profiler {
 	public List<Integer> getPropertyList() {
 		return propertyList;
 	}
-
+	
 	public int getHistoryLength() {
 		return history.size();
 	}

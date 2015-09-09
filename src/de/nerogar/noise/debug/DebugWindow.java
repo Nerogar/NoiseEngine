@@ -7,9 +7,13 @@ import org.lwjgl.opengl.GL11;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
+import de.nerogar.noise.render.fontRenderer.Font;
+import de.nerogar.noise.render.fontRenderer.FontRenderableString;
 import de.nerogar.noise.util.*;
 
 public class DebugWindow {
+
+	private static final int SIDEBAR_WIDTH = 150;
 
 	public GLWindow window;
 
@@ -20,22 +24,56 @@ public class DebugWindow {
 	private Shader shader;
 	private VertexList vertexList;
 
+	private Font font;
+
+	private List<FontRenderableString> stringList;
+
 	public DebugWindow(Profiler... profiler) {
 		profilerList = new ArrayList<Profiler>();
 
 		for (Profiler p : profiler) {
 			addProfiler(p);
 		}
-
 		activeProfiler = 0;
 
 		if (!Noise.DEBUG) return;
 
 		window = new GLWindow("debug", 800, 300, true, 0, null, null);
 
-		projectionMatrix = Matrix4fUtils.getOrthographicProjection(0f, 1.5f, 1.1f, -0.1f, 1, -1);
 		shader = ShaderLoader.loadShader("<debug/profiler.vert>", "<debug/profiler.frag>");
 		vertexList = new VertexList();
+
+		projectionMatrix = new Matrix4f();
+		setProjectionMatrix(window.getWidth(), window.getHeight());
+
+		window.setSizeChangeListener(new GLWindowSizeChangeListener() {
+			@Override
+			public void onChange(int width, int height) {
+				setProjectionMatrix(width, height);
+			}
+		});
+
+		font = new Font("calibri", 14);
+		stringList = new ArrayList<FontRenderableString>();
+		createFont();
+	}
+
+	private void setProjectionMatrix(int width, int height) {
+		Matrix4fUtils.setOrthographicProjection(projectionMatrix, 0f, width, height, 0, 1, -1);
+	}
+
+	private void createFont() {
+		for (FontRenderableString s : stringList) {
+			s.cleanup();
+		}
+
+		stringList.clear();
+
+		for (int id : profilerList.get(activeProfiler).getPropertyList()) {
+			String s = profilerList.get(activeProfiler).getName(id);
+
+			stringList.add(new FontRenderableString(font, s, profilerList.get(activeProfiler).getColor(id), projectionMatrix, 1.0f, 1.0f));
+		}
 	}
 
 	public void addProfiler(Profiler profiler) {
@@ -53,13 +91,19 @@ public class DebugWindow {
 		if (window.isClosed()) return;
 		if (window.shouldClose()) window.cleanup();
 
+		long currentContext = GLWindow.getCurrentContext();
+		window.bind();
+		
 		int scrollDelta = (int) window.getInputHandler().getScrollDeltaY();
-		activeProfiler += scrollDelta;
-		activeProfiler = (activeProfiler + profilerList.size()) % profilerList.size();
+		if (scrollDelta != 0) {
+			activeProfiler += scrollDelta;
+			activeProfiler = ((activeProfiler % profilerList.size()) + profilerList.size()) % profilerList.size();
 
+			createFont();
+		}
 		Profiler profiler = profilerList.get(activeProfiler);
 
-		Logger.log(Logger.DEBUG, profiler);
+		//Logger.log(Logger.DEBUG, profiler);
 		window.setTitle("Debug (Profiler: " + profiler.getName() + ")");
 
 		vertexList.clear();
@@ -71,7 +115,7 @@ public class DebugWindow {
 			//vbo
 
 			int lastValue = history.get(0);
-			int lastVertex = vertexList.addVertex(0f, (float)lastValue / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
+			int lastVertex = vertexList.addVertex(0f, (float) lastValue / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
 
 			for (int i = 1; i < profiler.getHistoryLength() - 1; i++) {
 
@@ -90,14 +134,12 @@ public class DebugWindow {
 				lastValue = value;
 			}
 
-			int vertex = vertexList.addVertex(1f, (float)history.get(history.size() - 1) / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
+			int vertex = vertexList.addVertex(1f, (float) history.get(history.size() - 1) / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
 			vertexList.addIndex(lastVertex, vertex);
-			
-			
+
 		}
 
-		long currentContext = GLWindow.getCurrentContext();
-		window.bind();
+		
 
 		VertexBufferObjectIndexed vbo = new VertexBufferObjectIndexed(
 				VertexBufferObject.LINES,
@@ -113,11 +155,20 @@ public class DebugWindow {
 
 		shader.activate();
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
+		shader.setUniform2f("cornerSmall", 0, 10);
+		shader.setUniform2f("cornerBig", window.getWidth() - SIDEBAR_WIDTH, window.getHeight() - 10);
 		vbo.render();
 		shader.deactivate();
-
 		vbo.cleanup();
+
+		int y = 10;
+
+		for (FontRenderableString s : stringList) {
+			s.render(window.getWidth() - SIDEBAR_WIDTH, y);
+			y += 20;
+		}
 
 		GLWindow.makeContextCurrent(currentContext);
 	}
+
 }
