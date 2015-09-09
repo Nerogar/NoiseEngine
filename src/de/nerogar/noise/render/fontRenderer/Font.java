@@ -116,4 +116,8 @@ public class Font {
 	public int getLineSpace() {
 		return size + size / 3;
 	}
+
+	public int getTexturePadding() {
+		return padding;
+	}
 }

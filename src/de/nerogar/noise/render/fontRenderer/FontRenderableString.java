@@ -97,7 +97,7 @@ public class FontRenderableString {
 		shader.activate();
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
 		shader.setUniform2f("pointSize", pointSizeX, pointSizeY);
-		shader.setUniform2f("offset", left, bottom);
+		shader.setUniform2f("offset", left - font.getTexturePadding(), bottom);
 		shader.setUniform4f("fontColor", color.getR(), color.getG(), color.getB(), color.getA());
 		vbo.render();
 		shader.deactivate();
