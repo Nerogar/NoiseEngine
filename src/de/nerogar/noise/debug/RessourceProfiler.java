@@ -5,10 +5,12 @@ import de.nerogar.noise.util.Color;
 public class RessourceProfiler extends Profiler {
 
 	private static final int TEXTURE = 0;
-	private static final int VBO = 1;
-	private static final int SOUND = 2;
-	private static final int FRAMEBUFFER = 3;
-	private static final int SHADER = 4;
+	private static final int TEXTURE_BANDWIDTH = 1;
+	private static final int VBO = 2;
+	private static final int VBO_BANDWIDTH = 3;
+	private static final int SOUND = 4;
+	private static final int FRAMEBUFFER = 5;
+	private static final int SHADER = 6;
 
 
 	public static final int TEXTURE_COUNT			= 0;
@@ -33,22 +35,22 @@ public class RessourceProfiler extends Profiler {
 	public RessourceProfiler() {
 		super("ressource");
 
-		registerProperty(TEXTURE_COUNT,			TEXTURE,		new Color(0.0f, 0.0f, 1.0f, 1.0f),	"texture count");
-		registerProperty(TEXTURE_BINDS,			TEXTURE,		new Color(0.2f, 0.0f, 1.0f, 1.0f),	"texture binds");
-		registerProperty(TEXTURE_UPLOAD_COUNT,	TEXTURE,		new Color(0.4f, 0.0f, 1.0f, 1.0f),	"texture upload count");
-		registerProperty(TEXTURE_UPLOAD_SIZE,	TEXTURE,		new Color(0.6f, 0.0f, 1.0f, 1.0f),	"texture upload size");
+		registerProperty(TEXTURE_COUNT,			TEXTURE,			new Color(0.0f, 0.0f, 0.8f, 1.0f),	"texture count");
+		registerProperty(TEXTURE_BINDS,			TEXTURE,			new Color(0.3f, 0.0f, 1.0f, 1.0f),	"texture binds");
+		registerProperty(TEXTURE_UPLOAD_COUNT,	TEXTURE,			new Color(0.3f, 0.3f, 1.0f, 1.0f),	"texture upload count");
+		registerProperty(TEXTURE_UPLOAD_SIZE,	TEXTURE_BANDWIDTH,	new Color(0.6f, 0.0f, 1.0f, 1.0f),	"texture upload size");
 
-		registerProperty(VBO_COUNT,				VBO,			new Color(0.0f, 0.8f, 0.2f, 1.0f),	"vbo count");
-		registerProperty(VBO_CALLS,				VBO,			new Color(0.4f, 0.8f, 0.2f, 1.0f),	"vbo calls");
-		registerProperty(VBO_UPLOAD_COUNT,		VBO,			new Color(0.6f, 0.6f, 0.2f, 1.0f),	"vbo upload count");
-		registerProperty(VBO_UPLOAD_SIZE,		VBO,			new Color(0.6f, 0.4f, 0.2f, 1.0f),	"vbo upload size");
+		registerProperty(VBO_COUNT,				VBO,				new Color(1.0f, 0.4f, 0.4f, 1.0f),	"vbo count");
+		registerProperty(VBO_CALLS,				VBO,				new Color(1.0f, 0.4f, 0.0f, 1.0f),	"vbo calls");
+		registerProperty(VBO_UPLOAD_COUNT,		VBO,				new Color(1.0f, 0.0f, 0.0f, 1.0f),	"vbo upload count");
+		registerProperty(VBO_UPLOAD_SIZE,		VBO_BANDWIDTH,		new Color(0.6f, 0.4f, 0.2f, 1.0f),	"vbo upload size");
 
-		registerProperty(FRAMEBUFFER_COUNT,		FRAMEBUFFER,	new Color(1.0f, 0.8f, 0.0f, 1.0f),	"framebuffer count");
-		registerProperty(FRAMEBUFFER_BINDS,		FRAMEBUFFER,	new Color(1.0f, 1.0f, 0.0f, 1.0f),	"framebuffer binds");
+		registerProperty(FRAMEBUFFER_COUNT,		FRAMEBUFFER,		new Color(1.0f, 0.7f, 0.0f, 1.0f),	"framebuffer count");
+		registerProperty(FRAMEBUFFER_BINDS,		FRAMEBUFFER,		new Color(1.0f, 1.0f, 0.0f, 1.0f),	"framebuffer binds");
 
-		registerProperty(SHADER_COUNT,			SHADER,			new Color(0.5f, 0.5f, 1.0f, 1.0f),	"shader count");
-		registerProperty(SHADER_BINDS,			SHADER,			new Color(0.5f, 0.7f, 1.0f, 1.0f),	"shader binds");
-		registerProperty(SHADER_COMPILE_COUNT,	SHADER,			new Color(0.5f, 0.9f, 1.0f, 1.0f),	"shader compile count");
+		registerProperty(SHADER_COUNT,			SHADER,				new Color(0.5f, 0.5f, 1.0f, 1.0f),	"shader count");
+		registerProperty(SHADER_BINDS,			SHADER,				new Color(0.5f, 0.7f, 1.0f, 1.0f),	"shader binds");
+		registerProperty(SHADER_COMPILE_COUNT,	SHADER,				new Color(0.5f, 0.9f, 1.0f, 1.0f),	"shader compile count");
 	}
 
 	@Override

@@ -3,12 +3,12 @@ package de.nerogar.noise.debug;
 import java.util.ArrayList;
 import java.util.List;
 
-class ProfilerStatisticsCollection {
+class ProfilerStatisticsCategory {
 	protected List<ProfilerStatistic> statisticList;
 
 	protected int maxHistory;
 
-	public ProfilerStatisticsCollection() {
+	public ProfilerStatisticsCategory() {
 		statisticList = new ArrayList<ProfilerStatistic>();
 		
 		maxHistory = 1;

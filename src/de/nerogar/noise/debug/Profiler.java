@@ -11,14 +11,14 @@ public class Profiler {
 	private int currentIndex;
 	private int historySize;
 
-	private Map<Integer, ProfilerStatisticsCollection> collections;
+	private Map<Integer, ProfilerStatisticsCategory> categories;
 	private ArrayList<Integer> values;
 
 	public Profiler(String name) {
 		this.name = name;
-		collections = new HashMap<Integer, ProfilerStatisticsCollection>();
+		categories = new HashMap<Integer, ProfilerStatisticsCategory>();
 
-		historySize = 512;
+		historySize = 1024;
 
 		currentIndex = 0;
 
@@ -29,16 +29,16 @@ public class Profiler {
 		return name;
 	}
 
-	protected void registerProperty(int id, int collectionID, Color color, String name) {
+	protected void registerProperty(int id, int categoryID, Color color, String name) {
 		ProfilerStatistic statistic = new ProfilerStatistic(name, id, color, historySize);
 
-		ProfilerStatisticsCollection collection = collections.get(collectionID);
-		if (collection == null) {
-			collection = new ProfilerStatisticsCollection();
-			collections.put(collectionID, collection);
+		ProfilerStatisticsCategory category = categories.get(categoryID);
+		if (category == null) {
+			category = new ProfilerStatisticsCategory();
+			categories.put(categoryID, category);
 		}
 
-		collection.addStatistic(statistic);
+		category.addStatistic(statistic);
 
 		//ensure values size
 		for (int i = values.size(); i <= id; i++) {
@@ -66,8 +66,8 @@ public class Profiler {
 		return historySize;
 	}
 
-	public Collection<ProfilerStatisticsCollection> getProfilerCollections() {
-		return collections.values();
+	public Collection<ProfilerStatisticsCategory> getProfilerCategories() {
+		return categories.values();
 	}
 
 	public void reset() {
@@ -75,13 +75,13 @@ public class Profiler {
 		currentIndex %= historySize;
 
 		for (int id = 0; id < values.size(); id++) {
-			search: for (ProfilerStatisticsCollection collection : collections.values()) {
-				for (ProfilerStatistic statistic : collection.statisticList) {
+			search: for (ProfilerStatisticsCategory category : categories.values()) {
+				for (ProfilerStatistic statistic : category.statisticList) {
 					if (statistic.id == id) {
 						statistic.history.set(currentIndex, values.get(id));
 						statistic.firstIndex = currentIndex + 1;
 
-						collection.maxHistory = Math.max(collection.maxHistory, values.get(id));
+						category.maxHistory = Math.max(category.maxHistory, values.get(id));
 						break search;
 					}
 				}
@@ -101,8 +101,8 @@ public class Profiler {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[Profiler: ").append(name).append("]\n");
 
-		for (ProfilerStatisticsCollection collection : collections.values()) {
-			for (ProfilerStatistic statistic : collection.statisticList) {
+		for (ProfilerStatisticsCategory category : categories.values()) {
+			for (ProfilerStatistic statistic : category.statisticList) {
 				sb.append("\t").append(statistic.name).append(": ").append(statistic.getValue(historySize - 1)).append("\n");
 			}
 		}
