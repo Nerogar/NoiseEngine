@@ -3,10 +3,12 @@ package de.nerogar.noise.debug;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
+import de.nerogar.noise.render.InputHandler.KeyboardKeyEvent;
 import de.nerogar.noise.render.fontRenderer.Font;
 import de.nerogar.noise.render.fontRenderer.FontRenderableString;
 import de.nerogar.noise.util.*;
@@ -28,6 +30,9 @@ public class DebugWindow {
 
 	private List<FontRenderableString> stringList;
 
+	private float scrollOffset;
+	private float renderedScrollOffset;
+
 	public DebugWindow(Profiler... profiler) {
 		profilerList = new ArrayList<Profiler>();
 
@@ -38,7 +43,7 @@ public class DebugWindow {
 
 		if (!Noise.DEBUG) return;
 
-		window = new GLWindow("debug", 800, 300, true, 0, null, null);
+		window = new GLWindow("debug", 800, 400, true, 0, null, null);
 
 		shader = ShaderLoader.loadShader("<debug/profiler.vert>", "<debug/profiler.frag>");
 		vertexList = new VertexList();
@@ -64,15 +69,19 @@ public class DebugWindow {
 
 	private void createFont() {
 		for (FontRenderableString s : stringList) {
-			s.cleanup();
+			if (s != null) s.cleanup();
 		}
 
 		stringList.clear();
 
-		for (int id : profilerList.get(activeProfiler).getPropertyList()) {
-			String s = profilerList.get(activeProfiler).getName(id);
+		for (ProfilerStatisticsCollection collection : profilerList.get(activeProfiler).getProfilerCollections()) {
+			for (ProfilerStatistic statistic : collection.statisticList) {
+				String s = statistic.name;
 
-			stringList.add(new FontRenderableString(font, s, profilerList.get(activeProfiler).getColor(id), projectionMatrix, 1.0f, 1.0f));
+				stringList.add(new FontRenderableString(font, s, statistic.color, projectionMatrix, 1.0f, 1.0f));
+			}
+
+			stringList.add(null);
 		}
 	}
 
@@ -83,7 +92,10 @@ public class DebugWindow {
 	public void removeProfiler(Profiler profiler) {
 		profilerList.remove(profiler);
 
-		if (activeProfiler >= profilerList.size()) activeProfiler = 0;
+		if (activeProfiler >= profilerList.size()) {
+			activeProfiler = 0;
+			createFont();
+		}
 	}
 
 	public void update() {
@@ -93,10 +105,27 @@ public class DebugWindow {
 
 		long currentContext = GLWindow.getCurrentContext();
 		window.bind();
-		
-		int scrollDelta = (int) window.getInputHandler().getScrollDeltaY();
-		if (scrollDelta != 0) {
-			activeProfiler += scrollDelta;
+
+		scrollOffset += window.getInputHandler().getScrollDeltaY() * 0.2f;
+		scrollOffset = MathHelper.clamp(scrollOffset, 0, profilerList.get(activeProfiler).getProfilerCollections().size() - 1);
+
+		renderedScrollOffset += (scrollOffset - renderedScrollOffset) * 0.1f;
+
+		boolean activeProfilerChanged = false;
+		for (KeyboardKeyEvent event : window.getInputHandler().getKeyboardKeyEvents()) {
+			if (event.action == GLFW.GLFW_PRESS) {
+				if (event.key == GLFW.GLFW_KEY_RIGHT) {
+					activeProfiler++;
+					activeProfilerChanged = true;
+					event.setProcessed();
+				} else if (event.key == GLFW.GLFW_KEY_LEFT) {
+					activeProfiler--;
+					activeProfilerChanged = true;
+					event.setProcessed();
+				}
+			}
+		}
+		if (activeProfilerChanged) {
 			activeProfiler = ((activeProfiler % profilerList.size()) + profilerList.size()) % profilerList.size();
 
 			createFont();
@@ -107,39 +136,52 @@ public class DebugWindow {
 		window.setTitle("Debug (Profiler: " + profiler.getName() + ")");
 
 		vertexList.clear();
-		for (int id : profiler.getPropertyList()) {
-			List<Integer> history = profiler.getHistory(id);
-			int maxHistory = profiler.getMaxHistory(id);
-			Color color = profiler.getColor(id);
 
-			//vbo
+		float yOffset = -renderedScrollOffset;
 
-			int lastValue = history.get(0);
-			int lastVertex = vertexList.addVertex(0f, (float) lastValue / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
+		for (ProfilerStatisticsCollection collection : profiler.getProfilerCollections()) {
+			for (ProfilerStatistic statistic : collection.statisticList) {
 
-			for (int i = 1; i < profiler.getHistoryLength() - 1; i++) {
+				//vbo
 
-				int value = history.get(i);
-				int nextValue = history.get(i + 1);
+				int lastValue = statistic.getValue(0);
+				int lastVertex = vertexList.addVertex(0f, (float) lastValue / collection.maxHistory + yOffset, 0f, 0f, 0f, statistic.color.getR(), statistic.color.getG(), statistic.color.getB());
 
-				if (value == lastValue && nextValue == lastValue) continue;
+				for (int i = 1; i < profiler.getHistorySize() - 1; i++) {
 
-				float x = (float) i / profiler.getHistoryLength();
-				float y = (float) value / maxHistory;
-				int vertex = vertexList.addVertex(x, y, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
+					int value = statistic.getValue(i);
+					int nextValue = statistic.getValue(i + 1);
 
+					if (value == lastValue && nextValue == lastValue) continue;
+
+					float x = (float) i / profiler.getHistorySize();
+					float y = (float) value / collection.maxHistory + yOffset;
+
+					int vertex = vertexList.addVertex(x, y, 0f, 0f, 0f, statistic.color.getR(), statistic.color.getG(), statistic.color.getB());
+
+					vertexList.addIndex(lastVertex, vertex);
+
+					lastVertex = vertex;
+					lastValue = value;
+				}
+
+				int vertex = vertexList.addVertex(1f, (float) statistic.getValue(profiler.getHistorySize() - 1) / collection.maxHistory + yOffset, 0f, 0f, 0f, statistic.color.getR(), statistic.color.getG(), statistic.color.getB());
 				vertexList.addIndex(lastVertex, vertex);
-
-				lastVertex = vertex;
-				lastValue = value;
 			}
 
-			int vertex = vertexList.addVertex(1f, (float) history.get(history.size() - 1) / maxHistory, 0f, 0f, 0f, color.getR(), color.getG(), color.getB());
-			vertexList.addIndex(lastVertex, vertex);
+			//render border
+			int v1 = vertexList.addVertex(0f, 0f + yOffset, 0f, 0f, 0f, 1.0f, 1.0f, 1.0f);
+			int v2 = vertexList.addVertex(1f, 0f + yOffset, 0f, 0f, 0f, 1.0f, 1.0f, 1.0f);
+			int v3 = vertexList.addVertex(1f, 1f + yOffset, 0f, 0f, 0f, 1.0f, 1.0f, 1.0f);
+			int v4 = vertexList.addVertex(0f, 1f + yOffset, 0f, 0f, 0f, 1.0f, 1.0f, 1.0f);
 
+			vertexList.addIndex(v1, v2);
+			vertexList.addIndex(v2, v3);
+			vertexList.addIndex(v3, v4);
+			vertexList.addIndex(v4, v1);
+
+			yOffset += 1.0f;
 		}
-
-		
 
 		VertexBufferObjectIndexed vbo = new VertexBufferObjectIndexed(
 				VertexBufferObject.LINES,
@@ -156,7 +198,7 @@ public class DebugWindow {
 		shader.activate();
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
 		shader.setUniform2f("cornerSmall", 0, 10);
-		shader.setUniform2f("cornerBig", window.getWidth() - SIDEBAR_WIDTH, window.getHeight() - 10);
+		shader.setUniform2f("cornerBig", window.getWidth() - SIDEBAR_WIDTH, 300 - 10);
 		vbo.render();
 		shader.deactivate();
 		vbo.cleanup();
@@ -164,7 +206,7 @@ public class DebugWindow {
 		int y = 10;
 
 		for (FontRenderableString s : stringList) {
-			s.render(window.getWidth() - SIDEBAR_WIDTH, y);
+			if (s != null) s.render(window.getWidth() - SIDEBAR_WIDTH, y);
 			y += 20;
 		}
 
