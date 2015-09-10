@@ -87,6 +87,9 @@ public class GLWindow implements IRenderTarget {
 				if (focused == GL_FALSE) {
 					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 					mouseHidden = false;
+					
+					//fix mouse jumping
+					inputHandler.flagMouseDelta();
 				}
 			}
 		};

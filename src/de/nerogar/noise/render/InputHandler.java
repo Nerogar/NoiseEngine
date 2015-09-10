@@ -48,6 +48,8 @@ public final class InputHandler {
 	private GLWindow window;
 	private long windowPointer;
 
+	private boolean ignoreMouseDelta;
+
 	private double cursorXpos, cursorYpos;
 	private double cursorDeltaX, cursorDeltaY;
 	private double scrollDeltaY, scrollDeltaX;
@@ -61,6 +63,8 @@ public final class InputHandler {
 		this.window = window;
 		this.windowPointer = windowPointer;
 
+		ignoreMouseDelta = true;
+
 		inputText = new StringBuilder();
 		keyboardKeyEvents = new ArrayList<InputHandler.KeyboardKeyEvent>();
 		mouseButtonEvents = new ArrayList<InputHandler.MouseButtonEvent>();
@@ -72,11 +76,22 @@ public final class InputHandler {
 
 	//---[mouse]---
 	protected void setCursorPosition(double xpos, double ypos) {
-		cursorDeltaX = xpos - cursorXpos;
-		cursorDeltaY = ypos - cursorYpos;
+		if (!ignoreMouseDelta) {
+			cursorDeltaX = xpos - cursorXpos;
+			cursorDeltaY = ypos - cursorYpos;
+		} else {
+			ignoreMouseDelta = false;
+		}
 
 		cursorXpos = xpos;
 		cursorYpos = ypos;
+	}
+
+	public void flagMouseDelta() {
+		ignoreMouseDelta = true;
+
+		cursorDeltaX = 0;
+		cursorDeltaY = 0;
 	}
 
 	public float getCursorPosX() {
