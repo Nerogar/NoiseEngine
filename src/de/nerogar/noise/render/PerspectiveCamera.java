@@ -223,14 +223,10 @@ public class PerspectiveCamera {
 
 		if (lookVecZ == 0) {
 			setYaw(lookVecX > 0 ? PI / 2f : -PI / 2f);
-
-			System.out.println("1");
 		} else {
 			float sign = lookVecZ > 0 ? PI : 0;
 
 			setYaw((float) Math.atan(lookVecX / lookVecZ) + sign);
-
-			System.out.println(lookVecX + "    " + lookVecZ);
 		}
 
 		if (lookVecX == 0 && lookVecZ == 0) {
@@ -240,7 +236,6 @@ public class PerspectiveCamera {
 
 			setPitch((float) Math.atan(lookVecY / lengthXZ));
 		}
-
 	}
 
 	public void setFOV(float fov) {
