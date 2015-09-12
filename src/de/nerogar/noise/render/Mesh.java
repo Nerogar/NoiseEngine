@@ -6,6 +6,7 @@ public class Mesh {
 
 	private int indexCount;
 	private int vertexCount;
+	private int triangleCount;
 
 	private int[] indexArray;
 	private float[] positionArray;
@@ -27,6 +28,7 @@ public class Mesh {
 		this.bitangentArray = bitangentArray;
 
 		calcBoundingRadius();
+		calcTriangleCount();
 	}
 
 	public Mesh(int indexCount, int vertexCount, int[] indexArray, float[] positionArray, float[] uvArray, float[] normalArray) {
@@ -40,6 +42,7 @@ public class Mesh {
 
 		calcTangents();
 		calcBoundingRadius();
+		calcTriangleCount();
 	}
 
 	public int getIndexCount() {
@@ -76,6 +79,10 @@ public class Mesh {
 
 	public float getBoundingRadius() {
 		return boundingRadius;
+	}
+
+	public int getTriangleCount() {
+		return triangleCount;
 	}
 
 	private void calcTangents() {
@@ -205,5 +212,9 @@ public class Mesh {
 		}
 
 		boundingRadius = (float) Math.sqrt(boundingRadius);
+	}
+
+	private void calcTriangleCount() {
+		triangleCount = indexCount / 3;
 	}
 }

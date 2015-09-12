@@ -505,6 +505,7 @@ public class DeferredRenderer {
 			currentShader.deactivate();
 
 			profiler.addValue(DeferredRendererProfiler.OBJECT_RENDER_COUNT, instanceCount);
+			profiler.addValue(DeferredRendererProfiler.TRIANGLE_RENDER_COUNT, instanceCount * container.container.getMesh().getTriangleCount());
 		}
 
 		glDisable(GL_DEPTH_TEST);
