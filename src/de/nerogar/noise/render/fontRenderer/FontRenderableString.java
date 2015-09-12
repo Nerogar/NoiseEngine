@@ -8,6 +8,9 @@ import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Matrix4f;
 
+/**
+ * a class for easy text rendering
+ */
 public class FontRenderableString {
 
 	private static final int tabSize = 4;
@@ -23,6 +26,23 @@ public class FontRenderableString {
 	private float pointSizeX;
 	private float pointSizeY;
 
+	/**
+	 * pointSizeX and pointSizeY are the sizes of a single point in viewSpace. Example:
+	 * <p>
+	 * on a 800x600 pixel screen with an orthographic projection matrix that maps
+	 * (0/0) to (0/0) and (1/1) to (800/600) the point sizes should be:
+	 * <ul>
+	 * <li>pointSizeX = 1/800</li>
+	 * <li>pointSizeY = 1/600</li>
+	 * </ul>
+	 * 
+	 * @param font the {@link Font Font} for this string
+	 * @param text the text to display
+	 * @param color the {@link Color color}
+	 * @param projectionMatrix the projection matrix that will be used to display this string
+	 * @param pointSizeX the size of a point
+	 * @param pointSizeY the size of a point
+	 */
 	public FontRenderableString(Font font, String text, Color color, Matrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
 		this.font = font;
 		this.color = color;
@@ -73,12 +93,25 @@ public class FontRenderableString {
 
 	}
 
+	/**
+	 * updates the projection settings set at creation time
+	 * 
+	 * @param projectionMatrix the new projectinoMatrix
+	 * @param pointSizeX the new pointSizeX
+	 * @param pointSizeY the new pointSizeY
+	 */
 	public void setRenderDimensions(Matrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
 		this.projectionMatrix = projectionMatrix;
 		this.pointSizeX = pointSizeX;
 		this.pointSizeY = pointSizeY;
 	}
 
+	/**
+	 * parameters are in units set by the projection matrix
+	 * 
+	 * @param left the left border of the string
+	 * @param bottom the baseline for the first line in the string
+	 */
 	public void render(int left, int bottom) {
 		long currentContext = GLWindow.getCurrentContext();
 
@@ -87,7 +120,7 @@ public class FontRenderableString {
 		Shader shader = glContextShaderMap.get(currentContext);
 
 		if (shader == null) {
-			shader = getFontShader();
+			shader = loadFontShader();
 			glContextShaderMap.put(currentContext, shader);
 		}
 
@@ -105,7 +138,7 @@ public class FontRenderableString {
 		glDisable(GL_BLEND);
 	}
 
-	private static Shader getFontShader() {
+	private static Shader loadFontShader() {
 		Shader shader = ShaderLoader.loadShader("<font/font.vert>", "<font/font.frag>");
 		shader.activate();
 		shader.setUniform1i("fontSheet", 0);
@@ -114,6 +147,9 @@ public class FontRenderableString {
 		return shader;
 	}
 
+	/**
+	 * Cleans all internal opengl ressources. This string is unuseable after this call.
+	 */
 	public void cleanup() {
 		vbo.cleanup();
 	}

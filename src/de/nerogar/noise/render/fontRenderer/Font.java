@@ -7,12 +7,17 @@ import java.awt.image.BufferedImage;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
 
+/**
+ * a font class used for creating {@link FontRenderableString FontRenderableString}
+ */
 public class Font {
 	private static int CHAR_COUNT = 16;
 
+	private String fontName;
+
 	private Texture2D texture;
 	private int textureSize;
-	private int size;
+	private int pointSize;
 
 	private int padding;
 	private int charCellSize;
@@ -20,28 +25,46 @@ public class Font {
 
 	private int[] rightBorder;
 
-	public Font(String fontName, int size) {
-		this.size = size;
-
-		padding = Math.max(3, (size + 1) / 2);
-		charCellSize = size + 2 * padding;
-		minCharRight = padding + size / 8;
-		rightBorder = new int[CHAR_COUNT * CHAR_COUNT];
-
-		createTexture(fontName, size);
+	/**
+	 * A new Font sheet texture is rendered. All variables are set as in
+	 * {@link java.awt.Font#Font(String, int, int) java.awt.Font.Font(String, int, int)}.
+	 * The style is set to {@link java.awt.Font#PLAIN PLAIN}.
+	 * 
+	 * @param fontName the name of the font
+	 * @param pointSize the point size of the font
+	 */
+	public Font(String fontName, int pointSize) {
+		this(fontName, java.awt.Font.PLAIN, pointSize);
 	}
 
-	private void createTexture(String fontName, int size) {
+	/**
+	 * A new Font sheet texture is rendered. All variables are set as in
+	 * {@link java.awt.Font#Font(String, int, int) java.awt.Font.Font(String, int, int)}.
+	 * 
+	 * @param fontName the name of the font
+	 * @param style the style of the font
+	 * @param pointSize the point size of the font
+	 */
+	public Font(String fontName, int style, int pointSize) {
+		this.fontName = fontName;
+		this.pointSize = pointSize;
+
+		padding = Math.max(3, (pointSize + 1) / 2);
+		charCellSize = pointSize + 2 * padding;
+		minCharRight = padding + pointSize / 8;
+		rightBorder = new int[CHAR_COUNT * CHAR_COUNT];
+
+		createTexture(fontName, style, pointSize);
+	}
+
+	private void createTexture(String fontName, int style, int size) {
 		textureSize = CHAR_COUNT * (size + padding * 2);
 
 		BufferedImage fontRendered = new BufferedImage(textureSize, textureSize, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = fontRendered.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-		//g.setColor(java.awt.Color.BLACK);
-		//g.fillRect(0, 0, fontRendered.getWidth(), fontRendered.getHeight());
-
-		java.awt.Font font = new java.awt.Font(fontName, java.awt.Font.PLAIN, size);
+		java.awt.Font font = new java.awt.Font(fontName, style, size);
 		g.setFont(font);
 
 		g.setColor(java.awt.Color.WHITE);
@@ -71,53 +94,98 @@ public class Font {
 			}
 		}
 
-		right += Math.max(size / 6, 1);
+		right += Math.max(pointSize / 6, 1);
 
 		return right - x;
 
 	}
 
+	/**
+	 * @return the font sheet as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getTexture() {
 		return texture;
 	}
 
+	/**
+	 * @param c the character
+	 * @return the width of the character in pixels
+	 */
 	public int getCharPixelWidth(char c) {
 		return rightBorder[c] - padding;
 	}
 
-	public float getCharWidth(char c) {
+	/**
+	 * @param c the character
+	 * @return the complete width reserved for this character on the texture
+	 */
+	protected float getCharWidth(char c) {
 		return 1.0f / CHAR_COUNT;
 	}
 
-	public float getCharHeight(char c) {
+	/**
+	 * @param c the character
+	 * @return the complete height reserved for this character on the texture
+	 */
+	protected float getCharHeight(char c) {
 		return 1.0f / CHAR_COUNT;
 	}
 
-	public float getCharLeft(char c) {
+	/**
+	 * @param c the character
+	 * @return the left border for this character on the texture
+	 */
+	protected float getCharLeft(char c) {
 		return (float) (c % CHAR_COUNT) / CHAR_COUNT;
 	}
 
-	public float getCharBottom(char c) {
+	/**
+	 * @param c the character
+	 * @return the bottom border for this character on the texture
+	 */
+	protected float getCharBottom(char c) {
 		return (float) (CHAR_COUNT - (c / CHAR_COUNT) - 1) / CHAR_COUNT;
 	}
 
-	public int getSize() {
+	/**
+	 * @return the complete size of the character in pixels
+	 */
+	protected int getSize() {
 		return charCellSize;
 	}
 
-	public int getPointSize() {
-		return size;
+	/**
+	 * @return the font name of this font
+	 */
+	public String getFontName() {
+		return fontName;
 	}
 
-	public int getBaseline() {
+	/**
+	 * @return the point size of this font
+	 */
+	public int getPointSize() {
+		return pointSize;
+	}
+
+	/**
+	 * @return the height of the baseline of each character in pixels
+	 */
+	protected int getBaseline() {
 		return padding;
 	}
 
-	public int getLineSpace() {
-		return size + size / 3;
+	/**
+	 * @return the distance between the baseline of two rendered lines in pixels
+	 */
+	protected int getLineSpace() {
+		return pointSize + pointSize / 3;
 	}
 
-	public int getTexturePadding() {
+	/**
+	 * @return the padding each character is given on the font sheet in pixels
+	 */
+	protected int getTexturePadding() {
 		return padding;
 	}
 }
