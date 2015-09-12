@@ -15,7 +15,7 @@ import de.nerogar.noise.util.*;
 
 public class DebugWindow {
 
-	private static final int SIDEBAR_WIDTH = 150;
+	private static final int SIDEBAR_WIDTH = 220;
 	private static final int PROFILER_HEIGHT = 300;
 	private static final int RENDER_PADDING = 10;
 	private static final Color PROFILER_COLOR = new Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -31,6 +31,7 @@ public class DebugWindow {
 
 	private Font font;
 	private List<FontRenderableString> stringList;
+	private List<FontRenderableString> stringValueList;
 
 	private float scrollOffset;
 	private float renderedScrollOffset;
@@ -62,6 +63,7 @@ public class DebugWindow {
 
 		font = new Font("calibri", 14);
 		stringList = new ArrayList<FontRenderableString>();
+		stringValueList = new ArrayList<FontRenderableString>();
 		createFontSidebar();
 	}
 
@@ -139,9 +141,9 @@ public class DebugWindow {
 		window.setTitle("Debug (Profiler: " + profiler.getName() + ")");
 
 		vertexList.clear();
-
+		stringValueList.clear();
+		
 		float yOffset = -renderedScrollOffset;
-
 		for (ProfilerStatisticsCategory category : profiler.getProfilerCategories()) {
 			for (ProfilerStatistic statistic : category.statisticList) {
 
@@ -168,13 +170,19 @@ public class DebugWindow {
 					lastValue = value;
 				}
 
-				int vertex = vertexList.addVertex(1f, (float) statistic.getValue(profiler.getHistorySize() - 1) / category.maxHistory + yOffset, 0f, 0f, 0f, statistic.color.getR(), statistic.color.getG(), statistic.color.getB());
+				int value = statistic.getValue(profiler.getHistorySize() - 1);
+				int vertex = vertexList.addVertex(1f, (float) value / category.maxHistory + yOffset, 0f, 0f, 0f, statistic.color.getR(), statistic.color.getG(), statistic.color.getB());
 				vertexList.addIndex(lastVertex, vertex);
 
 				FontRenderableString maxHistoryString = new FontRenderableString(font, String.valueOf(category.maxHistory), PROFILER_COLOR, projectionMatrix, 1.0f, 1.0f);
 				maxHistoryString.render(RENDER_PADDING + 3, (int) ((yOffset + 1.0f) * PROFILER_HEIGHT) - font.getPointSize() + RENDER_PADDING);
 				maxHistoryString.cleanup();
+
+				FontRenderableString valueString = new FontRenderableString(font, String.valueOf(value), PROFILER_COLOR, projectionMatrix, 1f, 1f);
+				stringValueList.add(valueString);
 			}
+
+			stringValueList.add(null);
 
 			//render border
 			int v1 = vertexList.addVertex(0f, 0f + yOffset, 0f, 0f, 0f, PROFILER_COLOR.getR(), PROFILER_COLOR.getG(), PROFILER_COLOR.getB());
@@ -210,8 +218,15 @@ public class DebugWindow {
 
 		int y = RENDER_PADDING;
 
-		for (FontRenderableString s : stringList) {
-			if (s != null) s.render(window.getWidth() - SIDEBAR_WIDTH, y);
+		for (int i = 0; i < stringList.size(); i++) {
+			FontRenderableString s = stringList.get(i);
+			FontRenderableString v = stringValueList.get(i);
+
+			if (s != null) {
+				s.render(window.getWidth() - SIDEBAR_WIDTH + 70, y);
+				v.render(window.getWidth() - SIDEBAR_WIDTH, y);
+				v.cleanup();
+			}
 			y += 20;
 		}
 
