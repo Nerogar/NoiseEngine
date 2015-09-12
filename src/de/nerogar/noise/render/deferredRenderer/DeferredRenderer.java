@@ -151,6 +151,9 @@ public class DeferredRenderer {
 	private float sunLightBrightness;
 	private float minAmbientBrightness;
 
+	//debug
+	private DeferredRenderable originAxis;
+
 	public DeferredRenderer(int width, int height) {
 
 		profiler = new DeferredRendererProfiler();
@@ -194,6 +197,25 @@ public class DeferredRenderer {
 
 		loadShaders();
 		setFrameBufferResolution(width, height);
+
+		//debug features
+
+		if (Noise.DEBUG) {
+			loadOriginAxis();
+			addObject(originAxis);
+		}
+	}
+
+	private void loadOriginAxis() {
+		DeferredContainer axisContainer = new DeferredContainer(
+				WavefrontLoader.loadObject(Noise.RESSOURCE_DIR + "deferredRenderer/originAxis/mesh.obj"),
+				null,
+				Texture2DLoader.loadTexture(Noise.RESSOURCE_DIR + "deferredRenderer/originAxis/color.png"),
+				Texture2DLoader.loadTexture(Noise.RESSOURCE_DIR + "deferredRenderer/originAxis/normal.png"),
+				Texture2DLoader.loadTexture(Noise.RESSOURCE_DIR + "deferredRenderer/originAxis/light.png")
+				);
+
+		originAxis = new DeferredRenderable(axisContainer, new RenderProperties3f());
 	}
 
 	public void addObject(DeferredRenderable object) {
@@ -240,6 +262,10 @@ public class DeferredRenderer {
 		}
 
 		vboMap.clear();
+
+		if (Noise.DEBUG) {
+			addObject(originAxis);
+		}
 
 		profiler.setValue(DeferredRendererProfiler.OBJECT_COUNT, 0);
 	}
@@ -535,7 +561,9 @@ public class DeferredRenderer {
 	}
 
 	public void cleanup() {
-		clear();
+		for (VboContainer container : vboMap.values()) {
+			container.vbo.cleanup();
+		}
 
 		gBuffer.cleanup();
 		lightFrameBuffer.cleanup();
