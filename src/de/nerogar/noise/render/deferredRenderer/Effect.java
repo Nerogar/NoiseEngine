@@ -3,6 +3,9 @@ package de.nerogar.noise.render.deferredRenderer;
 import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.util.Matrix4f;
 
+/**
+ * an interface for effects used in the {@link DeferredRenderer DeferredRenderer}
+ */
 public interface Effect {
 
 	/**
@@ -19,6 +22,12 @@ public interface Effect {
 	 */
 	public float getBoundingRadius();
 
+	/**
+	 * renders this effect
+	 * 
+	 * @param viewMatrix the view matrix of the camera
+	 * @param projectionMatrix the projection matrix of the camera
+	 */
 	public void render(Matrix4f viewMatrix, Matrix4f projectionMatrix);
 
 }

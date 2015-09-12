@@ -3,7 +3,7 @@ package de.nerogar.noise.render.deferredRenderer;
 import de.nerogar.noise.debug.Profiler;
 import de.nerogar.noise.util.Color;
 
-public class DeferredRendererProfiler extends Profiler {
+class DeferredRendererProfiler extends Profiler {
 
 	private static final int OBJECT = 0;
 	private static final int LIGHT = 1;

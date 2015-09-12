@@ -8,6 +8,14 @@ import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.*;
 
+/**
+ * A renderer implementing a deferred rendering pipeline.
+ * <ul>
+ * <li>Lights can be managed with a {@link LightContainer LightContainer}.</li>
+ * <li>Effects can be managed with an {@link EffectContainer EffectContainer}.</li>
+ * </ul>
+ */
+
 public class DeferredRenderer {
 
 	private static class VboContainer {
@@ -154,6 +162,10 @@ public class DeferredRenderer {
 	//debug
 	private DeferredRenderable originAxis;
 
+	/**
+	 * @param width initial width of the target {@link FrameBufferObject FrameBufferObject}
+	 * @param height initial height of the target {@link FrameBufferObject FrameBufferObject}
+	 */
 	public DeferredRenderer(int width, int height) {
 
 		profiler = new DeferredRendererProfiler();
@@ -218,6 +230,9 @@ public class DeferredRenderer {
 		originAxis = new DeferredRenderable(axisContainer, new RenderProperties3f());
 	}
 
+	/**
+	 * @param object a {@link DeferredRenderable DeferredRenderable} to add
+	 */
 	public void addObject(DeferredRenderable object) {
 		VboContainer container = vboMap.get(object.getContainer());
 
@@ -232,12 +247,18 @@ public class DeferredRenderer {
 		profiler.incrementValue(DeferredRendererProfiler.OBJECT_COUNT);
 	}
 
+	/**
+	 * @param objects a collection of {@link DeferredRenderable DeferredRenderables} to add
+	 */
 	public void addAllObjects(Collection<DeferredRenderable> objects) {
 		for (DeferredRenderable object : objects) {
 			addObject(object);
 		}
 	}
 
+	/**
+	 * @param object a {@link DeferredRenderable DeferredRenderable} to remove
+	 */
 	public void removeObject(DeferredRenderable object) {
 		VboContainer container = vboMap.get(object.getContainer());
 		container.renderables.remove(object);
@@ -250,12 +271,18 @@ public class DeferredRenderer {
 		profiler.decrementValue(DeferredRendererProfiler.OBJECT_COUNT);
 	}
 
+	/**
+	 * @param objects a collection of {@link DeferredRenderable DeferredRenderables} to remove
+	 */
 	public void removeAllObjects(Collection<DeferredRenderable> objects) {
 		for (DeferredRenderable object : objects) {
 			removeObject(object);
 		}
 	}
 
+	/**
+	 * removes all {@link DeferredRenderable DeferredRenderables} from this renderer
+	 */
 	public void clear() {
 		for (VboContainer container : vboMap.values()) {
 			container.vbo.cleanup();
@@ -270,10 +297,20 @@ public class DeferredRenderer {
 		profiler.setValue(DeferredRendererProfiler.OBJECT_COUNT, 0);
 	}
 
+	/**
+	 * the light container is used to manage lights
+	 * 
+	 * @return the light container
+	 */
 	public LightContainer getLightContainer() {
 		return lightContainer;
 	}
 
+	/**
+	 * the effect container is used to manage effects
+	 * 
+	 * @return the effect container
+	 */
 	public EffectContainer getEffectContainer() {
 		return effectContainer;
 	}
@@ -311,7 +348,7 @@ public class DeferredRenderer {
 	}
 
 	//TODO: remove
-	public void loadShaders() {
+	private void loadShaders() {
 		gBufferShader = ShaderLoader.loadShader("<deferredRenderer/gBuffer.vert>", "<deferredRenderer/gBuffer.frag>");
 		gBufferShader.activate();
 		gBufferShader.setUniform1i("textureColor_N", 0);
@@ -344,6 +381,12 @@ public class DeferredRenderer {
 		filterShader.deactivate();
 	}
 
+	/**
+	 * resizes the {@link FrameBufferObject FrameBufferObjects} to match the new resolution
+	 * 
+	 * @param width the new width
+	 * @param height the new height
+	 */
 	public void setFrameBufferResolution(int width, int height) {
 		gBuffer.setResolution(width, height);
 		lightFrameBuffer.setResolution(width, height);
@@ -364,24 +407,43 @@ public class DeferredRenderer {
 		filterShader.deactivate();
 	}
 
+	/**
+	 * a {@link TextureCubeMap TextureCubeMap} used for reflections
+	 * 
+	 * @param reflectionTexture the reflection texture
+	 */
 	public void setReflectionTexture(TextureCubeMap reflectionTexture) {
 		this.reflectionTexture = reflectionTexture;
 	}
 
+	/**
+	 * @param sunLightColor the color of the sun light
+	 */
 	public void setSunLightColor(Color sunLightColor) {
 		this.sunLightColor = sunLightColor;
 	}
 
+	/**
+	 * @param sunLightDirection the direction of the sun light
+	 */
 	public void setSunLightDirection(Vector3f sunLightDirection) {
 		this.sunLightDirectionInternal = sunLightDirection;
 		recalcSunLight();
 	}
 
+	/**
+	 * @param sunLightBrightness the brightness of the sun light
+	 */
 	public void setSunLightBrightness(float sunLightBrightness) {
 		this.sunLightBrightness = sunLightBrightness;
 		recalcSunLight();
 	}
 
+	/**
+	 * the minimum brightness of objects without sunlight
+	 * 
+	 * @param minAmbientBrightness the brightness
+	 */
 	public void setMinAmbientBrightness(float minAmbientBrightness) {
 		this.minAmbientBrightness = minAmbientBrightness;
 	}
@@ -391,6 +453,16 @@ public class DeferredRenderer {
 		sunLightDirection.setValue(sunLightBrightness);
 	}
 
+	/**
+	 * Renders everything onto internal {@link FrameBufferObject FrameBufferObjects}.<br>
+	 * Access them with
+	 * <ul>
+	 * <li>{@link DeferredRenderer#getColorOutput() getColorOutput()} for the final output.</li>
+	 * <li> getXXXBuffer() for the different buffers.</li>
+	 * </ul>
+	 * 
+	 * @param camera the camera for viewing the scene
+	 */
 	public void render(PerspectiveCamera camera) {
 		//render gBuffer
 		gBuffer.bind();
@@ -528,38 +600,71 @@ public class DeferredRenderer {
 		profiler.reset();
 	}
 
+	/**
+	 * @return the final color output as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getColorOutput() {
 		return filterFrameBuffer.getTextureAttachment(0);
 	}
 
+	/**
+	 * @return the depth buffer as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getDepthBuffer() {
 		return gBuffer.getTextureAttachment(-1);
 	}
 
+	/**
+	 * @return the color buffer as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getColorBuffer() {
 		return gBuffer.getTextureAttachment(0);
 	}
 
+	/**
+	 * @return the normal buffer as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getNormalBuffer() {
 		return gBuffer.getTextureAttachment(1);
 	}
 
+	/**
+	 * @return the position buffer as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getPositionBuffer() {
 		return gBuffer.getTextureAttachment(2);
 	}
 
+	/**
+	 * the light buffer contains light information
+	 * 
+	 * @return the light buffer as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getLightBuffer() {
 		return gBuffer.getTextureAttachment(3);
 	}
 
+	/**
+	 * the lights buffer contains lights from the {@link LightContainer LightContainer} returned by {@link DeferredRenderer#getLightContainer() getLightContainer()}
+	 * 
+	 * @return the light buffer as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getLightsBuffer() {
 		return lightFrameBuffer.getTextureAttachment(0);
 	}
 
+	/**
+	 * the effects buffer contains effects from the {@link EffectContainer EffectContainer} returned by {@link DeferredRenderer#getEffectContainer() getEffectContainer()}
+	 * 
+	 * @return the depth buffer as a {@link Texture2D Texture2D}
+	 */
 	public Texture2D getEffectsBuffer() {
 		return effectFrameBuffer.getTextureAttachment(0);
 	}
 
+	/**
+	 * Cleans all internal opengl ressources. This renderer is unuseable after this call.
+	 */
 	public void cleanup() {
 		for (VboContainer container : vboMap.values()) {
 			container.vbo.cleanup();
