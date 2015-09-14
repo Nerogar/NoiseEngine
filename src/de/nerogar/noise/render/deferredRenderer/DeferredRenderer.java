@@ -290,11 +290,11 @@ public class DeferredRenderer {
 
 		vboMap.clear();
 
+		profiler.setValue(DeferredRendererProfiler.OBJECT_COUNT, 0);
+
 		if (Noise.DEBUG) {
 			addObject(originAxis);
 		}
-
-		profiler.setValue(DeferredRendererProfiler.OBJECT_COUNT, 0);
 	}
 
 	/**
