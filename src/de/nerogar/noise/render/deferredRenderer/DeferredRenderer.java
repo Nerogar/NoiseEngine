@@ -154,7 +154,6 @@ public class DeferredRenderer {
 	//settings
 	private TextureCubeMap reflectionTexture;
 	private Color sunLightColor;
-	private Vector3f sunLightDirectionInternal;
 	private Vector3f sunLightDirection;
 	private float sunLightBrightness;
 	private float minAmbientBrightness;
@@ -181,9 +180,8 @@ public class DeferredRenderer {
 				);
 
 		sunLightColor = new Color(1.0f, 1.0f, 0.9f, 0.0f);
-		sunLightDirectionInternal = new Vector3f(-1.0f);
+		sunLightDirection = new Vector3f(-1.0f);
 		sunLightBrightness = 1.5f;
-		recalcSunLight();
 		minAmbientBrightness = 0.3f;
 
 		lightContainer = new LightContainer();
@@ -193,7 +191,8 @@ public class DeferredRenderer {
 
 		gBuffer = new FrameBufferObject(width, height, true,
 				Texture2D.DataType.BGRA_8_8_8_8I, //color
-				Texture2D.DataType.BGRA_16_16_16F, //normal
+				Texture2D.DataType.BGRA_10_10_10_2, //normal
+				//Texture2D.DataType.BGRA_16_16_16F, //normal
 				Texture2D.DataType.BGRA_32_32_32F, //position
 				Texture2D.DataType.BGRA_8_8_8_8I //light
 		);
@@ -427,8 +426,7 @@ public class DeferredRenderer {
 	 * @param sunLightDirection the direction of the sun light
 	 */
 	public void setSunLightDirection(Vector3f sunLightDirection) {
-		this.sunLightDirectionInternal = sunLightDirection;
-		recalcSunLight();
+		this.sunLightDirection = sunLightDirection.normalized();
 	}
 
 	/**
@@ -436,7 +434,6 @@ public class DeferredRenderer {
 	 */
 	public void setSunLightBrightness(float sunLightBrightness) {
 		this.sunLightBrightness = sunLightBrightness;
-		recalcSunLight();
 	}
 
 	/**
@@ -446,11 +443,6 @@ public class DeferredRenderer {
 	 */
 	public void setMinAmbientBrightness(float minAmbientBrightness) {
 		this.minAmbientBrightness = minAmbientBrightness;
-	}
-
-	private void recalcSunLight() {
-		sunLightDirection = sunLightDirectionInternal.clone();
-		sunLightDirection.setValue(sunLightBrightness);
 	}
 
 	/**
@@ -583,6 +575,7 @@ public class DeferredRenderer {
 		finalShader.setUniform3f("cameraPosition", camera.getX(), camera.getY(), camera.getZ());
 		finalShader.setUniform3f("sunLightColor", sunLightColor.getR(), sunLightColor.getG(), sunLightColor.getB());
 		finalShader.setUniform3f("sunLightDirection", sunLightDirection.getX(), sunLightDirection.getY(), sunLightDirection.getZ());
+		finalShader.setUniform1f("sunLightBrightness", sunLightBrightness);
 		finalShader.setUniform1f("minAmbientBrightness", minAmbientBrightness);
 		fullscreenQuad.render();
 		finalShader.deactivate();

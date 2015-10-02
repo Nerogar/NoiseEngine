@@ -14,21 +14,21 @@ layout (location = 9) in mat3 normalMatrix_N;
 
 out DATA_N
 {
-	vec4 position;
+	vec3 position;
 	vec3 normal;
 	vec3 tangent;
 	vec3 bitangent;
 	vec2 uv;
 } vert_out_N;
 
-void mainSurface(inout vec2 uv, inout vec4 position, inout vec3 normal);
-
 void main(){
 	vert_out_N.normal = normalize(normalMatrix_N * normal_N);
 	vert_out_N.tangent = normalize(normalMatrix_N * tangent_N);
 	vert_out_N.bitangent = normalize(normalMatrix_N * bitangent_N);
 	vert_out_N.uv = uv_N;
-	vert_out_N.position = modelMatrix_N * vec4(position_N, 1.0);
 
-	gl_Position = projectionMatrix_N * viewMatrix_N * vert_out_N.position;
+	vec4 pos = modelMatrix_N * vec4(position_N, 1.0);
+	vert_out_N.position = pos.xyz;
+
+	gl_Position = projectionMatrix_N * viewMatrix_N * pos;
 }

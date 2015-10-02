@@ -14,14 +14,14 @@ layout (location = 9) in mat3 normalMatrix_N;
 
 out DATA_N
 {
-	vec4 position;
+	vec3 position;
 	vec3 normal;
 	vec3 tangent;
 	vec3 bitangent;
 	vec2 uv;
 } vert_out_N;
 
-void mainSurface(inout vec2 uv, inout vec4 position, inout vec3 normal);
+void mainSurface(inout vec2 uv, inout vec3 position, inout vec3 normal);
 
 #parameter surfaceShaderVertex
 
@@ -30,9 +30,9 @@ void main(){
 	vert_out_N.tangent = normalize(normalMatrix_N * tangent_N);
 	vert_out_N.bitangent = normalize(normalMatrix_N * bitangent_N);
 	vert_out_N.uv = uv_N;
-	vert_out_N.position = modelMatrix_N * vec4(position_N, 1.0);
+	vert_out_N.position = (modelMatrix_N * vec4(position_N, 1.0)).xyz;
 
-	mainSurface(vert_out_N.uv, vert_out_N.position, vert_out_N.normal.xyz);
+	mainSurface(vert_out_N.uv, vert_out_N.position, vert_out_N.normal);
 
-	gl_Position = projectionMatrix_N * viewMatrix_N * vert_out_N.position;
+	gl_Position = projectionMatrix_N * viewMatrix_N * vec4(vert_out_N.position, 1.0);
 }

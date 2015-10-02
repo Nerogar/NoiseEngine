@@ -33,7 +33,7 @@ vec4 calcLight(vec3 lightPos, vec3 lightColor, vec3 worldPosition, vec3 worldNor
 
 void main(){
 	vec2 screenPosition = gl_FragCoord.xy * inverseResolution;
-	vec3 worldNormal = texture(textureNormal, screenPosition).xyz;
+	vec3 worldNormal = (texture(textureNormal, screenPosition).xyz * 2.0) - 1.0;
 	vec3 worldPosition = texture(texturePosition, screenPosition).xyz;
 
 	//sunlight is currently calculated in final.frag

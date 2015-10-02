@@ -6,19 +6,19 @@ uniform sampler2D textureLight_N;
 
 layout (location = 0) out vec4 color_out_N;
 layout (location = 1) out vec4 normal_out_N;
-layout (location = 2) out vec4 position_out_N;
+layout (location = 2) out vec3 position_out_N;
 layout (location = 3) out vec4 light_out_N; //ambient, reflection
 
 in DATA_N
 {
-	vec4 position;
+	vec3 position;
 	vec3 normal;
 	vec3 tangent;
 	vec3 bitangent;
 	vec2 uv;
 } frag_in_N;
 
-void mainSurface(inout vec4 color, in vec2 uv, inout vec4 position, inout vec3 normal, inout float displace, inout vec4 light);
+void mainSurface(inout vec4 color, in vec2 uv, inout vec3 position, inout vec3 normal, inout float displace, inout vec4 light);
 
 #parameter surfaceShaderFragment
 
@@ -36,5 +36,6 @@ void main(){
 
 	mainSurface(color_out_N, frag_in_N.uv, position_out_N, normal_out_N.xyz, normal_out_N.w, light_out_N);
 
-	if(color_out_N.a == 0.0) discard;
+	normal_out_N.xyz = (normal_out_N.xyz + 1.0) * 0.5;
+	//if(color_out_N.a == 0.0) discard;
 }
