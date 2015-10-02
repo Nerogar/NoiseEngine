@@ -45,6 +45,20 @@ public class Mesh {
 		calcTriangleCount();
 	}
 
+	public Mesh(int indexCount, int vertexCount, int[] indexArray, float[] positionArray, float[] uvArray) {
+		this.indexCount = indexCount;
+		this.vertexCount = vertexCount;
+
+		this.indexArray = indexArray;
+		this.positionArray = positionArray;
+		this.uvArray = uvArray;
+
+		calcNormals();
+		calcTangents();
+		calcBoundingRadius();
+		calcTriangleCount();
+	}
+
 	public int getIndexCount() {
 		return indexCount;
 	}
@@ -85,9 +99,49 @@ public class Mesh {
 		return triangleCount;
 	}
 
+	private void calcNormals() {
+		normalArray = new float[vertexCount * 3];
+
+		Vector3f direction1 = new Vector3f();
+		Vector3f direction2 = new Vector3f();
+
+		//calculate normals
+		for (int i = 0; i < indexCount; i += 3) {
+			direction1.set(
+					positionArray[indexArray[i + 1] * 3 + 0] - positionArray[indexArray[i + 0] * 3 + 0],
+					positionArray[indexArray[i + 1] * 3 + 1] - positionArray[indexArray[i + 0] * 3 + 1],
+					positionArray[indexArray[i + 1] * 3 + 2] - positionArray[indexArray[i + 0] * 3 + 2]
+					);
+
+			direction2.set(
+					positionArray[indexArray[i + 2] * 3 + 0] - positionArray[indexArray[i + 0] * 3 + 0],
+					positionArray[indexArray[i + 2] * 3 + 1] - positionArray[indexArray[i + 0] * 3 + 1],
+					positionArray[indexArray[i + 2] * 3 + 2] - positionArray[indexArray[i + 0] * 3 + 2]
+					);
+
+			direction1.cross(direction2);
+			direction1.normalize();
+
+			for (int j = 0; j < 3; j++) {
+				normalArray[indexArray[i + j] * 3 + 0] += direction1.getX();
+				normalArray[indexArray[i + j] * 3 + 1] += direction1.getY();
+				normalArray[indexArray[i + j] * 3 + 2] += direction1.getZ();
+			}
+		}
+
+		//noralize normals
+		for (int i = 0; i < vertexCount; i++) {
+			direction1.set(normalArray[i * 3 + 0], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
+			direction1.normalize();
+			normalArray[i * 3 + 0] = direction1.getX();
+			normalArray[i * 3 + 1] = direction1.getY();
+			normalArray[i * 3 + 2] = direction1.getZ();
+		}
+	}
+
 	private void calcTangents() {
-		tangentArray = new float[normalArray.length];
-		bitangentArray = new float[normalArray.length];
+		tangentArray = new float[vertexCount * 3];
+		bitangentArray = new float[vertexCount * 3];
 
 		Vector2f sRelative = new Vector2f();
 		Vector2f tRelative = new Vector2f();
@@ -103,8 +157,8 @@ public class Mesh {
 			//caclulate tangents and bitangents
 
 			sRelative.set(
-					uvArray[indexArray[i + 1] * 2] - uvArray[indexArray[i + 0] * 2],
-					uvArray[indexArray[i + 2] * 2] - uvArray[indexArray[i + 0] * 2]
+					uvArray[indexArray[i + 1] * 2 + 0] - uvArray[indexArray[i + 0] * 2 + 0],
+					uvArray[indexArray[i + 2] * 2 + 0] - uvArray[indexArray[i + 0] * 2 + 0]
 					);
 
 			tRelative.set(
@@ -113,13 +167,13 @@ public class Mesh {
 					);
 
 			q1Relative.set(
-					positionArray[indexArray[i + 1] * 3] - positionArray[indexArray[i + 0] * 3],
+					positionArray[indexArray[i + 1] * 3 + 0] - positionArray[indexArray[i + 0] * 3 + 0],
 					positionArray[indexArray[i + 1] * 3 + 1] - positionArray[indexArray[i + 0] * 3 + 1],
 					positionArray[indexArray[i + 1] * 3 + 2] - positionArray[indexArray[i + 0] * 3 + 2]
 					);
 
 			q2Relative.set(
-					positionArray[indexArray[i + 2] * 3] - positionArray[indexArray[i + 0] * 3],
+					positionArray[indexArray[i + 2] * 3 + 0] - positionArray[indexArray[i + 0] * 3 + 0],
 					positionArray[indexArray[i + 2] * 3 + 1] - positionArray[indexArray[i + 0] * 3 + 1],
 					positionArray[indexArray[i + 2] * 3 + 2] - positionArray[indexArray[i + 0] * 3 + 2]
 					);
@@ -155,13 +209,14 @@ public class Mesh {
 		float avgError = 0;
 		float minError = 0;
 
-		//normalize tangent and bitangent
+		//Use the Gram–Schmidt process to make normals, tangents and bitangents orthogonal.
+		//Normals are expected to be normalized, tangents and bitangents are normalized in the process
 		for (int i = 0; i < vertexCount; i++) {
-			tangent.set(tangentArray[i * 3], tangentArray[i * 3 + 1], tangentArray[i * 3 + 2]);
-			bitangent.set(bitangentArray[i * 3], bitangentArray[i * 3 + 1], bitangentArray[i * 3 + 2]);
+			tangent.set(tangentArray[i * 3 + 0], tangentArray[i * 3 + 1], tangentArray[i * 3 + 2]);
+			bitangent.set(bitangentArray[i * 3 + 0], bitangentArray[i * 3 + 1], bitangentArray[i * 3 + 2]);
 
 			//make tangent orthogonal and store
-			normal.set(normalArray[i * 3], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
+			normal.set(normalArray[i * 3 + 0], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
 
 			tangent.subtract(normal.multiply(normal.dot(tangent)));
 			tangent.normalize();
@@ -177,6 +232,7 @@ public class Mesh {
 			bitangentArray[i * 3 + 1] = bitangent.getY();
 			bitangentArray[i * 3 + 2] = bitangent.getZ();
 
+			//load normal and tangent again to calculate errors
 			normal.set(normalArray[i * 3], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
 			tangent.set(tangentArray[i * 3], tangentArray[i * 3 + 1], tangentArray[i * 3 + 2]);
 
