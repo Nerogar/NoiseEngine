@@ -50,9 +50,9 @@ public final class InputHandler {
 
 	private boolean ignoreMouseDelta;
 
-	private double cursorXpos, cursorYpos;
+	private double cursorPosX, cursorPosY;
 	private double cursorDeltaX, cursorDeltaY;
-	private double scrollDeltaY, scrollDeltaX;
+	private double scrollDeltaX, scrollDeltaY;
 
 	private StringBuilder inputText;
 
@@ -77,14 +77,14 @@ public final class InputHandler {
 	//---[mouse]---
 	protected void setCursorPosition(double xpos, double ypos) {
 		if (!ignoreMouseDelta) {
-			cursorDeltaX = xpos - cursorXpos;
-			cursorDeltaY = ypos - cursorYpos;
+			cursorDeltaX = xpos - cursorPosX;
+			cursorDeltaY = ypos - cursorPosY;
 		} else {
 			ignoreMouseDelta = false;
 		}
 
-		cursorXpos = xpos;
-		cursorYpos = ypos;
+		cursorPosX = xpos;
+		cursorPosY = ypos;
 	}
 
 	public void flagMouseDelta() {
@@ -95,11 +95,11 @@ public final class InputHandler {
 	}
 
 	public float getCursorPosX() {
-		return (float) cursorXpos;
+		return (float) cursorPosX;
 	}
 
 	public float getCursorPosY() {
-		return (float) cursorYpos;
+		return (float) cursorPosY;
 	}
 
 	public float getCursorDeltaX() {
