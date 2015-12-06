@@ -17,6 +17,8 @@ public abstract class VertexBufferObject {
 	protected HashMap<Long, Integer> glContextVaoHandles;
 	protected boolean deleted;
 	
+	public abstract int getBufferName();
+	
 	public abstract void render();
 
 	public abstract void cleanup();

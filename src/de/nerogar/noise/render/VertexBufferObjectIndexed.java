@@ -138,6 +138,11 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 	}
 
 	@Override
+	public int getBufferName() {
+		return vboHandle;
+	};
+
+	@Override
 	public void render() {
 		Integer vaoHandle = glContextVaoHandles.get(GLWindow.getCurrentContext());
 		if (vaoHandle == null) vaoHandle = initVAO(null, null);
