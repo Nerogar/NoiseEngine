@@ -87,7 +87,7 @@ public final class InputHandler {
 		cursorPosY = ypos;
 	}
 
-	public void flagMouseDelta() {
+	protected void flagMouseDelta() {
 		ignoreMouseDelta = true;
 
 		cursorDeltaX = 0;
