@@ -11,10 +11,10 @@ import de.nerogar.noise.util.Logger;
  * 
  * <ul>
  * <li>a {@link Mesh Mesh} that defines the shape of the object</li>
+ * <li>a {@link Shader Shader} that defines the surface shader</li>
  * <li>a colorTexture that defines the color</li>
  * <li>a normalTexture that defines the normals</li>
  * <li>a lightTexture that defines the light information</li>
- * <li>a {@link Shader Shader} that defines the surface shader</li>
  * </ul>
  * 
  * the lightTexture should be in the following format:
@@ -184,11 +184,11 @@ public class DeferredContainer {
 	 * The entry points are:
 	 * <ul>
 	 * <li>For the vertex Shader:<br>
-	 * {@code void mainSurface(inout vec2 uv, inout vec4 position, inout vec3 normal)}
+	 * {@code void mainSurface(inout vec2 uv, inout vec3 position, inout vec3 normal)}
 	 * </li>
 	 * <p>
 	 * <li>For the fragment Shader:<br>
-	 * {@code void mainSurface(inout vec4 color, in vec2 uv, inout vec4 position, inout vec3 normal, inout float displace, inout vec4 light)}
+	 * {@code void mainSurface(inout vec4 color, in vec2 uv, inout vec3 position, inout vec3 normal, inout float displace, inout vec4 light)}
 	 * </li>
 	 * </ul>
 	 * <p>
