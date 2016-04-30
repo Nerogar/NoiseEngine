@@ -241,7 +241,7 @@ public class Shader {
 		if (glGetShaderi(shaderHandle, GL_COMPILE_STATUS) == GL_FALSE) {
 			int errorSize = glGetShaderi(shaderHandle, GL_INFO_LOG_LENGTH);
 			Logger.log(Logger.ERROR, shaderName + " wasn't able to be compiled correctly. Error log:\n" + glGetShaderInfoLog(vertexShaderHandle, errorSize));
-			return false;
+			return true;
 		}
 
 		return false;

@@ -1,12 +1,15 @@
 package de.nerogar.noise.render.deferredRenderer;
 
-import static org.lwjgl.opengl.GL11.*;
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.render.*;
+import de.nerogar.noise.util.Color;
+import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noise.util.Vector3f;
 
 import java.util.*;
 
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.render.*;
-import de.nerogar.noise.util.*;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * A renderer implementing a deferred rendering pipeline.
@@ -32,12 +35,13 @@ public class DeferredRenderer {
 
 		public VboContainer(DeferredContainer container) {
 			this.container = container;
-			renderables = new ArrayList<DeferredRenderable>();
+			renderables = new ArrayList<>();
 
-			instanceModelMatrices = new ArrayList<Matrix4f>();
-			instanceNormalMatrices = new ArrayList<Matrix4f>();
+			instanceModelMatrices = new ArrayList<>();
+			instanceNormalMatrices = new ArrayList<>();
 
-			vbo = new VertexBufferObjectInstanced(new int[] { 3, 2, 3, 3, 3 },
+			vbo = new VertexBufferObjectInstanced(
+					new int[] { 3, 2, 3, 3, 3 },
 					container.getMesh().getIndexCount(),
 					container.getMesh().getVertexCount(),
 					container.getMesh().getIndexArray(),
@@ -45,7 +49,8 @@ public class DeferredRenderer {
 					container.getMesh().getUVArray(),
 					container.getMesh().getNormalArray(),
 					container.getMesh().getTangentArray(),
-					container.getMesh().getBitangentArray());
+					container.getMesh().getBitangentArray()
+			);
 		}
 
 		public int rebuildInstanceData(ViewFrustum frustum) {
@@ -55,16 +60,16 @@ public class DeferredRenderer {
 
 			Vector3f point = new Vector3f();
 
-			for (int i = 0; i < renderables.size(); i++) {
-				if (!renderables.get(i).getRenderProperties().isVisible()) continue;
+			for (DeferredRenderable renderable : renderables) {
+				if (!renderable.getRenderProperties().isVisible()) continue;
 
-				point.setX(renderables.get(i).getRenderProperties().getX());
-				point.setY(renderables.get(i).getRenderProperties().getY());
-				point.setZ(renderables.get(i).getRenderProperties().getZ());
+				point.setX(renderable.getRenderProperties().getX());
+				point.setY(renderable.getRenderProperties().getY());
+				point.setZ(renderable.getRenderProperties().getZ());
 
-				if (frustum.getPointDistance(point) < renderables.get(i).getContainer().getMesh().getBoundingRadius() * renderables.get(i).getRenderProperties().getMaxScaleComponent()) {
-					instanceModelMatrices.add(renderables.get(i).getRenderProperties().getModelMatrix());
-					instanceNormalMatrices.add(renderables.get(i).getRenderProperties().getNormalMatrix());
+				if (frustum.getPointDistance(point) < renderable.getContainer().getMesh().getBoundingRadius() * renderable.getRenderProperties().getMaxScaleComponent()) {
+					instanceModelMatrices.add(renderable.getRenderProperties().getModelMatrix());
+					instanceNormalMatrices.add(renderable.getRenderProperties().getNormalMatrix());
 				}
 			}
 
@@ -118,8 +123,9 @@ public class DeferredRenderer {
 			}
 
 			vbo.setInstanceData(instanceModelMatrices.size(), instanceComponentCounts,
-					modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
-					normalMatrix1, normalMatrix2, normalMatrix3);
+								modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
+								normalMatrix1, normalMatrix2, normalMatrix3
+			);
 
 			return instanceModelMatrices.size();
 		}
@@ -152,11 +158,21 @@ public class DeferredRenderer {
 	private FrameBufferObject filterFrameBuffer;
 
 	//settings
+	private Map<String, String> settingsParamter;
+
+	private int width;
+	private int height;
+
 	private TextureCubeMap reflectionTexture;
 	private Color sunLightColor;
 	private Vector3f sunLightDirection;
 	private float sunLightBrightness;
+
 	private float minAmbientBrightness;
+
+	private boolean ambientOcclusionEnabled;
+	private float ambientOcclusionSize;
+	private float ambientOcclusionStrength;
 
 	//debug
 	private DeferredRenderable originAxis;
@@ -166,10 +182,12 @@ public class DeferredRenderer {
 	 * @param height initial height of the target {@link FrameBufferObject FrameBufferObject}
 	 */
 	public DeferredRenderer(int width, int height) {
+		this.width = width;
+		this.height = height;
 
 		profiler = new DeferredRendererProfiler();
 		Noise.getDebugWindow().addProfiler(profiler);
-		vboMap = new HashMap<DeferredContainer, VboContainer>();
+		vboMap = new HashMap<>();
 		fullscreenQuad = new VertexBufferObjectIndexed(
 				new int[] { 2, 2 },
 				6,
@@ -177,12 +195,16 @@ public class DeferredRenderer {
 				new int[] { 0, 1, 2, 2, 3, 0 },
 				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f },
 				new float[] { 0.0f, 0.0f,/**/0.0f, 1.0f, /**/1.0f, 1.0f,/**/1.0f, 0.0f }
-				);
+		);
 
 		sunLightColor = new Color(1.0f, 1.0f, 0.9f, 0.0f);
 		sunLightDirection = new Vector3f(-1.0f);
 		sunLightBrightness = 1.5f;
 		minAmbientBrightness = 0.3f;
+
+		ambientOcclusionEnabled = true;
+		ambientOcclusionSize = 0.3f;
+		ambientOcclusionStrength = 2.0f;
 
 		lightContainer = new LightContainer();
 		effectContainer = new EffectContainer();
@@ -190,11 +212,10 @@ public class DeferredRenderer {
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
 		gBuffer = new FrameBufferObject(width, height, true,
-				Texture2D.DataType.BGRA_8_8_8_8I, //color
-				Texture2D.DataType.BGRA_10_10_10_2, //normal
-				//Texture2D.DataType.BGRA_16_16_16F, //normal
-				Texture2D.DataType.BGRA_32_32_32F, //position
-				Texture2D.DataType.BGRA_8_8_8_8I //light
+										Texture2D.DataType.BGRA_8_8_8_8I, //color
+										Texture2D.DataType.BGRA_10_10_10_2, //normal
+										Texture2D.DataType.BGRA_32_32_32F, //position TODO: remove and reconstruct from depth buffer
+										Texture2D.DataType.BGRA_8_8_8_8I //light
 		);
 
 		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
@@ -224,7 +245,7 @@ public class DeferredRenderer {
 				Texture2DLoader.loadTexture(Noise.RESSOURCE_DIR + "deferredRenderer/originAxis/color.png"),
 				Texture2DLoader.loadTexture(Noise.RESSOURCE_DIR + "deferredRenderer/originAxis/normal.png"),
 				Texture2DLoader.loadTexture(Noise.RESSOURCE_DIR + "deferredRenderer/originAxis/light.png")
-				);
+		);
 
 		originAxis = new DeferredRenderable(axisContainer, new RenderProperties3f());
 	}
@@ -298,7 +319,7 @@ public class DeferredRenderer {
 
 	/**
 	 * the light container is used to manage lights
-	 * 
+	 *
 	 * @return the light container
 	 */
 	public LightContainer getLightContainer() {
@@ -307,7 +328,7 @@ public class DeferredRenderer {
 
 	/**
 	 * the effect container is used to manage effects
-	 * 
+	 *
 	 * @return the effect container
 	 */
 	public EffectContainer getEffectContainer() {
@@ -346,8 +367,16 @@ public class DeferredRenderer {
 		return i;
 	}
 
-	//TODO: remove
 	private void loadShaders() {
+		if (settingsParamter == null) settingsParamter = new HashMap<>();
+		settingsParamter.clear();
+		settingsParamter.put("AO_ENABLED", "#define AO_ENABLED " + (ambientOcclusionEnabled ? 1 : 0));
+
+		if (gBufferShader != null) gBufferShader.cleanup();
+		if (lightShader != null) lightShader.cleanup();
+		if (finalShader != null) finalShader.cleanup();
+		if (filterShader != null) filterShader.cleanup();
+
 		gBufferShader = ShaderLoader.loadShader("<deferredRenderer/gBuffer.vert>", "<deferredRenderer/gBuffer.frag>");
 		gBufferShader.activate();
 		gBufferShader.setUniform1i("textureColor_N", 0);
@@ -359,9 +388,10 @@ public class DeferredRenderer {
 		lightShader.activate();
 		lightShader.setUniform1i("textureNormal", 1);
 		lightShader.setUniform1i("texturePosition", 2);
+		lightShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		lightShader.deactivate();
 
-		finalShader = ShaderLoader.loadShader("<deferredRenderer/final.vert>", "<deferredRenderer/final.frag>");
+		finalShader = ShaderLoader.loadShader("<deferredRenderer/final.vert>", "<deferredRenderer/final.frag>", settingsParamter);
 		finalShader.activate();
 		finalShader.setUniform1i("textureColor", 0);
 		finalShader.setUniform1i("textureNormal", 1);
@@ -370,23 +400,29 @@ public class DeferredRenderer {
 		finalShader.setUniform1i("textureLights", 4);
 		finalShader.setUniform1i("textureEffects", 5);
 		finalShader.setUniform1i("textureReflection", 6);
+		finalShader.setUniform1i("textureDepth", 7);
 		finalShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
+		finalShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		finalShader.deactivate();
 
 		filterShader = ShaderLoader.loadShader("<deferredRenderer/filter.vert>", "<deferredRenderer/filter.frag>");
 		filterShader.activate();
 		filterShader.setUniform1i("textureColor", 0);
 		filterShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
+		filterShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		filterShader.deactivate();
 	}
 
 	/**
 	 * resizes the {@link FrameBufferObject FrameBufferObjects} to match the new resolution
-	 * 
+	 *
 	 * @param width the new width
 	 * @param height the new height
 	 */
 	public void setFrameBufferResolution(int width, int height) {
+		this.width = width;
+		this.height = height;
+
 		gBuffer.setResolution(width, height);
 		lightFrameBuffer.setResolution(width, height);
 		effectFrameBuffer.setResolution(width, height);
@@ -408,7 +444,7 @@ public class DeferredRenderer {
 
 	/**
 	 * a {@link TextureCubeMap TextureCubeMap} used for reflections
-	 * 
+	 *
 	 * @param reflectionTexture the reflection texture
 	 */
 	public void setReflectionTexture(TextureCubeMap reflectionTexture) {
@@ -438,11 +474,24 @@ public class DeferredRenderer {
 
 	/**
 	 * the minimum brightness of objects without sunlight
-	 * 
+	 *
 	 * @param minAmbientBrightness the brightness
 	 */
 	public void setMinAmbientBrightness(float minAmbientBrightness) {
 		this.minAmbientBrightness = minAmbientBrightness;
+	}
+
+	public void setAmbientOcclusionEnabled(boolean ambientOcclusionEnabled) {
+		this.ambientOcclusionEnabled = ambientOcclusionEnabled;
+		loadShaders();
+	}
+
+	public void setAmbientOcclusionSize(float ambientOcclusionSize) {
+		this.ambientOcclusionSize = ambientOcclusionSize;
+	}
+
+	public void setAmbientOcclusionStrength(float ambientOcclusionStrength) {
+		this.ambientOcclusionStrength = ambientOcclusionStrength;
 	}
 
 	/**
@@ -452,7 +501,7 @@ public class DeferredRenderer {
 	 * <li>{@link DeferredRenderer#getColorOutput() getColorOutput()} for the final output.</li>
 	 * <li> getXXXBuffer() for the different buffers.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param camera the camera for viewing the scene
 	 */
 	public void render(PerspectiveCamera camera) {
@@ -507,6 +556,7 @@ public class DeferredRenderer {
 		gBuffer.getTextureAttachment(1).bind(1);
 		gBuffer.getTextureAttachment(2).bind(2);
 		gBuffer.getTextureAttachment(3).bind(3);
+		gBuffer.getTextureAttachment(-1).bind(7);
 
 		//render lights
 		lightFrameBuffer.bind();
@@ -571,12 +621,35 @@ public class DeferredRenderer {
 		//final pass
 		finalFrameBuffer.bind();
 
+		//calculate screenSpace unit size for ambient occlusion disc size
+		float fovRadiants = (float) (camera.getFOV() * Math.PI / 180.0);
+		float f = (float) Math.tan(Math.PI * 0.5 - fovRadiants / 2.0f);
+		float ssUnitSize = f * height * 0.5f;
+
+		//calculate left/right and top/bottom vectors for depth -> position reconstruction
+		float fov = (float) Math.toRadians(camera.getFOV() / 2.0f);
+		float fovSides = (float) Math.atan(Math.tan(Math.toRadians(camera.getFOV() / 2.0f)) * camera.getAspect());
+		float topLength = (float) (Math.sin(fov) / Math.cos(fov));
+		float rightLength = (float) (Math.sin(fovSides) / Math.cos(fovSides));
+		Vector3f topVector = camera.getDirectionUp().multiplied(topLength);
+		Vector3f rightVector = camera.getDirectionRight().multiplied(rightLength);
+
 		finalShader.activate();
 		finalShader.setUniform3f("cameraPosition", camera.getX(), camera.getY(), camera.getZ());
 		finalShader.setUniform3f("sunLightColor", sunLightColor.getR(), sunLightColor.getG(), sunLightColor.getB());
 		finalShader.setUniform3f("sunLightDirection", sunLightDirection.getX(), sunLightDirection.getY(), sunLightDirection.getZ());
 		finalShader.setUniform1f("sunLightBrightness", sunLightBrightness);
 		finalShader.setUniform1f("minAmbientBrightness", minAmbientBrightness);
+		finalShader.setUniform1f("ssUnitSize", ssUnitSize);
+		finalShader.setUniform1f("aoSize", ambientOcclusionSize);
+		finalShader.setUniform1f("aoStrength", ambientOcclusionStrength);
+
+		finalShader.setUniform3f("frontVector", camera.getDirectionAt().getX(), camera.getDirectionAt().getY(), camera.getDirectionAt().getZ());
+		finalShader.setUniform3f("rightVector", rightVector.getX(), rightVector.getY(), rightVector.getZ());
+		finalShader.setUniform3f("topVector", topVector.getX(), topVector.getY(), topVector.getZ());
+		finalShader.setUniform1f("camNear", camera.getNear());
+		finalShader.setUniform1f("camFar", camera.getFar());
+
 		fullscreenQuad.render();
 		finalShader.deactivate();
 
@@ -631,7 +704,7 @@ public class DeferredRenderer {
 
 	/**
 	 * the light buffer contains light information
-	 * 
+	 *
 	 * @return the light buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getLightBuffer() {
@@ -640,7 +713,7 @@ public class DeferredRenderer {
 
 	/**
 	 * the lights buffer contains lights from the {@link LightContainer LightContainer} returned by {@link DeferredRenderer#getLightContainer() getLightContainer()}
-	 * 
+	 *
 	 * @return the light buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getLightsBuffer() {
@@ -649,7 +722,7 @@ public class DeferredRenderer {
 
 	/**
 	 * the effects buffer contains effects from the {@link EffectContainer EffectContainer} returned by {@link DeferredRenderer#getEffectContainer() getEffectContainer()}
-	 * 
+	 *
 	 * @return the depth buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getEffectsBuffer() {

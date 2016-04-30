@@ -140,7 +140,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 	@Override
 	public int getBufferName() {
 		return vboHandle;
-	};
+	}
 
 	@Override
 	public void render() {

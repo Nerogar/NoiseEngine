@@ -23,7 +23,7 @@ out DATA_N
 
 void mainSurface(inout vec2 uv, inout vec3 position, inout vec3 normal);
 
-#parameter surfaceShaderVertex
+#pinclude surfaceShaderVertex
 
 void main(){
 	vert_out_N.normal = normalize(normalMatrix_N * normal_N);

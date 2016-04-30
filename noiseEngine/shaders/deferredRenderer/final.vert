@@ -12,9 +12,8 @@ out DATA
 } vert_out;
 
 void main(){
-	gl_Position = projectionMatrix * vec4(position, 0.0, 1.0);
-
-	vec3 pixelOffset = vec3(inverseResolution, 0.0);
+	vec4 unitCubePosition = projectionMatrix * vec4(position, 0.0, 1.0);
+	gl_Position = unitCubePosition;
 
 	vert_out.uv = uv;
 }

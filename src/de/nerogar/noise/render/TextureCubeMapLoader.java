@@ -18,12 +18,12 @@ public class TextureCubeMapLoader {
 	/**
 	 * Call this method with 6 filenames of textures in this order:
 	 * <ol>
-	 * <li>right</li>
-	 * <li>left</li>
-	 * <li>bottom</li>
-	 * <li>top</li>
-	 * <li>back</li>
-	 * <li>front</li>
+	 * <li>x positive</li>
+	 * <li>x negative</li>
+	 * <li>y positive</li>
+	 * <li>y negative</li>
+	 * <li>z positive</li>
+	 * <li>z negative</li>
 	 * </ol>
 	 * 
 	 * @param filename the filenames
@@ -46,11 +46,25 @@ public class TextureCubeMapLoader {
 				int[] pixels = image[i].getRGB(0, 0, image[i].getWidth(), image[i].getHeight(), null, 0, image[i].getWidth());
 
 				//invert images
-				for (int line = 0; line < image[i].getHeight() / 2; line++) {
+				/*for (int line = 0; line < image[i].getHeight() / 2; line++) {
 					for (int x = 0; x < image[i].getWidth(); x++) {
-						int tempColor = pixels[line * image[i].getWidth() + x];
-						pixels[line * image[i].getWidth() + x] = pixels[(image[i].getHeight() - line - 1) * image[i].getWidth() + x];
-						pixels[(image[i].getHeight() - line - 1) * image[i].getWidth() + x] = tempColor;
+						int index0 = line * image[i].getWidth() + x;
+						int index1 = (image[i].getHeight() - line - 1) * image[i].getWidth() + x;
+
+						int tempColor = pixels[index0];
+						pixels[index0] = pixels[index1];
+						pixels[index1] = tempColor;
+					}
+				}*/
+
+				for (int column = 0; column < image[i].getWidth() / 2; column++) {
+					for (int y = 0; y < image[i].getHeight(); y++) {
+						int index0 = y * image[i].getWidth() + column;
+						int index1 = y * image[i].getWidth() + (image[i].getWidth() - column - 1);
+
+						int tempColor = pixels[index0];
+						pixels[index0] = pixels[index1];
+						pixels[index1] = tempColor;
 					}
 				}
 

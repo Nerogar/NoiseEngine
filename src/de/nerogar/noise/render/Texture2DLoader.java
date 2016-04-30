@@ -16,14 +16,14 @@ import de.nerogar.noise.util.Logger;
 
 public class Texture2DLoader {
 
-	private static HashMap<String, Texture2D> textureMap = new HashMap<String, Texture2D>();
+	private static HashMap<String, Texture2D> textureMap = new HashMap<>();
 
 	public static Texture2D loadTexture(String filename) {
 		return loadTexture(filename, filename);
 	}
 
 	public static Texture2D loadTexture(String filename, String textureName) {
-		return loadTexture(filename, filename, InterpolationType.LINEAR);
+		return loadTexture(filename, textureName, InterpolationType.LINEAR);
 	}
 
 	public static Texture2D loadTexture(String filename, InterpolationType interpolationType) {

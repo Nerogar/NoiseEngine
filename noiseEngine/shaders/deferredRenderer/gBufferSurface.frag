@@ -20,7 +20,7 @@ in DATA_N
 
 void mainSurface(inout vec4 color, in vec2 uv, inout vec3 position, inout vec3 normal, inout float displace, inout vec4 light);
 
-#parameter surfaceShaderFragment
+#pinclude surfaceShaderFragment
 
 void main(){
 	color_out_N = texture(textureColor_N, frag_in_N.uv);

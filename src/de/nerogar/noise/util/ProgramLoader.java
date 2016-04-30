@@ -1,6 +1,7 @@
 package de.nerogar.noise.util;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 
 import de.nerogar.noise.Noise;
@@ -22,7 +23,7 @@ import de.nerogar.noise.Noise;
  */
 public class ProgramLoader {
 
-	private static final Map<String, String> EMPTY_PARAMETERS = null;
+	private static final Map<String, String> EMPTY_PARAMETERS = new HashMap<String, String>();
 
 	public static String decodeFilename(String parent, String id) {
 		if (id.startsWith("<")) {
@@ -70,21 +71,30 @@ public class ProgramLoader {
 					String nextFilename = decodeFilename(folder, line);
 
 					text.append("#line 1\n");
-					text.append(readFile(nextFilename, parameters));
-					text.append("#line " + (lineNumber + 1) + "\n");
+					text.append(readFile(nextFilename, parameters)).append('\n');
+					text.append("#line ").append(lineNumber + 1).append('\n');
+				} else if (line.startsWith("#pinclude ")) {
+					int commentIndex = line.indexOf("//");
+					if (commentIndex >= 0) line = line.substring(0, commentIndex);
+
+					line = line.substring(10);
+
+					String parameter = readFile(decodeFilename(folder, parameters.get(line.trim())), parameters);
+
+					text.append("#line 1\n");
+					text.append(parameter).append('\n');
+					text.append("#line ").append(lineNumber + 1).append('\n');
 				} else if (line.startsWith("#parameter ")) {
 					int commentIndex = line.indexOf("//");
 					if (commentIndex >= 0) line = line.substring(0, commentIndex);
 
-					line = line.substring(11);
+					line = line.substring(11).trim();
 
-					String parameter = readFile(decodeFilename(folder, parameters.get(line).trim()), parameters);
+					String parameter = parameters.get(line);
 
-					text.append("#line 1\n");
-					text.append(parameter);
-					text.append("#line " + (lineNumber + 1) + "\n");
+					text.append(parameter).append('\n');
 				} else {
-					text.append(line).append("\n");
+					text.append(line).append('\n');
 				}
 
 				lineNumber++;
@@ -96,7 +106,7 @@ public class ProgramLoader {
 
 		text.append("\n");
 
-		Logger.log(Logger.INFO, "loaded shader: " + filename);
+		Logger.log(Logger.INFO, "loaded program: " + filename);
 
 		return text.toString();
 	}

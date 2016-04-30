@@ -1,29 +1,36 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_BGRA;
-import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT32;
-import static org.lwjgl.opengl.GL30.*;
-
-import java.nio.ByteBuffer;
-
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.RessourceProfiler;
 import de.nerogar.noise.util.Logger;
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
+
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.GL_BGRA;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT32;
+import static org.lwjgl.opengl.GL30.*;
 
 public class Texture2D extends Texture {
 
+	public static final float MAX_ANISOTROPIC_FILTERING = glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+
 	public enum InterpolationType {
-		LINEAR(GL_LINEAR, GL_LINEAR),
-		NEAREST(GL_NEAREST, GL_NEAREST);
+		LINEAR(GL_LINEAR, GL_LINEAR, false),
+		NEAREST(GL_NEAREST, GL_NEAREST, false),
+		LINEAR_MIPMAP(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, true),
+		NEAREST_MIPMAP(GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST, true);
 
 		public final int openglConstantMin;
 		public final int openglConstantMag;
+		public final boolean generateMipMaps;
 
-		InterpolationType(int openglConstantMin, int openglConstantMag) {
+		InterpolationType(int openglConstantMin, int openglConstantMag, boolean generateMipMaps) {
 			this.openglConstantMin = openglConstantMin;
 			this.openglConstantMag = openglConstantMag;
+			this.generateMipMaps = generateMipMaps;
 		}
 
 	}
@@ -89,12 +96,13 @@ public class Texture2D extends Texture {
 	private int height;
 	private InterpolationType interpolationType;
 	private DataType dataType;
+	private float anisotropicFiltering;
 
 	private boolean initialized;
 
 	/**
 	 * Creates an empty Texture
-	 * 
+	 *
 	 * @param name the name of the texture
 	 * @param width the width of the texture. 
 	 * @param height the height of the texture
@@ -105,7 +113,7 @@ public class Texture2D extends Texture {
 
 	/**
 	 * Creates a Texture with initial content
-	 * 
+	 *
 	 * @param name the name of the texture
 	 * @param width the width of the texture.
 	 * @param height the height of the texture.
@@ -114,11 +122,27 @@ public class Texture2D extends Texture {
 	 * @param dataType representation of the texture in memory
 	 */
 	public Texture2D(String name, int width, int height, ByteBuffer colorBuffer, InterpolationType interpolationType, DataType dataType) {
+		this(name, width, height, colorBuffer, interpolationType, dataType, 1);
+	}
+
+	/**
+	 * Creates a Texture with initial content
+	 *
+	 * @param name the name of the texture
+	 * @param width the width of the texture.
+	 * @param height the height of the texture.
+	 * @param colorBuffer initial content of the texture as an <code>IntBuffer</code>
+	 * @param interpolationType method used to interpolate pixels
+	 * @param dataType representation of the texture in memory
+	 * @param anisotropicFiltering the amount of anisotropic filtering
+	 */
+	public Texture2D(String name, int width, int height, ByteBuffer colorBuffer, InterpolationType interpolationType, DataType dataType, float anisotropicFiltering) {
 		this.name = name;
 		this.width = width;
 		this.height = height;
 		this.interpolationType = interpolationType;
 		this.dataType = dataType;
+		this.anisotropicFiltering = anisotropicFiltering;
 
 		id = glGenTextures();
 		createTexture(colorBuffer);
@@ -130,14 +154,34 @@ public class Texture2D extends Texture {
 		bind(0);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolationType.openglConstantMin);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolationType.openglConstantMin);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolationType.openglConstantMag);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer);
 
+		if (interpolationType.generateMipMaps) {
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+
 		initialized = true;
+
+		setAnisotropicFilteringParameter();
 
 		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_UPLOAD_COUNT);
 		if (colorBuffer != null) Noise.getRessourceProfiler().addValue(RessourceProfiler.TEXTURE_UPLOAD_SIZE, colorBuffer.remaining());
+	}
+
+	private void setAnisotropicFilteringParameter() {
+		anisotropicFiltering = Math.min(MAX_ANISOTROPIC_FILTERING, anisotropicFiltering);
+
+		if (!initialized) return;
+
+		if (anisotropicFiltering > 1 && GLWindow.getCurrentWindow().getGLContext().getCapabilities().GL_EXT_texture_filter_anisotropic) {
+			glTexParameterf(GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropicFiltering);
+		} else if (anisotropicFiltering <= 1 && GLWindow.getCurrentWindow().getGLContext().getCapabilities().GL_EXT_texture_filter_anisotropic) {
+			glTexParameterf(GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
+		}
 	}
 
 	public int getID() {
@@ -148,12 +192,28 @@ public class Texture2D extends Texture {
 		return name;
 	}
 
-	protected void setWidth(int width) {
+	/**
+	 * Sets the new width of this texture.
+	 * The width does not change until {@link Texture2D#createTexture createTexture} is called.
+	 *
+	 * @param width the new width
+	 * @return this Texture2D object
+	 */
+	protected Texture2D setWidth(int width) {
 		this.width = width;
+		return this;
 	}
 
-	protected void setHeight(int height) {
+	/**
+	 * Sets the new height of this texture.
+	 * The height does not change until {@link Texture2D#createTexture createTexture} is called.
+	 *
+	 * @param height the new height
+	 * @return this Texture2D object
+	 */
+	protected Texture2D setHeight(int height) {
 		this.height = height;
+		return this;
 	}
 
 	public int getWidth() {
@@ -162,6 +222,28 @@ public class Texture2D extends Texture {
 
 	public int getHeight() {
 		return height;
+	}
+
+	/**
+	 * Sets the new anisotropic filtering amount. Anything <= 1 will disable it.
+	 * <br>
+	 * Note: this binds the texture to the slot 0.
+	 *
+	 * @param anisotropicFiltering the new amount of anisotropic filtering
+	 * @return this Texture2D object
+	 */
+	public Texture2D setAnisotropicFiltering(float anisotropicFiltering) {
+		this.anisotropicFiltering = anisotropicFiltering;
+
+		bind(0);
+
+		setAnisotropicFilteringParameter();
+
+		return this;
+	}
+
+	public float getAnisotropicFiltering() {
+		return anisotropicFiltering;
 	}
 
 	@Override
