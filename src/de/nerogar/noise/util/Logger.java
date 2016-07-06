@@ -5,6 +5,13 @@ import java.util.*;
 
 public class Logger {
 
+	private static final String[] LOG_LEVEL_STRINGS = {
+			"debug",
+			"info",
+			"warning",
+			"error"
+	};
+
 	/**
 	 * Information to find bugs during development.
 	 */
@@ -122,7 +129,7 @@ public class Logger {
 	}
 
 	private static void print(PrintStream stream, int logLevel, String msg) {
-		stream.println("[" + logLevel + "] " + msg);
+		stream.println("[" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
 	}
 
 	static {
