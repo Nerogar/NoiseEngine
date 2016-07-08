@@ -1,6 +1,11 @@
 package de.nerogar.noise.util;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Logger {
@@ -15,32 +20,43 @@ public class Logger {
 	/**
 	 * Information to find bugs during development.
 	 */
-	public static final int DEBUG = 0;
+	public static final  int         DEBUG        = 0;
 	private static final PrintWriter DEBUG_WRITER = (new LogWriter(DEBUG));
 
 	/**
-	 * More important than debug information. 
+	 * More important than debug information.
 	 */
-	public static final int INFO = 1;
+	public static final  int         INFO        = 1;
 	private static final PrintWriter INFO_WRITER = (new LogWriter(INFO));
 
 	/**
 	 * Warnings about unexpected behavior.
 	 */
-	public static final int WARNING = 2;
+	public static final  int         WARNING        = 2;
 	private static final PrintWriter WARNING_WRITER = (new LogWriter(WARNING));
 
 	/**
 	 * Problems that can cause a crash.
 	 */
-	public static final int ERROR = 4;
+	public static final  int         ERROR        = 4;
 	private static final PrintWriter ERROR_WRITER = (new LogWriter(ERROR));
 
 	private static List<LogOutStream> logStreams;
+	private static boolean    printTimestamp = false;
+	private static DateFormat dateFormat     = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	/**
-	 * @param minLogLevel the minimum loglevel to print on this stream 
-	 * @param stream the printStream for message output
+	 * acitvates or deactivates the output of timestamps in log messages
+	 *
+	 * @param print the new printTimestamp value
+	 */
+	public static void setPrintTimestamp(boolean print){
+		printTimestamp = print;
+	}
+
+	/**
+	 * @param minLogLevel the minimum loglevel to print on this stream
+	 * @param stream      the printStream for message output
 	 */
 	public static void addStream(int minLogLevel, PrintStream stream) {
 		logStreams.add(new LogOutStream(minLogLevel, ERROR, stream));
@@ -49,7 +65,7 @@ public class Logger {
 	/**
 	 * @param minLogLevel the minimum loglevel to print on this stream
 	 * @param maxLogLevel the maximum loglevel to print on this stream
-	 * @param stream the printStream for message output
+	 * @param stream      the printStream for message output
 	 */
 	public static void addStream(int minLogLevel, int maxLogLevel, PrintStream stream) {
 		logStreams.add(new LogOutStream(minLogLevel, maxLogLevel, stream));
@@ -57,6 +73,7 @@ public class Logger {
 
 	/**
 	 * removes any stream that is equal to the specified stream.
+	 *
 	 * @param stream the stream to remove
 	 * @return true, if a stream was removed, false otherwise
 	 */
@@ -66,6 +83,7 @@ public class Logger {
 
 	/**
 	 * returns a {@link PrintWriter} for easy debug logging
+	 *
 	 * @return the debug writer
 	 */
 	public static PrintWriter getDebugWriter() {
@@ -74,6 +92,7 @@ public class Logger {
 
 	/**
 	 * returns a {@link PrintWriter} for easy info logging
+	 *
 	 * @return the info writer
 	 */
 	public static PrintWriter getInfoWriter() {
@@ -82,6 +101,7 @@ public class Logger {
 
 	/**
 	 * returns a {@link PrintWriter} for easy warning logging
+	 *
 	 * @return the warning writer
 	 */
 	public static PrintWriter getWarningWriter() {
@@ -90,6 +110,7 @@ public class Logger {
 
 	/**
 	 * returns a {@link PrintWriter} for easy error logging
+	 *
 	 * @return the error writer
 	 */
 	public static PrintWriter getErrorWriter() {
@@ -98,9 +119,9 @@ public class Logger {
 
 	/**
 	 * prints the message to all attached streams with the correct log level
-	 * 
+	 *
 	 * @param logLevel the loglevel for this message
-	 * @param msg the message as a String
+	 * @param msg      the message as a String
 	 */
 	public static void log(int logLevel, String msg) {
 		logStreams.forEach((logStream) -> {
@@ -112,9 +133,9 @@ public class Logger {
 
 	/**
 	 * calls </code>.toString()</code> on msg and logs it
-	 * 
+	 *
 	 * @param logLevel the loglevel for this message
-	 * @param msg the Object to log
+	 * @param msg      the Object to log
 	 */
 	public static void log(int logLevel, Object msg) {
 		logStreams.forEach((logStream) -> {
@@ -129,7 +150,12 @@ public class Logger {
 	}
 
 	private static void print(PrintStream stream, int logLevel, String msg) {
-		stream.println("[" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+		if (printTimestamp) {
+			Date date = new Date();
+			stream.println(dateFormat.format(date) + " [" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+		} else {
+			stream.println("[" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+		}
 	}
 
 	static {
@@ -140,8 +166,8 @@ public class Logger {
 	 * A class to store the output streams
 	 */
 	private static class LogOutStream {
-		public int minLogLevel;
-		public int maxLogLevel;
+		public int         minLogLevel;
+		public int         maxLogLevel;
 		public PrintStream stream;
 
 		public LogOutStream(int minLogLevel, int maxLogLevel, PrintStream stream) {
