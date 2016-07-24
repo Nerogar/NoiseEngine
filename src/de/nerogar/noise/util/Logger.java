@@ -1,9 +1,8 @@
 package de.nerogar.noise.util;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -21,25 +20,25 @@ public class Logger {
 	 * Information to find bugs during development.
 	 */
 	public static final  int         DEBUG        = 0;
-	private static final PrintWriter DEBUG_WRITER = new LogWriter(DEBUG);
+	private static final PrintStream DEBUG_STREAM = new LogStream(DEBUG);
 
 	/**
 	 * More important than debug information.
 	 */
 	public static final  int         INFO        = 1;
-	private static final PrintWriter INFO_WRITER = new LogWriter(INFO);
+	private static final PrintStream INFO_STREAM = new LogStream(INFO);
 
 	/**
 	 * Warnings about unexpected behavior.
 	 */
 	public static final  int         WARNING        = 2;
-	private static final PrintWriter WARNING_WRITER = new LogWriter(WARNING);
+	private static final PrintStream WARNING_STREAM = new LogStream(WARNING);
 
 	/**
 	 * Problems that can cause a crash.
 	 */
-	public static final  int         ERROR        = 4;
-	private static final PrintWriter ERROR_WRITER = new LogWriter(ERROR);
+	public static final  int         ERROR        = 3;
+	private static final PrintStream ERROR_STREAM = new LogStream(ERROR);
 
 	private static List<LogOutStream> logStreams;
 	private static boolean    printTimestamp = false;
@@ -50,7 +49,7 @@ public class Logger {
 	 *
 	 * @param print the new printTimestamp value
 	 */
-	public static void setPrintTimestamp(boolean print){
+	public static void setPrintTimestamp(boolean print) {
 		printTimestamp = print;
 	}
 
@@ -82,39 +81,39 @@ public class Logger {
 	}
 
 	/**
-	 * returns a {@link PrintWriter} for easy debug logging
+	 * returns a {@link PrintStream} for easy debug logging
 	 *
-	 * @return the debug writer
+	 * @return the debug stream
 	 */
-	public static PrintWriter getDebugWriter() {
-		return DEBUG_WRITER;
+	public static PrintStream getDebugStream() {
+		return DEBUG_STREAM;
 	}
 
 	/**
-	 * returns a {@link PrintWriter} for easy info logging
+	 * returns a {@link PrintStream} for easy info logging
 	 *
-	 * @return the info writer
+	 * @return the info stream
 	 */
-	public static PrintWriter getInfoWriter() {
-		return INFO_WRITER;
+	public static PrintStream getInfoStream() {
+		return INFO_STREAM;
 	}
 
 	/**
-	 * returns a {@link PrintWriter} for easy warning logging
+	 * returns a {@link PrintStream} for easy warning logging
 	 *
-	 * @return the warning writer
+	 * @return the warning stream
 	 */
-	public static PrintWriter getWarningWriter() {
-		return WARNING_WRITER;
+	public static PrintStream getWarningStream() {
+		return WARNING_STREAM;
 	}
 
 	/**
-	 * returns a {@link PrintWriter} for easy error logging
+	 * returns a {@link PrintStream} for easy error logging
 	 *
-	 * @return the error writer
+	 * @return the error stream
 	 */
-	public static PrintWriter getErrorWriter() {
-		return ERROR_WRITER;
+	public static PrintStream getErrorStream() {
+		return ERROR_STREAM;
 	}
 
 	/**
@@ -178,12 +177,12 @@ public class Logger {
 	}
 
 	/**
-	 * a writer that does nothing
+	 * a stream that does nothing
 	 */
-	private static class NullWriter extends Writer {
+	private static class NullStream extends OutputStream {
 
 		@Override
-		public void write(char[] cbuf, int off, int len) throws IOException {
+		public void write(int b) throws IOException {
 			//do nothing
 		}
 
@@ -200,14 +199,14 @@ public class Logger {
 	}
 
 	/**
-	 * A class to write to for writer based interfaces
+	 * A stream fpr logging different datatypes
 	 */
-	private static class LogWriter extends PrintWriter {
+	private static class LogStream extends PrintStream {
 
 		private int logLevel;
 
-		public LogWriter(int logLevel) {
-			super(new NullWriter());
+		public LogStream(int logLevel) {
+			super(new NullStream());
 			this.logLevel = logLevel;
 		}
 
@@ -307,41 +306,41 @@ public class Logger {
 		}
 
 		@Override
-		public PrintWriter printf(String format, Object... args) {
+		public PrintStream printf(String format, Object... args) {
 			return format(format, args);
 		}
 
 		@Override
-		public PrintWriter printf(Locale l, String format, Object... args) {
+		public PrintStream printf(Locale l, String format, Object... args) {
 			return format(l, format, args);
 		}
 
 		@Override
-		public PrintWriter append(CharSequence csq) {
-			write(csq.toString());
+		public PrintStream append(CharSequence csq) {
+			print(csq.toString());
 			return this;
 		}
 
 		@Override
-		public PrintWriter format(String format, Object... args) {
+		public PrintStream format(String format, Object... args) {
 			log(logLevel, String.format(format, args));
 			return this;
 		}
 
 		@Override
-		public PrintWriter format(Locale l, String format, Object... args) {
+		public PrintStream format(Locale l, String format, Object... args) {
 			log(logLevel, String.format(l, format, args));
 			return this;
 		}
 
 		@Override
-		public PrintWriter append(CharSequence csq, int start, int end) {
-			write(csq.subSequence(start, end).toString());
+		public PrintStream append(CharSequence csq, int start, int end) {
+			print(csq.subSequence(start, end).toString());
 			return this;
 		}
 
 		@Override
-		public PrintWriter append(char c) {
+		public PrintStream append(char c) {
 			write(c);
 			return this;
 		}
@@ -349,26 +348,6 @@ public class Logger {
 		@Override
 		public void write(int c) {
 			log(c, String.valueOf(c));
-		}
-
-		@Override
-		public void write(char[] buf) {
-			log(logLevel, String.valueOf(buf));
-		}
-
-		@Override
-		public void write(String s) {
-			log(logLevel, s);
-		}
-
-		@Override
-		public void write(char[] cbuf, int off, int len) {
-			log(logLevel, String.valueOf(cbuf, off, len));
-		}
-
-		@Override
-		public void write(String s, int off, int len) {
-			log(logLevel, s.substring(off, off + len));
 		}
 
 		@Override

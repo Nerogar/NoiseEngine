@@ -3,7 +3,6 @@ package de.nerogar.noise;
 import de.nerogar.noise.debug.DebugWindow;
 import de.nerogar.noise.debug.RessourceProfiler;
 import de.nerogar.noise.util.Logger;
-import org.lwjgl.Sys;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.openal.AL;
@@ -42,7 +41,7 @@ public class Noise {
 
 			Logger.log(Logger.INFO, "GLFW initialized, version: " + GLFW.GLFW_VERSION_MAJOR + "." + GLFW.GLFW_VERSION_MINOR + "." + GLFW.GLFW_VERSION_REVISION);
 
-			errorCallbackFun = errorCallbackPrint(System.err);
+			errorCallbackFun = errorCallbackPrint(Logger.getErrorStream());
 			glfwSetErrorCallback(errorCallbackFun);
 
 			ressourceProfiler = new RessourceProfiler();
