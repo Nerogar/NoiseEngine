@@ -1,13 +1,16 @@
 package de.nerogar.noise;
 
-import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
-import static org.lwjgl.glfw.GLFW.*;
-
+import de.nerogar.noise.debug.DebugWindow;
+import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.util.Logger;
+import org.lwjgl.Sys;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALContext;
 
-import de.nerogar.noise.debug.DebugWindow;
-import de.nerogar.noise.debug.RessourceProfiler;
+import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Noise {
 
@@ -27,13 +30,20 @@ public class Noise {
 
 	private static ALContext alContext;
 
-	private static DebugWindow debugWindow;
+	private static DebugWindow       debugWindow;
 	private static RessourceProfiler ressourceProfiler;
+
+	//hold our own reference, GLFW doesn't like to do that itself
+	private static GLFWErrorCallback errorCallbackFun;
 
 	public static void init() {
 		if (!initialized) {
 			glfwInit();
-			glfwSetErrorCallback(errorCallbackPrint(System.err));
+
+			Logger.log(Logger.INFO, "GLFW initialized, version: " + GLFW.GLFW_VERSION_MAJOR + "." + GLFW.GLFW_VERSION_MINOR + "." + GLFW.GLFW_VERSION_REVISION);
+
+			errorCallbackFun = errorCallbackPrint(System.err);
+			glfwSetErrorCallback(errorCallbackFun);
 
 			ressourceProfiler = new RessourceProfiler();
 			debugWindow = new DebugWindow(ressourceProfiler);
@@ -56,6 +66,7 @@ public class Noise {
 			sleepThread.start();
 
 			alContext = ALContext.create();
+			Logger.log(Logger.INFO, "Noise initialized, LWJGL version: " + org.lwjgl.Sys.getVersion());
 		}
 
 		initialized = true;
