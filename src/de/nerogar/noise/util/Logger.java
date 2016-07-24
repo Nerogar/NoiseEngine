@@ -21,25 +21,25 @@ public class Logger {
 	 * Information to find bugs during development.
 	 */
 	public static final  int         DEBUG        = 0;
-	private static final PrintWriter DEBUG_WRITER = (new LogWriter(DEBUG));
+	private static final PrintWriter DEBUG_WRITER = new LogWriter(DEBUG);
 
 	/**
 	 * More important than debug information.
 	 */
 	public static final  int         INFO        = 1;
-	private static final PrintWriter INFO_WRITER = (new LogWriter(INFO));
+	private static final PrintWriter INFO_WRITER = new LogWriter(INFO);
 
 	/**
 	 * Warnings about unexpected behavior.
 	 */
 	public static final  int         WARNING        = 2;
-	private static final PrintWriter WARNING_WRITER = (new LogWriter(WARNING));
+	private static final PrintWriter WARNING_WRITER = new LogWriter(WARNING);
 
 	/**
 	 * Problems that can cause a crash.
 	 */
 	public static final  int         ERROR        = 4;
-	private static final PrintWriter ERROR_WRITER = (new LogWriter(ERROR));
+	private static final PrintWriter ERROR_WRITER = new LogWriter(ERROR);
 
 	private static List<LogOutStream> logStreams;
 	private static boolean    printTimestamp = false;
