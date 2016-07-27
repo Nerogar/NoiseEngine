@@ -1,34 +1,35 @@
 package de.nerogar.noise.opencl;
 
-import static org.lwjgl.glfw.GLFWLinux.glfwGetX11Display;
+import de.nerogar.noise.render.GLContext;
+import de.nerogar.noise.util.Logger;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.Platform;
+
+import java.nio.IntBuffer;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.lwjgl.glfw.GLFWNativeX11.glfwGetX11Display;
 import static org.lwjgl.opencl.CL10.*;
 import static org.lwjgl.opencl.KHRGLSharing.*;
 import static org.lwjgl.opengl.CGL.CGLGetShareGroup;
 import static org.lwjgl.opengl.WGL.wglGetCurrentDC;
 import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.lwjgl.system.MemoryUtil.memDecodeUTF8;
-
-import java.nio.IntBuffer;
-import java.util.List;
-
-import org.lwjgl.*;
-import org.lwjgl.opencl.*;
-import org.lwjgl.opengl.GLContext;
-
-import de.nerogar.noise.util.Logger;
+import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 public class CLContext {
 
 	private static final String ERROR_LOCATION = "CLContext";
 	private IntBuffer errorCode;
 
-	private boolean shareGL;
+	private boolean   shareGL;
 	private GLContext glContext;
 
-	private long clContext;
+	private long clContextPointer;
 
 	private CLDevice clDevice;
-	private long clCommandQueue;
+	private long     clCommandQueue;
 
 	public CLContext(GLContext glContext) {
 		this.glContext = glContext;
@@ -38,9 +39,10 @@ public class CLContext {
 
 		//get a list with devices for gl sharing
 		CLPlatform platform = CLPlatform.getPlatforms().get(0);
-		List<CLDevice> devices = platform.getDevices(CL10.CL_DEVICE_TYPE_GPU, (device) -> {
-			return device.getCapabilities().cl_khr_gl_sharing;
-		});
+		List<CLDevice> devices = platform.getDevices(CL_DEVICE_TYPE_GPU)
+				.stream()
+				.filter(device -> device.getCapabilities().cl_khr_gl_sharing)
+				.collect(Collectors.toList());
 		boolean isSharingPossible = !devices.isEmpty();
 		if (!isSharingPossible) throw new RuntimeException("CL-GL context sharing is not supported.");
 
@@ -48,14 +50,14 @@ public class CLContext {
 
 		//fill a buffer with the first filtered device
 		PointerBuffer deviceBuffer = BufferUtils.createPointerBuffer(1);
-		deviceBuffer.put(0, clDevice.getPointer());
+		deviceBuffer.put(0, clDevice.getClDevicePointer());
 
 		//create a buffer with context creation properties
 		PointerBuffer contextProperties = BufferUtils.createPointerBuffer(7);
-		contextProperties.put(0, CL_CONTEXT_PLATFORM).put(1, platform.getPointer());
-		contextProperties.put(2, CL_GL_CONTEXT_KHR).put(3, glContext.getPointer());
+		contextProperties.put(0, CL_CONTEXT_PLATFORM).put(1, platform.getClPlatformPointer());
+		contextProperties.put(2, CL_GL_CONTEXT_KHR).put(3, glContext.getGlContextPointer());
 
-		switch (LWJGLUtil.getPlatform()) {
+		switch (Platform.get()) {
 		case WINDOWS:
 			contextProperties.put(4, CL_WGL_HDC_KHR).put(5, wglGetCurrentDC());
 			break;
@@ -63,23 +65,22 @@ public class CLContext {
 			contextProperties.put(4, CL_GLX_DISPLAY_KHR).put(5, glfwGetX11Display());
 			break;
 		case MACOSX:
-			contextProperties.put(4, CL_CGL_SHAREGROUP_KHR).put(5, CGLGetShareGroup(glContext.getPointer()));
+			contextProperties.put(4, CL_CGL_SHAREGROUP_KHR).put(5, CGLGetShareGroup(glContext.getGlContextPointer()));
 			break;
 		}
 
 		contextProperties.put(6, 0); //add a NULL terminator
 
+		checkCLError(errorCode, ERROR_LOCATION);
+
 		//create the context
-		clContext = clCreateContext(contextProperties, deviceBuffer, new CLCreateContextCallback() {
-			@Override
-			public void invoke(long errinfo, long private_info, long cb, long user_data) {
-				Logger.log(Logger.ERROR, "openCL error: " + memDecodeUTF8(errinfo));
-			}
+		clContextPointer = clCreateContext(contextProperties, deviceBuffer, (errinfo, private_info, cb, user_data) -> {
+			Logger.log(Logger.ERROR, "openCL error: " + memUTF8(errinfo));
 		}, NULL, errorCode);
 
 		checkCLError(errorCode, ERROR_LOCATION);
 
-		clCommandQueue = clCreateCommandQueue(clContext, clDevice.getPointer(), 0L, errorCode);
+		clCommandQueue = clCreateCommandQueue(clContextPointer, clDevice.getClDevicePointer(), 0L, errorCode);
 		checkCLError(errorCode, ERROR_LOCATION);
 	}
 
@@ -88,31 +89,28 @@ public class CLContext {
 
 		errorCode = BufferUtils.createIntBuffer(1);
 
-		//get a list with devices for gl sharing
-		CLPlatform platform = CLPlatform.getPlatforms().get(0);
-		List<CLDevice> devices = platform.getDevices(CL10.CL_DEVICE_TYPE_GPU);
+		//get a list with devices
+		CLPlatform clPlatform = CLPlatform.getPlatforms().get(0);
+		List<CLDevice> devices = clPlatform.getDevices(CL_DEVICE_TYPE_GPU);
 		clDevice = devices.get(0);
 
 		//fill a buffer with the first filtered device
 		PointerBuffer deviceBuffer = BufferUtils.createPointerBuffer(1);
-		deviceBuffer.put(0, clDevice.getPointer());
+		deviceBuffer.put(0, clDevice.getClDevicePointer());
 
 		//create a buffer with context creation properties
 		PointerBuffer contextProperties = BufferUtils.createPointerBuffer(3);
-		contextProperties.put(0, CL_CONTEXT_PLATFORM).put(1, platform.getPointer());
+		contextProperties.put(0, CL_CONTEXT_PLATFORM).put(1, clPlatform.getClPlatformPointer());
 		contextProperties.put(2, 0); //add a NULL terminator
 
 		//create the context
-		clContext = clCreateContext(contextProperties, deviceBuffer, new CLCreateContextCallback() {
-			@Override
-			public void invoke(long errinfo, long private_info, long cb, long user_data) {
-				Logger.log(Logger.ERROR, "openCL error: " + memDecodeUTF8(errinfo));
-			}
+		clContextPointer = clCreateContext(contextProperties, deviceBuffer, (errinfo, private_info, cb, user_data) -> {
+			Logger.log(Logger.ERROR, "openCL error: " + memUTF8(errinfo));
 		}, NULL, errorCode);
 
 		checkCLError(errorCode, ERROR_LOCATION);
 
-		clCommandQueue = clCreateCommandQueue(clContext, clDevice.getPointer(), 0L, errorCode);
+		clCommandQueue = clCreateCommandQueue(clContextPointer, clDevice.getClDevicePointer(), 0L, errorCode);
 		checkCLError(errorCode, ERROR_LOCATION);
 	}
 
@@ -121,7 +119,7 @@ public class CLContext {
 	}
 
 	public long getCLContext() {
-		return clContext;
+		return clContextPointer;
 	}
 
 	public GLContext getGLContext() {
@@ -142,8 +140,8 @@ public class CLContext {
 
 	public static void checkCLError(int errorCode, String errorLocation) {
 		if (errorCode != CL_SUCCESS) {
-			Logger.log(Logger.ERROR, "OpenCL error: " + CLUtil.getErrcodeName(errorCode) + " in " + errorLocation);
-			throw new OpenCLException(CLUtil.getErrcodeName(errorCode));
+			Logger.log(Logger.ERROR, "OpenCL error: " + errorCode + " in " + errorLocation);
+			throw new CLException("openCL error code " + errorCode);
 		}
 	}
 

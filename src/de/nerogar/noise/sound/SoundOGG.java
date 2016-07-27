@@ -37,13 +37,13 @@ public class SoundOGG extends Sound {
 			return;
 		}
 
-		STBVorbisInfo vorbisInfo = new STBVorbisInfo();
-		stb_vorbis_get_info(decoderPointer, vorbisInfo.buffer());
+		STBVorbisInfo vorbisInfo = STBVorbisInfo.create();
+		stb_vorbis_get_info(decoderPointer, vorbisInfo);
 
-		setInfo(vorbisInfo.getChannels(),
-				vorbisInfo.getSampleRate(),
+		setInfo(vorbisInfo.channels(),
+				vorbisInfo.sample_rate(),
 				stb_vorbis_stream_length_in_samples(decoderPointer),
-				getFormat(vorbisInfo.getChannels()));
+				getFormat(vorbisInfo.channels()));
 
 		sampleBuffer = BufferUtils.createShortBuffer(BUFFER_SIZE);
 

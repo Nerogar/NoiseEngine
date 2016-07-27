@@ -43,7 +43,7 @@ public class SoundOGGLoader {
 			}
 
 			if (pcmContainer != null) {
-				return new SoundPCM(pcmContainer.pcmData, pcmContainer.vorbisInfo.getChannels(), pcmContainer.vorbisInfo.getSampleRate(), pcmContainer.samples);
+				return new SoundPCM(pcmContainer.pcmData, pcmContainer.vorbisInfo.channels(), pcmContainer.vorbisInfo.sample_rate(), pcmContainer.samples);
 			} else {
 				return null;
 			}
@@ -78,13 +78,13 @@ public class SoundOGGLoader {
 			return null;
 		}
 
-		pcmContainer.vorbisInfo = new STBVorbisInfo();
-		stb_vorbis_get_info(decoderPointer, pcmContainer.vorbisInfo.buffer());
+		pcmContainer.vorbisInfo = STBVorbisInfo.create();
+		stb_vorbis_get_info(decoderPointer, pcmContainer.vorbisInfo);
 
 		pcmContainer.samples = stb_vorbis_stream_length_in_samples(decoderPointer);
-		pcmContainer.pcmData = BufferUtils.createShortBuffer(pcmContainer.samples * pcmContainer.vorbisInfo.getChannels());
+		pcmContainer.pcmData = BufferUtils.createShortBuffer(pcmContainer.samples * pcmContainer.vorbisInfo.channels());
 
-		stb_vorbis_get_samples_short_interleaved(decoderPointer, pcmContainer.vorbisInfo.getChannels(), pcmContainer.pcmData);
+		stb_vorbis_get_samples_short_interleaved(decoderPointer, pcmContainer.vorbisInfo.channels(), pcmContainer.pcmData);
 
 		stb_vorbis_close(decoderPointer);
 

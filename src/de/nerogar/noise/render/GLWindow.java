@@ -1,35 +1,34 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.util.Logger;
+import org.lwjgl.glfw.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.GLContext;
-
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.util.Logger;
-
 public class GLWindow implements IRenderTarget {
 
 	private static List<GLWindow> windows;
-	private static GLWindow currentWindow;
-	private static long currentGlContext;
+	private static GLWindow       currentWindow;
+	private static long           currentGlContext;
 
 	private long windowPointer;
 
-	private String title;
-	private int windowWidth, windowHeight;
-	private int swapInterval;
+	private String  title;
+	private int     windowWidth;
+	private int     windowHeight;
+	private int     swapInterval;
 	private boolean resizable;
-	/**true if the mouse should be hidden*/
+	/** true if the mouse should be hidden */
 	private boolean hideMouse;
-	/**true if the mouse is currently hidden*/
+	/** true if the mouse is currently hidden */
 	private boolean mouseHidden;
 
 	private GLContext glContext;
@@ -39,26 +38,26 @@ public class GLWindow implements IRenderTarget {
 	private InputHandler inputHandler;
 
 	//holds references to callbacks, otherwise the gc will delete them
-	private GLFWWindowFocusCallback windowFocusCallback;
+	private GLFWWindowFocusCallback     windowFocusCallback;
 	private GLFWFramebufferSizeCallback frameBufferCallback;
-	private GLFWCursorPosCallback cursorPosCallback;
-	private GLFWKeyCallback keyCallback;
-	private GLFWCharModsCallback charModsCallback;
-	private GLFWMouseButtonCallback mouseButtonCallback;
-	private GLFWScrollCallback scrollCallback;
+	private GLFWCursorPosCallback       cursorPosCallback;
+	private GLFWKeyCallback             keyCallback;
+	private GLFWCharModsCallback        charModsCallback;
+	private GLFWMouseButtonCallback     mouseButtonCallback;
+	private GLFWScrollCallback          scrollCallback;
 
 	private boolean deleted;
 
 	/**
 	 * Creates a new window for OpenGL. A new GLContext will be created.
 	 * To share objects like textures or vertex buffers between windows, use the <code>parentWindow</code> parameter
-	 * 
-	 * @param title initial window Title
-	 * @param width initial window width
-	 * @param height initial window height
-	 * @param resizable initial resizable status
+	 *
+	 * @param title        initial window Title
+	 * @param width        initial window width
+	 * @param height       initial window height
+	 * @param resizable    initial resizable status
 	 * @param swapInterval initial swap interval (0 = unbound)
-	 * @param monitor the monitor for fullscreen windows, null otherwise
+	 * @param monitor      the monitor for fullscreen windows, null otherwise
 	 * @param parentWindow the window to share opengl objects with, null otherwise
 	 */
 	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval, Monitor monitor, GLWindow parentWindow) {
@@ -77,17 +76,17 @@ public class GLWindow implements IRenderTarget {
 		inputHandler = new InputHandler(this, windowPointer);
 
 		GLWindow.makeContextCurrent(windowPointer);
-		glContext = GLContext.createFromCurrent();
+		glContext = new GLContext(windowPointer);//GLContext.createFromCurrent();
 
 		setSwapInterval(swapInterval > 0 ? swapInterval : 0);
 
 		windowFocusCallback = new GLFWWindowFocusCallback() {
 			@Override
-			public void invoke(long window, int focused) {
-				if (focused == GL_FALSE) {
+			public void invoke(long window, boolean focused) {
+				if (focused) {
 					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 					mouseHidden = false;
-					
+
 					//fix mouse jumping
 					inputHandler.flagMouseDelta();
 				}
@@ -191,11 +190,11 @@ public class GLWindow implements IRenderTarget {
 	}
 
 	public void setShouldClose(boolean shouldClose) {
-		glfwSetWindowShouldClose(windowPointer, shouldClose ? GL_TRUE : GL_FALSE);
+		glfwSetWindowShouldClose(windowPointer, shouldClose);
 	}
 
 	public boolean shouldClose() {
-		return glfwWindowShouldClose(windowPointer) == GL_TRUE;
+		return glfwWindowShouldClose(windowPointer);
 	}
 
 	public boolean isClosed() {
@@ -289,7 +288,7 @@ public class GLWindow implements IRenderTarget {
 
 	public static GLWindow getWindow(long glContext) {
 		for (GLWindow win : windows) {
-			if (win.getGLContext().getPointer() == glContext) return win;
+			if (win.getGLContext().getGlContextPointer() == glContext) return win;
 		}
 
 		return null;
@@ -314,7 +313,7 @@ public class GLWindow implements IRenderTarget {
 	}
 
 	static {
-		windows = new ArrayList<GLWindow>();
+		windows = new ArrayList<>();
 	}
 
 }

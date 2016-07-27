@@ -1,15 +1,14 @@
 package de.nerogar.noise.opencl;
 
-import static org.lwjgl.opencl.CL10.*;
-
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-
+import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opencl.CL10;
 
-import de.nerogar.noise.util.Logger;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+
+import static org.lwjgl.opencl.CL10.*;
 
 public class CLProgram {
 
@@ -32,19 +31,19 @@ public class CLProgram {
 	}
 
 	private void build() {
-		int buildErrorCode = clBuildProgram(clProgram, clContext.getCLDevice().getPointer(), "", null, 0L);
+		int buildErrorCode = clBuildProgram(clProgram, clContext.getCLDevice().getClDevicePointer(), "", null, 0L);
 		if (buildErrorCode != CL_SUCCESS) {
-			logBuildError(clProgram, clContext.getCLDevice().getPointer());
+			logBuildError(clProgram, clContext.getCLDevice().getClDevicePointer());
 		}
 		CLContext.checkCLError(buildErrorCode, ERROR_LOCATION);
 	}
 
 	private static void logBuildError(long program, long device) {
 		PointerBuffer lengthBuffer = BufferUtils.createPointerBuffer(1);
-		clGetProgramBuildInfo(program, device, CL10.CL_PROGRAM_BUILD_LOG, 0, null, lengthBuffer);
+		clGetProgramBuildInfo(program, device, CL10.CL_PROGRAM_BUILD_LOG, (ByteBuffer) null, lengthBuffer);
 		int length = (int) lengthBuffer.get();
 		ByteBuffer errorbuffer = BufferUtils.createByteBuffer(length);
-		clGetProgramBuildInfo(program, device, CL10.CL_PROGRAM_BUILD_LOG, length, errorbuffer, (PointerBuffer) null);
+		clGetProgramBuildInfo(program, device, CL10.CL_PROGRAM_BUILD_LOG, errorbuffer, (PointerBuffer) null);
 
 		StringBuilder sb = new StringBuilder(length + 1);
 		for (int i = 0; i < errorbuffer.capacity(); i++) {

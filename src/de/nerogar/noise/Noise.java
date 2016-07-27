@@ -2,13 +2,12 @@ package de.nerogar.noise;
 
 import de.nerogar.noise.debug.DebugWindow;
 import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.sound.ALContext;
 import de.nerogar.noise.util.Logger;
+import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.ALContext;
 
-import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Noise {
@@ -41,7 +40,7 @@ public class Noise {
 
 			Logger.log(Logger.INFO, "GLFW initialized, version: " + GLFW.GLFW_VERSION_MAJOR + "." + GLFW.GLFW_VERSION_MINOR + "." + GLFW.GLFW_VERSION_REVISION);
 
-			errorCallbackFun = errorCallbackPrint(Logger.getErrorStream());
+			errorCallbackFun = GLFWErrorCallback.createPrint(Logger.getErrorStream());
 			glfwSetErrorCallback(errorCallbackFun);
 
 			ressourceProfiler = new RessourceProfiler();
@@ -64,8 +63,8 @@ public class Noise {
 			sleepThread.setDaemon(true);
 			sleepThread.start();
 
-			alContext = ALContext.create();
-			Logger.log(Logger.INFO, "Noise initialized, LWJGL version: " + org.lwjgl.Sys.getVersion());
+			alContext = new ALContext();
+			Logger.log(Logger.INFO, "Noise initialized, LWJGL version: " + Version.getVersion());
 		}
 
 		initialized = true;
@@ -81,6 +80,6 @@ public class Noise {
 
 	public static void cleanup() {
 		glfwTerminate();
-		AL.destroy(alContext);
+		alContext.destroy();
 	}
 }

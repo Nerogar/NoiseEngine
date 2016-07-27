@@ -1,5 +1,15 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.util.Logger;
+import org.lwjgl.BufferUtils;
+
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.HashMap;
+
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL15.*;
@@ -8,15 +18,7 @@ import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
 import static org.lwjgl.opengl.GL33.glVertexAttribDivisor;
-
-import java.nio.*;
-import java.util.HashMap;
-
-import org.lwjgl.BufferUtils;
-
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.RessourceProfiler;
-import de.nerogar.noise.util.Logger;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public class VertexBufferObjectInstanced extends VertexBufferObject {
 
@@ -24,28 +26,27 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	private int indexBufferHandle;
 	private int instanceBufferHandle;
 
-	private int indexCount;
-	private int totalComponents;
+	private int   indexCount;
+	private int   totalComponents;
 	private int[] componentCounts;
 	private int[] incrementalComponentCounts;
 
-	private int instanceCount;
-	private int totalComponentsInstance;
+	private int   instanceCount;
+	private int   totalComponentsInstance;
 	private int[] componentCountsInstance;
 	private int[] incrementalComponentCountsInstance;
 
-	private float[] attribArrayInstance;
+	private float[]    attribArrayInstance;
 	private ByteBuffer instanceBuffer;
 
 	protected HashMap<Long, Boolean> glContextInstanceDataDirty;
 
 	/**
 	 * @param componentCounts an array containing all component counts
-	 * @param indexCount number of vertices specified in indexArray
-	 * @param vertexCount number of vertices specified in attributes
-	 * @param indexArary an array containing the index data
-	 * @param attributes arays containing all components to use for this VBO
-	 * 
+	 * @param indexCount      number of vertices specified in indexArray
+	 * @param vertexCount     number of vertices specified in attributes
+	 * @param indexArary      an array containing the index data
+	 * @param attributes      arays containing all components to use for this VBO
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
 	public VertexBufferObjectInstanced(int[] componentCounts, int indexCount, int vertexCount, int[] indexArary, float[]... attributes) {
@@ -53,14 +54,13 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	}
 
 	/**
-	 * @param renderType type of rendered primitives. Either {@link VertexBufferObject#POINTS POINTS},
-	 * {@link VertexBufferObject#TRIANGLES TRIANGLES} or {@link VertexBufferObject#LINES LINES}
+	 * @param renderType      type of rendered primitives. Either {@link VertexBufferObject#POINTS POINTS},
+	 *                        {@link VertexBufferObject#TRIANGLES TRIANGLES} or {@link VertexBufferObject#LINES LINES}
 	 * @param componentCounts an array containing all component counts
-	 * @param indexCount number of vertices specified in indexArray
-	 * @param vertexCount number of vertices specified in attributes
-	 * @param indexArary an array containing the index data
-	 * @param attributes arays containing all components to use for this VBO
-	 * 
+	 * @param indexCount      number of vertices specified in indexArray
+	 * @param vertexCount     number of vertices specified in attributes
+	 * @param indexArary      an array containing the index data
+	 * @param attributes      arays containing all components to use for this VBO
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
 	public VertexBufferObjectInstanced(int renderType, int[] componentCounts, int indexCount, int vertexCount, int[] indexArary, float[]... attributes) {
@@ -143,7 +143,9 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		if (instanceBufferHandle == 0) instanceBufferHandle = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, instanceBufferHandle);
 		if (instanceBuffer != null) {
-			glBufferData(GL_ARRAY_BUFFER, instanceCount * totalComponentsInstance * Float.BYTES, instanceBuffer, GL_STATIC_DRAW);
+			//the ngl version is used here, because lwjgl doesnt expose the size parameter anymore
+			//glBufferData(GL_ARRAY_BUFFER, instanceCount * totalComponentsInstance * Float.BYTES, instanceBuffer, GL_STATIC_DRAW);
+			nglBufferData(GL_ARRAY_BUFFER, instanceCount * totalComponentsInstance * Float.BYTES, memAddress(instanceBuffer), GL_STATIC_DRAW);
 		}
 
 		if (componentCountsInstance != null) {
@@ -178,10 +180,10 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	/**
 	 * Updates the instance data of this VertexBuffer. ComponentCounts should contain only numbers from 1 to 4.
 	 * If you want to add 4x4 matrices, you have to specify 4 arrays, each containing a single collumn of the matrix
-	 * 
-	 * @param instanceCount number of instances to render
+	 *
+	 * @param instanceCount           number of instances to render
 	 * @param componentCountsInstance an array containing all component counts
-	 * @param attributesInstance arays containing all components to use for this VBO as instance data
+	 * @param attributesInstance      arays containing all components to use for this VBO as instance data
 	 */
 	public void setInstanceData(int instanceCount, int[] componentCountsInstance, float[]... attributesInstance) {
 		this.componentCountsInstance = componentCountsInstance;

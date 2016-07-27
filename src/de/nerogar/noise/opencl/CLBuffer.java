@@ -1,13 +1,14 @@
 package de.nerogar.noise.opencl;
 
-import static org.lwjgl.opencl.CL10.*;
-
-import java.nio.*;
-
+import de.nerogar.noise.render.Texture2D;
+import de.nerogar.noise.render.VertexBufferObject;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opencl.CL10GL;
 
-import de.nerogar.noise.render.VertexBufferObject;
+import java.nio.*;
+
+import static org.lwjgl.opencl.CL10.*;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public class CLBuffer {
 
@@ -16,10 +17,22 @@ public class CLBuffer {
 
 	private CLContext clContext;
 
-	private long bufferPointer;
+	private long    bufferPointer;
 	private boolean isGLBuffer;
 
 	private ByteBuffer bufferData;
+
+	public CLBuffer(CLContext clContext, Texture2D texture) {
+		if (!clContext.isContextGLShared()) throw new IllegalStateException("Can not create CL buffer from vbo in a non shared context.");
+
+		errorCode = BufferUtils.createIntBuffer(1);
+
+		long bufferPointer = CL10GL.clCreateFromGLTexture2D(clContext.getCLContext(), CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, texture.getID(), errorCode);
+		CLContext.checkCLError(errorCode, ERROR_LOCATION);
+
+		this.bufferPointer = bufferPointer;
+		this.isGLBuffer = true;
+	}
 
 	public CLBuffer(CLContext clContext, VertexBufferObject vbo) {
 		if (!clContext.isContextGLShared()) throw new IllegalStateException("Can not create CL buffer from vbo in a non shared context.");
