@@ -1,8 +1,9 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.util.Logger;
-import org.lwjgl.glfw.*;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +27,6 @@ public class GLWindow implements IRenderTarget {
 	private int     windowHeight;
 	private int     swapInterval;
 	private boolean resizable;
-	/** true if the mouse should be hidden */
-	private boolean hideMouse;
-	/** true if the mouse is currently hidden */
-	private boolean mouseHidden;
 
 	private GLContext glContext;
 
@@ -38,13 +35,8 @@ public class GLWindow implements IRenderTarget {
 	private InputHandler inputHandler;
 
 	//holds references to callbacks, otherwise the gc will delete them
-	private GLFWWindowFocusCallback     windowFocusCallback;
+
 	private GLFWFramebufferSizeCallback frameBufferCallback;
-	private GLFWCursorPosCallback       cursorPosCallback;
-	private GLFWKeyCallback             keyCallback;
-	private GLFWCharModsCallback        charModsCallback;
-	private GLFWMouseButtonCallback     mouseButtonCallback;
-	private GLFWScrollCallback          scrollCallback;
 
 	private boolean deleted;
 
@@ -80,19 +72,6 @@ public class GLWindow implements IRenderTarget {
 
 		setSwapInterval(swapInterval > 0 ? swapInterval : 0);
 
-		windowFocusCallback = new GLFWWindowFocusCallback() {
-			@Override
-			public void invoke(long window, boolean focused) {
-				if (focused) {
-					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-					mouseHidden = false;
-
-					//fix mouse jumping
-					inputHandler.flagMouseDelta();
-				}
-			}
-		};
-
 		frameBufferCallback = new GLFWFramebufferSizeCallback() {
 			@Override
 			public void invoke(long window, int newWidth, int newHeight) {
@@ -108,57 +87,7 @@ public class GLWindow implements IRenderTarget {
 			}
 		};
 
-		cursorPosCallback = new GLFWCursorPosCallback() {
-			@Override
-			public void invoke(long window, double xpos, double ypos) {
-				if (!hideMouse || mouseHidden) {
-					inputHandler.setCursorPosition(xpos, (double) getHeight() - ypos);
-				}
-			}
-		};
-
-		keyCallback = new GLFWKeyCallback() {
-			@Override
-			public void invoke(long window, int key, int scancode, int action, int mods) {
-				inputHandler.addKeyboardKeyEvent(key, scancode, action, mods);
-			}
-		};
-
-		charModsCallback = new GLFWCharModsCallback() {
-			@Override
-			public void invoke(long window, int codepoint, int mods) {
-				inputHandler.addInputTextCodepoint(codepoint);
-			}
-		};
-
-		mouseButtonCallback = new GLFWMouseButtonCallback() {
-			@Override
-			public void invoke(long window, int button, int action, int mods) {
-				if (hideMouse && !mouseHidden) {
-					glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-					mouseHidden = true;
-
-					return;
-				}
-
-				inputHandler.addMouseButtonEvent(button, action, mods);
-			}
-		};
-
-		scrollCallback = new GLFWScrollCallback() {
-			@Override
-			public void invoke(long window, double xoffset, double yoffset) {
-				inputHandler.setScrollWheelDelta(xoffset, yoffset);
-			}
-		};
-
-		glfwSetWindowFocusCallback(windowPointer, windowFocusCallback);
 		glfwSetFramebufferSizeCallback(windowPointer, frameBufferCallback);
-		glfwSetCursorPosCallback(windowPointer, cursorPosCallback);
-		glfwSetKeyCallback(windowPointer, keyCallback);
-		glfwSetCharModsCallback(windowPointer, charModsCallback);
-		glfwSetMouseButtonCallback(windowPointer, mouseButtonCallback);
-		glfwSetScrollCallback(windowPointer, scrollCallback);
 
 		bind();
 	}
@@ -178,6 +107,15 @@ public class GLWindow implements IRenderTarget {
 	@Override
 	public int getHeight() {
 		return windowHeight;
+	}
+
+	/**
+	 * sets the fullscreen mode. null means no fullscreen.
+	 *
+	 * @param monitor the target monitor or null
+	 */
+	public void setFullscreen(Monitor monitor) {
+		glfwSetWindowMonitor(windowPointer, monitor == null ? NULL : monitor.getPointer(), 100, 100, getWidth(), getHeight(), getSwapInterval());
 	}
 
 	public void setSwapInterval(int swapInterval) {
@@ -235,17 +173,6 @@ public class GLWindow implements IRenderTarget {
 		glfwShowWindow(windowPointer);
 	}
 
-	public void setMouseHiding(boolean hide) {
-		this.hideMouse = hide;
-		this.mouseHidden = hide;
-
-		if (hide) {
-			glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		} else {
-			glfwSetInputMode(windowPointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-	}
-
 	public void makeContextCurrent() {
 		makeContextCurrent(windowPointer);
 	}
@@ -299,10 +226,7 @@ public class GLWindow implements IRenderTarget {
 	 */
 	public static void updateAll() {
 		for (GLWindow window : windows) {
-			window.inputHandler.resetInputText();
-			window.inputHandler.resetKeyboardKeyEvents();
-			window.inputHandler.resetMouseButtonEvents();
-			window.inputHandler.resetDeltaValues();
+			window.inputHandler.update();
 
 			glfwSwapBuffers(window.windowPointer);
 		}

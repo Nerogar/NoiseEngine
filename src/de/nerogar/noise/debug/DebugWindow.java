@@ -8,7 +8,7 @@ import org.lwjgl.opengl.GL11;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
-import de.nerogar.noise.render.InputHandler.KeyboardKeyEvent;
+import de.nerogar.noise.input.KeyboardKeyEvent;
 import de.nerogar.noise.render.fontRenderer.Font;
 import de.nerogar.noise.render.fontRenderer.FontRenderableString;
 import de.nerogar.noise.util.*;
@@ -20,7 +20,7 @@ public class DebugWindow {
 	private static final int RENDER_PADDING = 10;
 	private static final Color PROFILER_COLOR = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
-	public GLWindow window;
+	private GLWindow window;
 
 	private List<Profiler> profilerList;
 	private int activeProfiler;
@@ -130,11 +130,12 @@ public class DebugWindow {
 				}
 			}
 		}
+
 		if (activeProfilerChanged) {
 			activeProfiler = ((activeProfiler % profilerList.size()) + profilerList.size()) % profilerList.size();
-
 			createFontSidebar();
 		}
+
 		Profiler profiler = profilerList.get(activeProfiler);
 
 		//Logger.log(Logger.DEBUG, profiler);
@@ -231,5 +232,9 @@ public class DebugWindow {
 		}
 
 		GLWindow.makeContextCurrent(currentContext);
+	}
+
+	public GLWindow getGLWindow() {
+		return window;
 	}
 }
