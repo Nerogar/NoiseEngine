@@ -122,10 +122,14 @@ public class DeferredRenderer {
 				normalMatrix3[i * 3 + 2] = normalMat.get(2, 2);
 			}
 
-			vbo.setInstanceData(instanceModelMatrices.size(), instanceComponentCounts,
-								modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
-								normalMatrix1, normalMatrix2, normalMatrix3
-			);
+			// don't update instance data, if no instance will be drawn
+			// outdated data doesn't matter in that case
+			if(instanceModelMatrices.size() > 0) {
+				vbo.setInstanceData(instanceModelMatrices.size(), instanceComponentCounts,
+				                    modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
+				                    normalMatrix1, normalMatrix2, normalMatrix3
+				                   );
+			}
 
 			return instanceModelMatrices.size();
 		}

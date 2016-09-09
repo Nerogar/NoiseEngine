@@ -70,7 +70,7 @@ public class DeferredContainer {
 	}
 
 	/**
-	 * method for settin internal textures for the deferred renderer
+	 * method for setting internal textures for the deferred renderer
 	 * 
 	 * @param texture the texture
 	 * @param slot the slot used when binding the texture
