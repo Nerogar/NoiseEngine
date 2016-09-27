@@ -1,18 +1,23 @@
 package de.nerogar.noise.network;
 
-import java.io.IOException;
-import java.net.*;
-import java.util.*;
-
 import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.network.packets.PacketConnectionInfo;
+import de.nerogar.noise.util.Logger;
+
+import java.io.IOException;
+import java.net.BindException;
+import java.net.ServerSocket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class ServerThread extends Thread {
 
 	private ServerSocket socket;
 
-	private List<Connection> connections = new ArrayList<>();
-	private List<Connection> newConnections = new ArrayList<>();
+	private List<Connection> connections        = new ArrayList<>();
+	private List<Connection> newConnections     = new ArrayList<>();
 	private List<Connection> pendingConnections = new ArrayList<>();
 
 	public ServerThread(int port) throws BindException {
@@ -21,7 +26,7 @@ public class ServerThread extends Thread {
 		} catch (BindException e) {
 			throw e;
 		} catch (IOException e) {
-			System.err.println("The server crashed brutally");
+			Logger.log(Logger.ERROR, "The server crashed brutally");
 			e.printStackTrace();
 		}
 		this.start();
@@ -38,17 +43,17 @@ public class ServerThread extends Thread {
 			// System.err.println("SocketException in Server");
 			// e.printStackTrace();
 		} catch (IOException e) {
-			System.err.println("The server crashed brutally");
+			Logger.log(Logger.ERROR, "The server crashed brutally");
 			e.printStackTrace();
 		}
 
 		stopThread();
-		System.out.println("SHUTDOWN: Server - " + socket);
+		Logger.log(Logger.INFO, "SHUTDOWN: Server - " + socket);
 
 	}
 
 	private void checkPendingConnections() {
-		for (Iterator<Connection> iter = pendingConnections.iterator(); iter.hasNext();) {
+		for (Iterator<Connection> iter = pendingConnections.iterator(); iter.hasNext(); ) {
 			Connection conn = iter.next();
 			if (conn.isClosed()) {
 				iter.remove();
@@ -74,12 +79,12 @@ public class ServerThread extends Thread {
 	}
 
 	private void cleanupClosedConnections() {
-		for (Iterator<Connection> iter = connections.iterator(); iter.hasNext();) {
+		for (Iterator<Connection> iter = connections.iterator(); iter.hasNext(); ) {
 			if (iter.next().isClosed()) {
 				iter.remove();
 			}
 		}
-		for (Iterator<Connection> iter = newConnections.iterator(); iter.hasNext();) {
+		for (Iterator<Connection> iter = newConnections.iterator(); iter.hasNext(); ) {
 			if (iter.next().isClosed()) {
 				iter.remove();
 			}
@@ -112,7 +117,7 @@ public class ServerThread extends Thread {
 			try {
 				socket.close();
 			} catch (IOException e) {
-				System.err.println("Could not close Server-Socket");
+				Logger.log(Logger.WARNING, "Could not close Server-Socket");
 				e.printStackTrace();
 			}
 		}

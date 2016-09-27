@@ -1,18 +1,20 @@
 package de.nerogar.noise.network;
 
-import java.io.*;
+import de.nerogar.noise.network.packets.Packet;
+import de.nerogar.noise.util.Logger;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.nerogar.noise.network.packets.Packet;
-
 public class SenderThread extends Thread {
 
 	private Socket socket;
-	private ArrayList<Packet> packets = new ArrayList<Packet>();
-
-	private DataOutputStream stream;
+	private final ArrayList<Packet> packets = new ArrayList<>();
 
 	private boolean shouldFlush;
 
@@ -34,11 +36,11 @@ public class SenderThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			stream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+			DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 
 			while (!isInterrupted()) {
 
-				List<Packet> sendPackets = new ArrayList<Packet>();
+				List<Packet> sendPackets = new ArrayList<>();
 				synchronized (packets) {
 
 					if (packets.isEmpty()) {
@@ -58,12 +60,17 @@ public class SenderThread extends Thread {
 				for (Packet packet : sendPackets) {
 					try {
 						stream.writeInt(Packets.byClass(packet.getClass()).getID());
-						byte[] data = packet.toByteArray();
+
+						ByteArrayOutputStream arrayOut = new ByteArrayOutputStream();
+						DataOutputStream out = new DataOutputStream(arrayOut);
+						packet.toStream(out);
+						byte[] data = arrayOut.toByteArray();
+
 						stream.writeInt(data.length);
 						stream.write(data);
 					} catch (IOException e) {
-						System.err.println("Could not send packet " + packet.toString());
-						// e.printStackTrace();
+						Logger.log(Logger.ERROR, "Could not send packet " + packet);
+						e.printStackTrace(Logger.getErrorStream());
 					}
 
 				}

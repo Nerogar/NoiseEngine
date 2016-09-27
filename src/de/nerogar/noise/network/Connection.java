@@ -1,18 +1,19 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.network.packets.Packet;
+import de.nerogar.noise.network.packets.PacketConnectionInfo;
+import de.nerogar.noise.util.Logger;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import de.nerogar.noise.network.packets.Packet;
-import de.nerogar.noise.network.packets.PacketConnectionInfo;
-
 public class Connection {
 
-	private Socket socket;
+	private Socket         socket;
 	private ReceiverThread receiver;
-	private SenderThread sender;
+	private SenderThread   sender;
 
 	public Connection(Socket socket) {
 		if (socket == null) { return; }
@@ -43,15 +44,15 @@ public class Connection {
 		receiver.pollPackets();
 	}
 
-	private void discardPackets(){
+	private void discardPackets() {
 		receiver.discardPackets();
 	}
 
 	public ArrayList<Packet> getPackets(int channelID) {
-		ArrayList<Packet> packets = new ArrayList<Packet>();
+		ArrayList<Packet> packets = new ArrayList<>();
 		ArrayList<Packet> availablePackets = receiver.getPackets();
 		synchronized (availablePackets) {
-			for (Iterator<Packet> iter = availablePackets.iterator(); iter.hasNext();) {
+			for (Iterator<Packet> iter = availablePackets.iterator(); iter.hasNext(); ) {
 				Packet p = iter.next();
 				if (Packets.byClass(p.getClass()).getChannel() == channelID) {
 					packets.add(p);
@@ -68,10 +69,10 @@ public class Connection {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			System.err.println("Could not close socket in Client.");
+			Logger.log(Logger.WARNING, "Could not close socket in Client.");
 			e.printStackTrace();
 		}
-		System.out.println("SHUTDOWN: Connection - " + socket.toString());
+		Logger.log(Logger.INFO, "SHUTDOWN: Connection - " + socket.toString());
 	}
 
 	public boolean isClosed() {

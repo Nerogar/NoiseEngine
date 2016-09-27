@@ -1,20 +1,21 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.network.Packets.PacketContainer;
+import de.nerogar.noise.network.packets.Packet;
+import de.nerogar.noise.util.Logger;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 
-import de.nerogar.noise.network.Packets.PacketContainer;
-import de.nerogar.noise.network.packets.Packet;
-
 public class ReceiverThread extends Thread {
 
-	private Socket socket;
+	private Socket       socket;
 	private SenderThread send;
-	private ArrayList<Packet> packets = new ArrayList<Packet>();
-	private ArrayList<Packet> polledPackets = new ArrayList<Packet>();
+	private final ArrayList<Packet> packets       = new ArrayList<>();
+	private       ArrayList<Packet> polledPackets = new ArrayList<>();
 
 	public ReceiverThread(Socket socket, SenderThread send) {
 		setName("Reveiver Thread for " + socket.toString());
@@ -36,7 +37,8 @@ public class ReceiverThread extends Thread {
 
 				PacketContainer packetContainer = Packets.byId(packetId);
 				if (packetContainer == null) {
-					System.out.println("received invalid packet id: " + packetId + ", ignored.");
+					Logger.log(Logger.WARNING, "received invalid packet id: " + packetId + ", closing connection.");
+					socket.close();
 				} else {
 					int length = stream.readInt();
 					int read = 0;

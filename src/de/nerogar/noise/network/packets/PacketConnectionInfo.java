@@ -1,6 +1,8 @@
 package de.nerogar.noise.network.packets;
 
-import java.nio.ByteBuffer;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class PacketConnectionInfo extends Packet {
 
@@ -14,13 +16,13 @@ public class PacketConnectionInfo extends Packet {
 	}
 
 	@Override
-	public void fromByteArray(byte[] data) {
-		version = ByteBuffer.wrap(data).getInt();
+	public void fromStream(DataInputStream in) throws IOException {
+		version = in.readInt();
 	}
 
 	@Override
-	public byte[] toByteArray() {
-		return ByteBuffer.allocate(4).putInt(version).array();
+	public void toStream(DataOutputStream out) throws IOException {
+		out.writeInt(version);
 	}
 
 }

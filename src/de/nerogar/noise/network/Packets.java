@@ -1,19 +1,24 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.network.packets.Packet;
+import de.nerogar.noise.network.packets.PacketConnectionInfo;
+import de.nerogar.noise.util.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.nerogar.noise.network.packets.Packet;
-import de.nerogar.noise.network.packets.PacketConnectionInfo;
-
 public class Packets {
-	
+
 	public static final int SYSTEM_PACKET_CHANNEL = -1;
-	
+
 	public static class PacketContainer {
-		public int channelID;
+
+		public int                     channelID;
 		public Class<? extends Packet> packetClass;
-		public int id;
+		public int                     id;
 
 		public PacketContainer(int id, int channelID, Class<? extends Packet> packetClass) {
 			this.id = id;
@@ -25,10 +30,13 @@ public class Packets {
 			Packet p = null;
 			try {
 				p = packetClass.newInstance();
-				p.fromByteArray(data);
+				p.fromStream(new DataInputStream(new ByteArrayInputStream(data)));
 			} catch (InstantiationException | IllegalAccessException e) {
-				System.err.println("Error calling constructor of packet class. Make sure every Packet has a default (empty) constructor!");
-				e.printStackTrace();
+				Logger.log(Logger.ERROR, "Error calling constructor of packet class. Make sure every Packet has a default (empty) constructor!");
+				e.printStackTrace(Logger.getErrorStream());
+			} catch (IOException e) {
+				Logger.log(Logger.ERROR, "Error reading packet from stream: " + p);
+				e.printStackTrace(Logger.getErrorStream());
 			}
 			return p;
 		}

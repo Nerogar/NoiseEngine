@@ -1,9 +1,13 @@
 package de.nerogar.noise.network;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public interface Loadable {
 
-	public void fromByteArray(byte[] data);
+	void fromStream(DataInputStream in) throws IOException;
 
-	public byte[] toByteArray();
+	void toStream(DataOutputStream out) throws IOException;
 
 }
