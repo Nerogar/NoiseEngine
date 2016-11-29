@@ -1,15 +1,15 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.util.FileUtil;
+import org.lwjgl.BufferUtils;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
-
-import javax.imageio.ImageIO;
-
-import org.lwjgl.BufferUtils;
 
 public class TextureCubeMapLoader {
 
@@ -25,11 +25,15 @@ public class TextureCubeMapLoader {
 	 * <li>z positive</li>
 	 * <li>z negative</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param filename the filenames
 	 * @return The CubeMap
 	 */
 	public static TextureCubeMap loadTexture(String... filename) {
+		for (int i = 0; i < filename.length; i++) {
+			filename[i] = FileUtil.decodeFilename(null, FileUtil.TEXTURE_SUBFOLDER, filename[i]);
+		}
+
 		TextureCubeMap retTexture = textureMap.get(filename[0]);
 
 		if (retTexture != null) return retTexture;

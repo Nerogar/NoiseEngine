@@ -4,45 +4,19 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.nerogar.noise.Noise;
-
 /**
  * Utility class for easy program loading. Different preprocessor statements are defined:
  * <p>
  * <ul>
- * <li>{@code #include fileID}	(Includes the specified file at this position. fileID is a file id (see below))
+ * <li>{@code #include fileID}	(Includes the specified file at this position. fileID is a file id, specified in {@link FileUtil#decodeFilename(String, String, String)})
  * <li>{@code #parameter foo}	(takes "foo" as the key for looking up the file path in the parameter list.)
  * </ul>
- * 
- * File IDs:
- * <ol>
- * <li>{@code foo/bar.glsl}		(specifies a file relatife to the calling file)
- * <li>{@code (foo/bar.glsl)}	(specifies a file relative to the program execution path)
- * <li>{@code <foo/bar.glsl>}	(specifies a file from the default noise engine shader library)
+ *
  * </ol>
  */
 public class ProgramLoader {
 
 	private static final Map<String, String> EMPTY_PARAMETERS = new HashMap<String, String>();
-
-	public static String decodeFilename(String parent, String id) {
-		if (id.startsWith("<")) {
-			id = id.substring(1, id.indexOf(">"));
-
-			return Noise.RESSOURCE_DIR + "shaders/" + id;
-		}
-		if (id.startsWith("(")) {
-			id = id.substring(1, id.indexOf(")"));
-
-			return id;
-		} else {
-			if (parent != null) {
-				id = parent + "/" + id;
-			}
-
-			return id;
-		}
-	}
 
 	public static String readFile(String filename, Map<String, String> parameters) {
 		if (parameters == null) parameters = EMPTY_PARAMETERS;
@@ -68,7 +42,7 @@ public class ProgramLoader {
 
 					line = line.substring(9);
 
-					String nextFilename = decodeFilename(folder, line);
+					String nextFilename = FileUtil.decodeFilename(folder, FileUtil.SHADER_SUBFOLDER, line);
 
 					text.append("#line 1\n");
 					text.append(readFile(nextFilename, parameters)).append('\n');
@@ -79,7 +53,7 @@ public class ProgramLoader {
 
 					line = line.substring(10);
 
-					String parameter = readFile(decodeFilename(folder, parameters.get(line.trim())), parameters);
+					String parameter = readFile(FileUtil.decodeFilename(folder, FileUtil.SHADER_SUBFOLDER, parameters.get(line.trim())), parameters);
 
 					text.append("#line 1\n");
 					text.append(parameter).append('\n');

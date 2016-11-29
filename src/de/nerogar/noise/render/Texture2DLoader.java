@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+import de.nerogar.noise.util.FileUtil;
 import org.lwjgl.BufferUtils;
 
 import de.nerogar.noise.render.Texture2D.DataType;
@@ -31,6 +32,8 @@ public class Texture2DLoader {
 	}
 
 	public static Texture2D loadTexture(String filename, String textureName, InterpolationType interpolationType) {
+		filename = FileUtil.decodeFilename(null, FileUtil.TEXTURE_SUBFOLDER, filename);
+
 		Texture2D retTexture = textureMap.get(filename);
 
 		if (retTexture != null) return retTexture;
@@ -40,7 +43,7 @@ public class Texture2DLoader {
 			retTexture = loadTexture(image, textureName, interpolationType);
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.err.println("Missing Texture: " + filename);
+			Logger.log(Logger.ERROR, "Missing Texture: " + filename);
 		}
 
 		textureMap.put(filename, retTexture);

@@ -2,6 +2,7 @@ package de.nerogar.noise.opencl;
 
 import java.util.Map;
 
+import de.nerogar.noise.util.FileUtil;
 import de.nerogar.noise.util.ProgramLoader;
 
 /**
@@ -32,7 +33,7 @@ public class CLLoader {
 	 * @return the new openCL program
 	 */
 	public static CLProgram loadCLProgram(CLContext clContext, String clProgramFile, Map<String, String> parameters) {
-		String clProgramSource = ProgramLoader.readFile(ProgramLoader.decodeFilename(null, clProgramFile), parameters);
+		String clProgramSource = ProgramLoader.readFile(FileUtil.decodeFilename(null, clProgramFile), parameters);
 
 		CLProgram clProgram = new CLProgram(clContext, clProgramSource);
 
