@@ -2,10 +2,7 @@ package de.nerogar.noise.render.deferredRenderer;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
-import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.util.*;
 
 import java.util.*;
 
@@ -22,13 +19,14 @@ import static org.lwjgl.opengl.GL11.*;
 public class DeferredRenderer {
 
 	private static class VboContainer {
-		public DeferredContainer container;
-		public List<DeferredRenderable> renderables;
+
+		public DeferredContainer           container;
+		public List<DeferredRenderable>    renderables;
 		public VertexBufferObjectInstanced vbo;
 
 		private ArrayList<Matrix4f> instanceModelMatrices;
 		private ArrayList<Matrix4f> instanceNormalMatrices;
-		private float[] modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
+		private float[]             modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
 		private float[] normalMatrix1, normalMatrix2, normalMatrix3;
 
 		private static final int[] instanceComponentCounts = new int[] { 4, 4, 4, 4, 3, 3, 3 };
@@ -53,7 +51,7 @@ public class DeferredRenderer {
 			);
 		}
 
-		public int rebuildInstanceData(ViewFrustum frustum) {
+		public int rebuildInstanceData(IViewRegion frustum) {
 
 			instanceModelMatrices.clear();
 			instanceNormalMatrices.clear();
@@ -124,7 +122,7 @@ public class DeferredRenderer {
 
 			// don't update instance data, if no instance will be drawn
 			// outdated data doesn't matter in that case
-			if(instanceModelMatrices.size() > 0) {
+			if (instanceModelMatrices.size() > 0) {
 				vbo.setInstanceData(instanceModelMatrices.size(), instanceComponentCounts,
 				                    modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
 				                    normalMatrix1, normalMatrix2, normalMatrix3
@@ -136,29 +134,29 @@ public class DeferredRenderer {
 	}
 
 	private Map<DeferredContainer, VboContainer> vboMap;
-	private VertexBufferObjectIndexed fullscreenQuad;
-	private DeferredRendererProfiler profiler;
+	private VertexBufferObjectIndexed            fullscreenQuad;
+	private DeferredRendererProfiler             profiler;
 
 	//gBuffer
-	private Shader gBufferShader;
+	private Shader            gBufferShader;
 	private FrameBufferObject gBuffer;
 
 	//lights
-	private LightContainer lightContainer;
+	private LightContainer              lightContainer;
 	private VertexBufferObjectInstanced lightVbo;
-	private Shader lightShader;
-	private FrameBufferObject lightFrameBuffer;
+	private Shader                      lightShader;
+	private FrameBufferObject           lightFrameBuffer;
 
 	//effects
-	private EffectContainer effectContainer;
+	private EffectContainer   effectContainer;
 	private FrameBufferObject effectFrameBuffer;
 
 	//final pass
-	private Shader finalShader;
+	private Shader            finalShader;
 	private FrameBufferObject finalFrameBuffer;
 
 	//filter
-	private Shader filterShader;
+	private Shader            filterShader;
 	private FrameBufferObject filterFrameBuffer;
 
 	//settings
@@ -168,21 +166,21 @@ public class DeferredRenderer {
 	private int height;
 
 	private TextureCubeMap reflectionTexture;
-	private Color sunLightColor;
-	private Vector3f sunLightDirection;
-	private float sunLightBrightness;
+	private Color          sunLightColor;
+	private Vector3f       sunLightDirection;
+	private float          sunLightBrightness;
 
 	private float minAmbientBrightness;
 
 	private boolean ambientOcclusionEnabled;
-	private float ambientOcclusionSize;
-	private float ambientOcclusionStrength;
+	private float   ambientOcclusionSize;
+	private float   ambientOcclusionStrength;
 
 	//debug
 	private DeferredRenderable originAxis;
 
 	/**
-	 * @param width initial width of the target {@link FrameBufferObject FrameBufferObject}
+	 * @param width  initial width of the target {@link FrameBufferObject FrameBufferObject}
 	 * @param height initial height of the target {@link FrameBufferObject FrameBufferObject}
 	 */
 	public DeferredRenderer(int width, int height) {
@@ -216,10 +214,10 @@ public class DeferredRenderer {
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
 		gBuffer = new FrameBufferObject(width, height, true,
-										Texture2D.DataType.BGRA_8_8_8_8I, //color
-										Texture2D.DataType.BGRA_10_10_10_2, //normal
-										Texture2D.DataType.BGRA_32_32_32F, //position TODO: remove and reconstruct from depth buffer
-										Texture2D.DataType.BGRA_8_8_8_8I //light
+		                                Texture2D.DataType.BGRA_8_8_8_8I, //color
+		                                Texture2D.DataType.BGRA_10_10_10_2, //normal
+		                                Texture2D.DataType.BGRA_32_32_32F, //position TODO: remove and reconstruct from depth buffer
+		                                Texture2D.DataType.BGRA_8_8_8_8I //light
 		);
 
 		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
@@ -341,7 +339,7 @@ public class DeferredRenderer {
 
 	private static final int[] lightInstanceComponents = new int[] { 3, 3, 1, 1 };
 
-	private int rebuildLightVbo(PerspectiveCamera camera) {
+	private int rebuildLightVbo(Camera camera) {
 		float[] position = new float[lightContainer.size() * 3];
 		float[] color = new float[lightContainer.size() * 3];
 		float[] reach = new float[lightContainer.size()];
@@ -349,7 +347,7 @@ public class DeferredRenderer {
 
 		int i = 0;
 		for (Light light : lightContainer) {
-			if (camera.getViewFrustum().getPointDistance(light.position) < light.reach) {
+			if (camera.getViewRegion().getPointDistance(light.position) < light.reach) {
 				position[i * 3 + 0] = light.position.getX();
 				position[i * 3 + 1] = light.position.getY();
 				position[i * 3 + 2] = light.position.getZ();
@@ -420,7 +418,7 @@ public class DeferredRenderer {
 	/**
 	 * resizes the {@link FrameBufferObject FrameBufferObjects} to match the new resolution
 	 *
-	 * @param width the new width
+	 * @param width  the new width
 	 * @param height the new height
 	 */
 	public void setFrameBufferResolution(int width, int height) {
@@ -508,7 +506,7 @@ public class DeferredRenderer {
 	 *
 	 * @param camera the camera for viewing the scene
 	 */
-	public void render(PerspectiveCamera camera) {
+	public void render(Camera camera) {
 		//render gBuffer
 		gBuffer.bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -528,7 +526,7 @@ public class DeferredRenderer {
 		Shader currentShader;
 
 		for (VboContainer container : vboMap.values()) {
-			int instanceCount = container.rebuildInstanceData(camera.getViewFrustum());
+			int instanceCount = container.rebuildInstanceData(camera.getViewRegion());
 			if (instanceCount == 0) continue;
 
 			if (container.container.getSurfaceShader() == null) {
@@ -610,7 +608,7 @@ public class DeferredRenderer {
 			point.setY(effect.getRenderProperties().getY());
 			point.setZ(effect.getRenderProperties().getZ());
 
-			if (camera.getViewFrustum().getPointDistance(point) < effect.getBoundingRadius() * effect.getRenderProperties().getMaxScaleComponent()) {
+			if (camera.getViewRegion().getPointDistance(point) < effect.getBoundingRadius() * effect.getRenderProperties().getMaxScaleComponent()) {
 				effect.render(camera.getViewMatrix(), camera.getProjectionMatrix());
 				profiler.incrementValue(DeferredRendererProfiler.EFFECT_RENDER_COUNT);
 			}
@@ -625,34 +623,46 @@ public class DeferredRenderer {
 		//final pass
 		finalFrameBuffer.bind();
 
-		//calculate screenSpace unit size for ambient occlusion disc size
-		float fovRadiants = (float) (camera.getFOV() * Math.PI / 180.0);
-		float f = (float) Math.tan(Math.PI * 0.5 - fovRadiants / 2.0f);
-		float ssUnitSize = f * height * 0.5f;
-
-		//calculate left/right and top/bottom vectors for depth -> position reconstruction
-		float fov = (float) Math.toRadians(camera.getFOV() / 2.0f);
-		float fovSides = (float) Math.atan(Math.tan(Math.toRadians(camera.getFOV() / 2.0f)) * camera.getAspect());
-		float topLength = (float) (Math.sin(fov) / Math.cos(fov));
-		float rightLength = (float) (Math.sin(fovSides) / Math.cos(fovSides));
-		Vector3f topVector = camera.getDirectionUp().multiplied(topLength);
-		Vector3f rightVector = camera.getDirectionRight().multiplied(rightLength);
+		// calculate unit rays for depth -> position reconstruction
+		Ray unitRayCenter = camera.unproject(0, 0);
+		Ray unitRayRight = camera.unproject(1, 0);
+		Ray unitRayTop = camera.unproject(0, 1);
+		unitRayRight.getStart().subtract(unitRayCenter.getStart());
+		unitRayRight.getDir().subtract(unitRayCenter.getDir());
+		unitRayTop.getStart().subtract(unitRayCenter.getStart());
+		unitRayTop.getDir().subtract(unitRayCenter.getDir());
 
 		finalShader.activate();
-		finalShader.setUniform3f("cameraPosition", camera.getX(), camera.getY(), camera.getZ());
 		finalShader.setUniform3f("sunLightColor", sunLightColor.getR(), sunLightColor.getG(), sunLightColor.getB());
 		finalShader.setUniform3f("sunLightDirection", sunLightDirection.getX(), sunLightDirection.getY(), sunLightDirection.getZ());
 		finalShader.setUniform1f("sunLightBrightness", sunLightBrightness);
 		finalShader.setUniform1f("minAmbientBrightness", minAmbientBrightness);
-		finalShader.setUniform1f("ssUnitSize", ssUnitSize);
+		finalShader.setUniform1f("ssUnitSize", camera.getUnitSize() * height);
 		finalShader.setUniform1f("aoSize", ambientOcclusionSize);
 		finalShader.setUniform1f("aoStrength", ambientOcclusionStrength);
 
+		finalShader.setUniform3f("unitRayCenterStart", unitRayCenter.getStart().getX(), unitRayCenter.getStart().getY(), unitRayCenter.getStart().getZ());
+		finalShader.setUniform3f("unitRayCenterDir", unitRayCenter.getDir().getX(), unitRayCenter.getDir().getY(), unitRayCenter.getDir().getZ());
+		finalShader.setUniform3f("unitRayRightStart", unitRayRight.getStart().getX(), unitRayRight.getStart().getY(), unitRayRight.getStart().getZ());
+		finalShader.setUniform3f("unitRayRightDir", unitRayRight.getDir().getX(), unitRayRight.getDir().getY(), unitRayRight.getDir().getZ());
+		finalShader.setUniform3f("unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
+		finalShader.setUniform3f("unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
+		Matrix4f projectMatrix = camera.getProjectionMatrix();
+		finalShader.setUniform4f(
+				"inverseDepthFunction",
+				projectMatrix.get(2, 2),
+				projectMatrix.get(3, 2),
+				projectMatrix.get(2, 3),
+				projectMatrix.get(3, 3)
+		                        );
+
+		/*
 		finalShader.setUniform3f("frontVector", camera.getDirectionAt().getX(), camera.getDirectionAt().getY(), camera.getDirectionAt().getZ());
 		finalShader.setUniform3f("rightVector", rightVector.getX(), rightVector.getY(), rightVector.getZ());
 		finalShader.setUniform3f("topVector", topVector.getX(), topVector.getY(), topVector.getZ());
 		finalShader.setUniform1f("camNear", camera.getNear());
 		finalShader.setUniform1f("camFar", camera.getFar());
+		*/
 
 		fullscreenQuad.render();
 		finalShader.deactivate();

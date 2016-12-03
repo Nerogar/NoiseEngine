@@ -13,12 +13,15 @@ uniform sampler2D textureDepth;
 
 //camera uniforms
 uniform vec2 inverseResolution;
-uniform vec3 cameraPosition;
-uniform vec3 frontVector;
-uniform vec3 rightVector;
-uniform vec3 topVector;
-uniform float camNear;
-uniform float camFar;
+
+uniform vec3 unitRayCenterStart;
+uniform vec3 unitRayCenterDir;
+uniform vec3 unitRayRightStart;
+uniform vec3 unitRayRightDir;
+uniform vec3 unitRayTopStart;
+uniform vec3 unitRayTopDir;
+
+uniform vec4 inverseDepthFunction;
 
 uniform vec3 sunLightColor;
 uniform vec3 sunLightDirection;
@@ -46,29 +49,55 @@ in DATA
     return fract(sin(sn) * c);
 }*/
 
+
+/*
+with a projection matrix P and a position vector X:
+
+     P      *   X   =   PX   -> dehomogenize
+
+( ? ? ? ? )   ( x )   ( x' )    ( x' / w' )
+( ? ? ? ? ) * ( y ) = ( y' ) -> ( y' / w' )
+( ? ? a b )   ( z )   ( z' )    ( z' / w' )
+( ? ? c d )   ( 1 )   ( w' )
+
+
+so the depth value is:
+depth = (z * a + b) / (z * c + d)
+=>
+z = (d * depth - b) / (a - c * depth)
+
+with:
+inverseDepthFunction = (a, b, c, d)
+
+*/
 float getLinearDepth(vec2 uv){
-	float depthSample = texture(textureDepth, uv).x;
+	// transform to unit cube (-1, 1)
+	float depthSample = texture(textureDepth, uv).x * 2 - 1;
 
-	//inverse function of the depth buffer
-	float a = camNear - camFar;
-	depthSample = (camFar * camNear) / (a * (depthSample - 0.5) + 0.5 * (camFar + camNear));
-
-	return depthSample;
+	// inverse depth buffer function
+	return -(inverseDepthFunction.w * depthSample - inverseDepthFunction.y)
+	       /(inverseDepthFunction.x - inverseDepthFunction.z * depthSample);
 }
 
-vec3 getViewDir(vec2 uv){
+vec3 getViewRayStart(vec2 uv){
 	uv = uv * 2.0 - 1.0;
 
-	return uv.x * rightVector + uv.y * topVector + frontVector;
+	return uv.x * unitRayRightStart + uv.y * unitRayTopStart + unitRayCenterStart;
+}
+
+vec3 getViewRayDir(vec2 uv){
+	uv = uv * 2.0 - 1.0;
+
+	return uv.x * unitRayRightDir + uv.y * unitRayTopDir + unitRayCenterDir;
 }
 
 vec3 getPositionReconstruct(vec2 uv){
-	return getLinearDepth(uv) * getViewDir(uv) + cameraPosition;
+	return getLinearDepth(uv) * getViewRayDir(uv) + getViewRayStart(uv);
 }
 
 vec3 getPositionReconstruct(vec2 uv, out float depth){
 	depth = getLinearDepth(uv);
-	return depth * getViewDir(uv) + cameraPosition;
+	return depth * getViewRayDir(uv) + getViewRayStart(uv);
 }
 
 /*vec3 getPosition(vec2 uv){
@@ -93,9 +122,10 @@ float getAOSample(vec3 pos, vec3 normal, vec2 uv){
 	
 	float occlusion = clamp(dot(normal, diffNorm), 0.0, 1.0) * max(distMult, 0.0);
 
+	// debug code for ao discs
 	/*if(uv.x > 0.5 && uv.y > 0.5   &&   uv.x < 0.508 && uv.y < 0.508){
 		return 100.0;
-	}/* else if (uv.x > 0.2 && uv.y > 0.5   &&   uv.x < 0.208 && uv.y < 0.508) {
+	} else if (uv.x > 0.2 && uv.y > 0.5   &&   uv.x < 0.208 && uv.y < 0.508) {
 		return 100.0;
     } else if (uv.x > 0.8 && uv.y > 0.5   &&   uv.x < 0.808 && uv.y < 0.508) {
 		return 100.0;
@@ -104,7 +134,6 @@ float getAOSample(vec3 pos, vec3 normal, vec2 uv){
 	} else if (uv.x > 0.5 && uv.y > 0.8   &&   uv.x < 0.508 && uv.y < 0.808) {
 		return 100.0;
 	}*/
-
 
 	return occlusion;
 }
@@ -121,7 +150,7 @@ float getAO(vec2 uv, vec3 pos, vec3 normal, float z){
 		sin(angle), cos(angle)
 	);
 
-	float diskSize = (aoSize * ssUnitSize) / z;
+	float diskSize = (aoSize * ssUnitSize) / (inverseDepthFunction.z * -z + inverseDepthFunction.w);
 
 	float occlusion = 0.0;
 
@@ -175,7 +204,7 @@ void main(){
 	vec3 sunLight = sunLightColor * sunBright;
 
 	//specular + reflections
-	vec3 viewDirection = normalize(cameraPosition - positionSample);
+	vec3 viewDirection = normalize(unitRayCenterStart - positionSample);
 	vec3 sunReflectionDirection = reflect(sunLightDirection, normalSample);
 	vec3 viewReflectionDirection = reflect(viewDirection, normalSample);
 
@@ -199,5 +228,7 @@ void main(){
 	//effects
 	color = mix(color, effectsSample, effectsSample.a);
 
+	// debug output for light only
 	//color.rgb = (sunLight + lightsSample) * ao * 0.5 + specularIntensity * sunLightColor;
+
 }

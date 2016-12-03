@@ -2,7 +2,7 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.util.Vector3f;
 
-public class ViewFrustum {
+public class ViewFrustum implements IViewRegion{
 
 	private PerspectiveCamera camera;
 
@@ -14,12 +14,10 @@ public class ViewFrustum {
 
 	private float inverseFar;
 
-	public ViewFrustum() {
-
-	}
-
-	public void setPlanes(PerspectiveCamera camera) {
-		this.camera = camera;
+	@Override
+	public void setPlanes(Camera cam) {
+		if(!(cam instanceof PerspectiveCamera)) throw new RuntimeException("Invalid camera type, PerspectiveCamera expected");
+		this.camera = (PerspectiveCamera) cam;
 
 		halfFarWidth = (float) (Math.tan(Math.toRadians(camera.getFOV()) / 2.0)) * camera.getFar() * camera.getAspect();
 		halfFarHeight = (float) (Math.tan(Math.toRadians(camera.getFOV()) / 2.0)) * camera.getFar();
@@ -39,7 +37,7 @@ public class ViewFrustum {
 
 		camera.pointToViewSpace(point);
 
-		float near = point.getZ() - camera.getNear();
+		float near = point.getZ() + camera.getNear();
 		float far = -camera.getFar() - point.getZ();
 
 		float left = leftRightFactor * (halfFarWidth * point.getZ() * inverseFar - point.getX());

@@ -18,4 +18,8 @@ public class Ray {
 
 	public void setDir(Vector3f dir)     { this.dir = dir; }
 
+	@Override
+	public String toString() {
+		return "Ray{" + "start: " + start + ", dir: " + dir + '}';
+	}
 }
