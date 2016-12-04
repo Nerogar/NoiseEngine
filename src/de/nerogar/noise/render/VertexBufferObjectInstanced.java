@@ -171,7 +171,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		}
 		if (instanceBuffer != null) {
 			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
-			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, instanceBuffer.remaining() * Float.BYTES);
+			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, instanceBuffer.remaining());
 		}
 
 		return vaoHandle;
