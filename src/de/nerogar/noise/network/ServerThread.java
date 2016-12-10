@@ -29,6 +29,7 @@ public class ServerThread extends Thread {
 			Logger.log(Logger.ERROR, "The server crashed brutally");
 			e.printStackTrace();
 		}
+		this.setDaemon(true);
 		this.start();
 	}
 
@@ -79,16 +80,8 @@ public class ServerThread extends Thread {
 	}
 
 	private void cleanupClosedConnections() {
-		for (Iterator<Connection> iter = connections.iterator(); iter.hasNext(); ) {
-			if (iter.next().isClosed()) {
-				iter.remove();
-			}
-		}
-		for (Iterator<Connection> iter = newConnections.iterator(); iter.hasNext(); ) {
-			if (iter.next().isClosed()) {
-				iter.remove();
-			}
-		}
+		connections.removeIf(Connection::isClosed);
+		newConnections.removeIf(Connection::isClosed);
 	}
 
 	private void addConnection(Connection conn) {
