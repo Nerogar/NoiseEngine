@@ -9,7 +9,7 @@ class ProfilerStatisticsCategory {
 	protected int maxHistory;
 
 	public ProfilerStatisticsCategory() {
-		statisticList = new ArrayList<ProfilerStatistic>();
+		statisticList = new ArrayList<>();
 		
 		maxHistory = 1;
 	}

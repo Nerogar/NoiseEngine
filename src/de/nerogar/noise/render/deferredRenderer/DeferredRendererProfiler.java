@@ -23,7 +23,7 @@ class DeferredRendererProfiler extends Profiler {
 	public static final int TRIANGLE_RENDER_COUNT	= 6;
 
 	public DeferredRendererProfiler() {
-		super("deferred renderer");
+		super("deferred renderer", false);
 
 		registerProperty(OBJECT_COUNT,			OBJECT,		new Color(1.0f, 0.0f, 0.0f, 1.0f),	"object count");
 		registerProperty(OBJECT_RENDER_COUNT,	OBJECT,		new Color(1.0f, 0.4f, 0.0f, 1.0f),	"object render count");

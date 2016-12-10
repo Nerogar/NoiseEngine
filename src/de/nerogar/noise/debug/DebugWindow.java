@@ -1,35 +1,37 @@
 package de.nerogar.noise.debug;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.input.KeyboardKeyEvent;
+import de.nerogar.noise.render.*;
+import de.nerogar.noise.render.fontRenderer.Font;
+import de.nerogar.noise.render.fontRenderer.FontRenderableString;
+import de.nerogar.noise.util.Color;
+import de.nerogar.noise.util.MathHelper;
+import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.util.Matrix4fUtils;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.render.*;
-import de.nerogar.noise.input.KeyboardKeyEvent;
-import de.nerogar.noise.render.fontRenderer.Font;
-import de.nerogar.noise.render.fontRenderer.FontRenderableString;
-import de.nerogar.noise.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DebugWindow {
 
-	private static final int SIDEBAR_WIDTH = 220;
-	private static final int PROFILER_HEIGHT = 300;
-	private static final int RENDER_PADDING = 10;
-	private static final Color PROFILER_COLOR = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+	private static final int   SIDEBAR_WIDTH   = 220;
+	private static final int   PROFILER_HEIGHT = 300;
+	private static final int   RENDER_PADDING  = 10;
+	private static final Color PROFILER_COLOR  = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
 	private GLWindow window;
 
 	private List<Profiler> profilerList;
-	private int activeProfiler;
+	private int            activeProfiler;
 
-	private Matrix4f projectionMatrix;
-	private Shader shader;
+	private Matrix4f   projectionMatrix;
+	private Shader     shader;
 	private VertexList vertexList;
 
-	private Font font;
+	private Font                       font;
 	private List<FontRenderableString> stringList;
 	private List<FontRenderableString> stringValueList;
 
@@ -127,6 +129,9 @@ public class DebugWindow {
 					activeProfiler--;
 					activeProfilerChanged = true;
 					event.setProcessed();
+				} else if (event.key == GLFW.GLFW_KEY_R) {
+					profilerList.get(activeProfiler).resetMax();
+					event.setProcessed();
 				}
 			}
 		}
@@ -138,12 +143,11 @@ public class DebugWindow {
 
 		Profiler profiler = profilerList.get(activeProfiler);
 
-		//Logger.log(Logger.DEBUG, profiler);
-		window.setTitle("Debug (Profiler: " + profiler.getName() + ")");
+		window.setTitle("Debug (Profiler: " + profiler.getName() + "), Arrow keys to navigate, R to reset max values");
 
 		vertexList.clear();
 		stringValueList.clear();
-		
+
 		float yOffset = -renderedScrollOffset;
 		for (ProfilerStatisticsCategory category : profiler.getProfilerCategories()) {
 			for (ProfilerStatistic statistic : category.statisticList) {
@@ -229,6 +233,10 @@ public class DebugWindow {
 				v.cleanup();
 			}
 			y += 20;
+		}
+
+		for (Profiler updateProfiler : profilerList) {
+			if (updateProfiler.autoUpdate) updateProfiler.reset();
 		}
 
 		GLWindow.makeContextCurrent(currentContext);

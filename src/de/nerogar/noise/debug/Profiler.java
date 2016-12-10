@@ -1,28 +1,35 @@
 package de.nerogar.noise.debug;
 
-import java.util.*;
-
 import de.nerogar.noise.util.Color;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Profiler {
 
 	private String name;
 
+	protected boolean autoUpdate;
+
 	private int currentIndex;
 	private int historySize;
 
 	private Map<Integer, ProfilerStatisticsCategory> categories;
-	private ArrayList<Integer> values;
+	private ArrayList<Integer>                       values;
 
-	public Profiler(String name) {
+	public Profiler(String name, boolean autoUpdate) {
 		this.name = name;
-		categories = new HashMap<Integer, ProfilerStatisticsCategory>();
+		this.autoUpdate = autoUpdate;
+
+		categories = new HashMap<>();
 
 		historySize = 1024;
 
 		currentIndex = 0;
 
-		values = new ArrayList<Integer>();
+		values = new ArrayList<>();
 	}
 
 	public String getName() {
@@ -40,7 +47,7 @@ public class Profiler {
 
 		category.addStatistic(statistic);
 
-		//ensure values size
+		// ensure values size
 		for (int i = values.size(); i <= id; i++) {
 			values.add(0);
 		}
@@ -75,7 +82,8 @@ public class Profiler {
 		currentIndex %= historySize;
 
 		for (int id = 0; id < values.size(); id++) {
-			search: for (ProfilerStatisticsCategory category : categories.values()) {
+			search:
+			for (ProfilerStatisticsCategory category : categories.values()) {
 				for (ProfilerStatistic statistic : category.statisticList) {
 					if (statistic.id == id) {
 						statistic.history.set(currentIndex, values.get(id));
@@ -88,13 +96,28 @@ public class Profiler {
 			}
 		}
 
-		ArrayList<Integer> newValues = new ArrayList<Integer>();
+		ArrayList<Integer> newValues = new ArrayList<>();
 
-		for (int i = 0; i < values.size(); i++) {
-			newValues.add(values.get(i));
+		for (Integer value : values) {
+			newValues.add(value);
 		}
 
 		values = newValues;
+	}
+
+	public void resetMax() {
+		for (ProfilerStatisticsCategory category : categories.values()) {
+
+			int max = 0;
+
+			for (ProfilerStatistic profilerStatistic : category.statisticList) {
+				for (Integer historyValue : profilerStatistic.history) {
+					max = Math.max(max, historyValue);
+				}
+			}
+
+			category.maxHistory = max;
+		}
 	}
 
 	@Override
