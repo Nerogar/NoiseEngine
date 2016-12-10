@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public interface Loadable {
+public interface Streamable {
 
 	void fromStream(DataInputStream in) throws IOException;
 
