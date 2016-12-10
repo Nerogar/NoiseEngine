@@ -4,7 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class PacketConnectionInfo extends Packet {
+public class PacketConnectionInfo implements Packet {
 
 	public int version;
 

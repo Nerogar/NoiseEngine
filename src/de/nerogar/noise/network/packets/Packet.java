@@ -1,7 +1,7 @@
 package de.nerogar.noise.network.packets;
 
-import de.nerogar.noise.network.Loadable;
+import de.nerogar.noise.network.Streamable;
 
-public abstract class Packet implements Loadable {
+public interface Packet extends Streamable {
 
 }
