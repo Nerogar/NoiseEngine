@@ -107,7 +107,10 @@ public class DebugWindow {
 	public void update() {
 		if (!Noise.DEBUG) return;
 		if (window.isClosed()) return;
-		if (window.shouldClose()) window.cleanup();
+		if (window.shouldClose()) {
+			window.cleanup();
+			return;
+		}
 
 		long currentContext = GLWindow.getCurrentContext();
 		window.bind();
