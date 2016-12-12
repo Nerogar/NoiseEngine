@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Logger {
 
@@ -41,6 +42,8 @@ public class Logger {
 	private static final PrintStream ERROR_STREAM = new LogStream(ERROR);
 
 	private static List<LogOutStream> logStreams;
+	private static List<LogListener>  logListener;
+
 	private static boolean    printTimestamp = false;
 	private static DateFormat dateFormat     = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -78,6 +81,33 @@ public class Logger {
 	 */
 	public static boolean removeStream(PrintStream stream) {
 		return logStreams.removeIf((a) -> a.stream.equals(stream));
+	}
+
+	/**
+	 * @param minLogLevel the minimum loglevel to print on this listener
+	 * @param listener    the listener for message output
+	 */
+	public static void addListener(int minLogLevel, Consumer<String> listener) {
+		logListener.add(new LogListener(minLogLevel, ERROR, listener));
+	}
+
+	/**
+	 * @param minLogLevel the minimum loglevel to print on this listener
+	 * @param maxLogLevel the maximum loglevel to print on this listener
+	 * @param listener    the listener for message output
+	 */
+	public static void addListener(int minLogLevel, int maxLogLevel, Consumer<String> listener) {
+		logListener.add(new LogListener(minLogLevel, maxLogLevel, listener));
+	}
+
+	/**
+	 * removes any listener that is equal to the specified listener.
+	 *
+	 * @param listener the listener to remove
+	 * @return true, if a listener was removed, false otherwise
+	 */
+	public static boolean removeListener(Consumer<String> listener) {
+		return logListener.removeIf((a) -> a.listener.equals(listener));
 	}
 
 	/**
@@ -123,11 +153,17 @@ public class Logger {
 	 * @param msg      the message as a String
 	 */
 	public static void log(int logLevel, String msg) {
-		logStreams.forEach((logStream) -> {
+		for (LogOutStream logStream : logStreams) {
 			if (logLevel >= logStream.minLogLevel && logLevel <= logStream.maxLogLevel) {
 				print(logStream.stream, logLevel, msg);
 			}
-		});
+		}
+
+		for (LogListener listener : logListener) {
+			if (logLevel >= listener.minLogLevel && logLevel <= listener.maxLogLevel) {
+				print(listener.listener, logLevel, msg);
+			}
+		}
 	}
 
 	/**
@@ -137,7 +173,7 @@ public class Logger {
 	 * @param msg      the Object to log
 	 */
 	public static void log(int logLevel, Object msg) {
-		logStreams.forEach((logStream) -> {
+		for (LogOutStream logStream : logStreams) {
 			if (logLevel >= logStream.minLogLevel && logLevel <= logStream.maxLogLevel) {
 				if (msg instanceof Object[]) {
 					print(logStream.stream, logLevel, Arrays.deepToString((Object[]) msg));
@@ -145,7 +181,17 @@ public class Logger {
 					print(logStream.stream, logLevel, msg.toString());
 				}
 			}
-		});
+		}
+
+		for (LogListener listener : logListener) {
+			if (logLevel >= listener.minLogLevel && logLevel <= listener.maxLogLevel) {
+				if (msg instanceof Object[]) {
+					print(listener.listener, logLevel, Arrays.deepToString((Object[]) msg));
+				} else {
+					print(listener.listener, logLevel, msg.toString());
+				}
+			}
+		}
 	}
 
 	private static void print(PrintStream stream, int logLevel, String msg) {
@@ -157,14 +203,25 @@ public class Logger {
 		}
 	}
 
+	private static void print(Consumer<String> listener, int logLevel, String msg) {
+		if (printTimestamp) {
+			Date date = new Date();
+			listener.accept(dateFormat.format(date) + " [" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+		} else {
+			listener.accept("[" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+		}
+	}
+
 	static {
-		logStreams = new ArrayList<LogOutStream>();
+		logStreams = new ArrayList<>();
+		logListener = new ArrayList<>();
 	}
 
 	/**
 	 * A class to store the output streams
 	 */
 	private static class LogOutStream {
+
 		public int         minLogLevel;
 		public int         maxLogLevel;
 		public PrintStream stream;
@@ -173,6 +230,22 @@ public class Logger {
 			this.minLogLevel = minLogLevel;
 			this.maxLogLevel = maxLogLevel;
 			this.stream = stream;
+		}
+	}
+
+	/**
+	 * A class to store the listener
+	 */
+	private static class LogListener {
+
+		public int              minLogLevel;
+		public int              maxLogLevel;
+		public Consumer<String> listener;
+
+		public LogListener(int minLogLevel, int maxLogLevel, Consumer<String> listener) {
+			this.minLogLevel = minLogLevel;
+			this.maxLogLevel = maxLogLevel;
+			this.listener = listener;
 		}
 	}
 
