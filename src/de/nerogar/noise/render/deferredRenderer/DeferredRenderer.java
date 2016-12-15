@@ -176,6 +176,8 @@ public class DeferredRenderer {
 	private float   ambientOcclusionSize;
 	private float   ambientOcclusionStrength;
 
+	private boolean antiAliasingEnabled;
+
 	//debug
 	private DeferredRenderable originAxis;
 
@@ -207,6 +209,8 @@ public class DeferredRenderer {
 		ambientOcclusionEnabled = true;
 		ambientOcclusionSize = 0.3f;
 		ambientOcclusionStrength = 2.0f;
+
+		antiAliasingEnabled = true;
 
 		lightContainer = new LightContainer();
 		effectContainer = new EffectContainer();
@@ -496,6 +500,10 @@ public class DeferredRenderer {
 		this.ambientOcclusionStrength = ambientOcclusionStrength;
 	}
 
+	public void setAntiAliasingEnabled(boolean antiAliasingEnabled) {
+		this.antiAliasingEnabled = antiAliasingEnabled;
+	}
+
 	/**
 	 * Renders everything onto internal {@link FrameBufferObject FrameBufferObjects}.<br>
 	 * Access them with
@@ -656,23 +664,17 @@ public class DeferredRenderer {
 				projectMatrix.get(3, 3)
 		                        );
 
-		/*
-		finalShader.setUniform3f("frontVector", camera.getDirectionAt().getX(), camera.getDirectionAt().getY(), camera.getDirectionAt().getZ());
-		finalShader.setUniform3f("rightVector", rightVector.getX(), rightVector.getY(), rightVector.getZ());
-		finalShader.setUniform3f("topVector", topVector.getX(), topVector.getY(), topVector.getZ());
-		finalShader.setUniform1f("camNear", camera.getNear());
-		finalShader.setUniform1f("camFar", camera.getFar());
-		*/
-
 		fullscreenQuad.render();
 		finalShader.deactivate();
 
 		//filter
-		finalFrameBuffer.getTextureAttachment(0).bind(0);
-		filterFrameBuffer.bind();
-		filterShader.activate();
-		fullscreenQuad.render();
-		filterShader.deactivate();
+		if (antiAliasingEnabled) {
+			finalFrameBuffer.getTextureAttachment(0).bind(0);
+			filterFrameBuffer.bind();
+			filterShader.activate();
+			fullscreenQuad.render();
+			filterShader.deactivate();
+		}
 
 		profiler.addValue(DeferredRendererProfiler.LIGHT_COUNT, lightContainer.size());
 
@@ -685,7 +687,11 @@ public class DeferredRenderer {
 	 * @return the final color output as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getColorOutput() {
-		return filterFrameBuffer.getTextureAttachment(0);
+		if (antiAliasingEnabled) {
+			return filterFrameBuffer.getTextureAttachment(0);
+		} else {
+			return finalFrameBuffer.getTextureAttachment(0);
+		}
 	}
 
 	/**
