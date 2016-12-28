@@ -2,6 +2,7 @@ package de.nerogar.noise.serialization;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PushbackReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import java.util.List;
 	private static final int TYPE_FLOAT_ARRAY   = TYPE_ARRAY_BIT + TYPE_FLOAT;
 	private static final int TYPE_BOOLEAN_ARRAY = TYPE_ARRAY_BIT + TYPE_BOOLEAN;
 
-	private BufferedReader reader;
+	private PushbackReader reader;
 
 	private int           currentChar;
 	private StringBuilder sb;
@@ -45,7 +46,7 @@ import java.util.List;
 	}
 
 	NDSjsonReader(BufferedReader reader) {
-		this.reader = reader;
+		this.reader = new PushbackReader(reader);
 		this.currentChar = -1;
 		sb = new StringBuilder();
 	}
@@ -69,24 +70,44 @@ import java.util.List;
 
 	private void skipWhitespace() throws IOException {
 
-		boolean lineStart = false;
 		boolean skipLine = false;
 
 		while (true) {
+			int nextChar = reader.read();
+			reader.unread(nextChar);
 
-			if (currentChar == '\n') {
-				lineStart = true;
-				skipLine = false;
-			} else if (currentChar == '#' && lineStart) {
-				skipLine = true;
-				lineStart = false;
+			if (currentChar == '/') {
+
+				if (nextChar == '/') {
+					next(); // skip '/' (currentChar == '/')
+					next(); // skip '/' (currentChar == first char of the comment)
+
+					while (currentChar != '\n') {
+						next();
+					}
+
+					next(); // skip '\n'
+
+				} else if (nextChar == '*') {
+					next(); // skip '/' (currentChar == '*')
+					next(); // skip '*' (currentChar == first char of the comment)
+
+					int lastChar = -1;
+					while (!(lastChar == '*' && currentChar == '/')) {
+						lastChar = currentChar;
+						next();
+					}
+
+					next(); // skip '/' (end of comment)
+				}
+
 			}
 
-			if (!skipLine && !Character.isWhitespace(currentChar)) {
+			if (!Character.isWhitespace(currentChar)) {
 				break;
+			} else {
+				next();
 			}
-
-			next();
 
 		}
 
