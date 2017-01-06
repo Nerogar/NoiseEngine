@@ -87,15 +87,8 @@ public class NDSReader {
 		return null;
 	}
 
-	public static NDSFile readFile(String filename) {
-
-		try {
-			return read(new FileInputStream(new File(filename)));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-
-		return null;
+	public static NDSFile readFile(String filename) throws FileNotFoundException {
+		return read(new FileInputStream(new File(filename)));
 	}
 
 	public static NDSFile readJson(InputStream in) {
@@ -111,15 +104,8 @@ public class NDSReader {
 		return null;
 	}
 
-	public static NDSFile readJsonFile(String filename) {
-
-		try {
-			return readJson(new FileInputStream(filename));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return null;
+	public static NDSFile readJsonFile(String filename) throws FileNotFoundException {
+		return readJson(new FileInputStream(filename));
 	}
 
 }

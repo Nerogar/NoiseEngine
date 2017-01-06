@@ -1,5 +1,6 @@
 package de.nerogar.noise.debug;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.Color;
 
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Profiler {
+
+	private static final int HISTORY_SIZE = Noise.getSettings().getObject("profiler").getInt("historySize");
 
 	private String name;
 
@@ -25,7 +28,7 @@ public class Profiler {
 
 		categories = new HashMap<>();
 
-		historySize = 1024;
+		historySize = HISTORY_SIZE;
 
 		currentIndex = 0;
 

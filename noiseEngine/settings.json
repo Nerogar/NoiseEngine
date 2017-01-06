@@ -1,0 +1,24 @@
+/*
+	Default settings file.
+	Use another settings file by passing the filename to Noise.init()
+	or overwrite the filename by setting the system property "noise.settings"
+*/
+
+{
+	"noise": {
+		// the location of default engine ressources
+		"resourceDir": "noiseEngine/"
+	},
+
+	// profiler settings
+	"profiler": {
+		"enabled": false,
+		"historySize": 1024
+	},
+
+	// DeferredRenderer settings
+	"deferredRenderer": {
+		"showAxis": false
+	}
+
+}

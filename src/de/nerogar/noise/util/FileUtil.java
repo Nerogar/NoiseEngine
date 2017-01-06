@@ -52,7 +52,7 @@ public class FileUtil {
 		if (id.startsWith("<")) {
 			id = id.substring(1, id.indexOf(">"));
 
-			return Noise.RESSOURCE_DIR + subFolder + id;
+			return Noise.RESOURCE_DIR + subFolder + id;
 		} else if (id.startsWith("(")) {
 			id = id.substring(1, id.indexOf(")"));
 

@@ -17,6 +17,8 @@ import java.util.List;
 
 public class DebugWindow {
 
+	private static final boolean ENABLED = Noise.getSettings().getObject("profiler").getBoolean("enabled");
+
 	private static final int   SIDEBAR_WIDTH   = 220;
 	private static final int   PROFILER_HEIGHT = 300;
 	private static final int   RENDER_PADDING  = 10;
@@ -39,14 +41,14 @@ public class DebugWindow {
 	private float renderedScrollOffset;
 
 	public DebugWindow(Profiler... profiler) {
-		profilerList = new ArrayList<Profiler>();
+		profilerList = new ArrayList<>();
 
 		for (Profiler p : profiler) {
 			addProfiler(p);
 		}
 		activeProfiler = 0;
 
-		if (!Noise.DEBUG) return;
+		if (!ENABLED) return;
 
 		window = new GLWindow("debug", 800, 400, true, 0, null, null);
 
@@ -105,7 +107,7 @@ public class DebugWindow {
 	}
 
 	public void update() {
-		if (!Noise.DEBUG) return;
+		if (!ENABLED) return;
 		if (window.isClosed()) return;
 		if (window.shouldClose()) {
 			window.cleanup();
