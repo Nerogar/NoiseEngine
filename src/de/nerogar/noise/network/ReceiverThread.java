@@ -55,11 +55,19 @@ public class ReceiverThread extends Thread {
 
 			}
 		} catch (SocketException e) {
-			// System.err.println("SocketException in ReceiverThread");
-			// e.printStackTrace();
+			System.err.println("SocketException in ReceiverThread");
+			e.printStackTrace();
 		} catch (IOException e) {
-			// System.err.println("ReceiverThread crashed (maybe due to connection abort)");
-			// e.printStackTrace();
+			System.err.println("ReceiverThread crashed (maybe due to connection abort)");
+			e.printStackTrace();
+		}
+
+		// make sure socket it closed when reaching this point
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// already dead, okay
+			e.printStackTrace();
 		}
 
 		send.interrupt();
