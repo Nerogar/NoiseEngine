@@ -7,7 +7,7 @@ import static org.lwjgl.opengl.GL13.*;
 import java.nio.ByteBuffer;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.util.Logger;
 
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
@@ -39,7 +39,7 @@ public class TextureCubeMap extends Texture {
 		id = glGenTextures();
 		createTexture(colorBuffer);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_COUNT);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_COUNT);
 	}
 
 	protected void setFilenames(String[] filenames) {
@@ -72,9 +72,9 @@ public class TextureCubeMap extends Texture {
 		initialized = true;
 
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_UPLOAD_COUNT);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_UPLOAD_COUNT);
 		for (ByteBuffer buff : colorBuffer) {
-			if (buff != null) Noise.getRessourceProfiler().addValue(RessourceProfiler.TEXTURE_UPLOAD_SIZE, buff.remaining());
+			if (buff != null) Noise.getResourceProfiler().addValue(ResourceProfiler.TEXTURE_UPLOAD_SIZE, buff.remaining());
 		}
 	}
 
@@ -111,7 +111,7 @@ public class TextureCubeMap extends Texture {
 		glActiveTexture(texturePositions[slot]);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.TEXTURE_BINDS);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_BINDS);
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class TextureCubeMap extends Texture {
 		Texture2DLoader.unloadTexture(filenames[0]);
 		initialized = false;
 
-		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.TEXTURE_COUNT);
+		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);
 	}
 
 	@Override

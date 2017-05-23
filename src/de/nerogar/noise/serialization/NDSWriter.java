@@ -94,7 +94,7 @@ public class NDSWriter {
 
 	public static void writeFile(NDSFile ndsFile, String filename, int dataCompressionFlags, int rawCompressionFlags) {
 		try {
-			OutputStream out = new FileOutputStream(new File(filename));
+			OutputStream out = new BufferedOutputStream(new FileOutputStream(new File(filename)));
 			write(ndsFile, out, dataCompressionFlags, rawCompressionFlags);
 		} catch (IOException e) {
 			e.printStackTrace();

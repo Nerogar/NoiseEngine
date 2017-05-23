@@ -2,7 +2,7 @@ package de.nerogar.noise.debug;
 
 import de.nerogar.noise.util.Color;
 
-public class RessourceProfiler extends Profiler {
+public class ResourceProfiler extends Profiler {
 
 	private static final int TEXTURE = 0;
 	private static final int TEXTURE_BANDWIDTH = 1;
@@ -32,7 +32,7 @@ public class RessourceProfiler extends Profiler {
 	public static final int SHADER_BINDS			= 12;
 	public static final int SHADER_COMPILE_COUNT	= 13;
 
-	public RessourceProfiler() {
+	public ResourceProfiler() {
 		super("ressource", false);
 
 		registerProperty(TEXTURE_COUNT,			TEXTURE,			new Color(0.0f, 0.0f, 0.8f, 1.0f),	"texture count");

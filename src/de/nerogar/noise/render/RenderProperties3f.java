@@ -1,13 +1,14 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.*;
+import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noise.util.Vector3f;
 
-public class RenderProperties3f implements RenderProperties {
+public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 
 	private float yaw, pitch, roll;
 	private float x, y, z;
 	private float scaleX, scaleY, scaleZ, maxScaleComponent;
-	private boolean isVisible;
 
 	private boolean positionMatrixDirty = true;
 	private Matrix4f positionMatrix;
@@ -52,8 +53,6 @@ public class RenderProperties3f implements RenderProperties {
 		scaleY = 1.0f;
 		scaleZ = 1.0f;
 		maxScaleComponent = 1.0f;
-
-		isVisible = true;
 
 		setPositionMatrix();
 		setScaleMatrix();
@@ -140,7 +139,7 @@ public class RenderProperties3f implements RenderProperties {
 	}
 
 	/**
-	 * Sets the yaw in radiants 
+	 * Sets the yaw in radiants
 	 */
 	public void setYaw(float yaw) {
 		if (this.yaw == yaw) return;
@@ -148,6 +147,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		yawMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(false, true, false);
 	}
 
 	/**
@@ -158,7 +159,7 @@ public class RenderProperties3f implements RenderProperties {
 	}
 
 	/**
-	 * Sets the pitch in radiants 
+	 * Sets the pitch in radiants
 	 */
 	public void setPitch(float pitch) {
 		if (this.pitch == pitch) return;
@@ -166,6 +167,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		pitchMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(false, true, false);
 	}
 
 	/**
@@ -176,7 +179,7 @@ public class RenderProperties3f implements RenderProperties {
 	}
 
 	/**
-	 * Sets the roll in radiants 
+	 * Sets the roll in radiants
 	 */
 	public void setRoll(float roll) {
 		if (this.roll == roll) return;
@@ -184,6 +187,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		rollMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(false, true, false);
 	}
 
 	public float getX() {
@@ -196,6 +201,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(true, false, false);
 	}
 
 	public float getY() {
@@ -208,6 +215,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(true, false, false);
 	}
 
 	public float getZ() {
@@ -220,6 +229,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(true, false, false);
 	}
 
 	/**
@@ -233,6 +244,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(true, false, false);
 	}
 
 	/**
@@ -246,13 +259,15 @@ public class RenderProperties3f implements RenderProperties {
 
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(true, false, false);
 	}
 
 	/**
 	 * sets the x, y and z scale properties
 	 */
 	public void setScale(float scaleX, float scaleY, float scaleZ) {
-		if (this.scaleX == x && this.scaleY == y && this.scaleZ == z) return;
+		if (this.scaleX == scaleX && this.scaleY == scaleY && this.scaleZ == scaleZ) return;
 		this.scaleX = scaleX;
 		this.scaleY = scaleY;
 		this.scaleZ = scaleZ;
@@ -263,6 +278,8 @@ public class RenderProperties3f implements RenderProperties {
 
 		scaleMatrixDirty = true;
 		modelMatrixDirty = true;
+
+		updateListener(false, false, true);
 	}
 
 	public float getScaleX() {
@@ -281,14 +298,10 @@ public class RenderProperties3f implements RenderProperties {
 		return maxScaleComponent;
 	}
 
-	@Override
-	public void setVisible(boolean visible) {
-		isVisible = visible;
-	}
-
-	@Override
-	public boolean isVisible() {
-		return isVisible;
+	private void updateListener(boolean position, boolean rotation, boolean scale) {
+		if (listener != null) {
+			listener.update(this, position, rotation, scale);
+		}
 	}
 
 }

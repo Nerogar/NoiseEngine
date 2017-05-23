@@ -11,30 +11,32 @@ class DeferredRendererProfiler extends Profiler {
 	private static final int TRIANGLES = 3;
 
 
-	public static final int OBJECT_COUNT			= 0;
-	public static final int OBJECT_RENDER_COUNT		= 1;
+	public static final int OBJECT_COUNT            = 0;
+	public static final int OBJECT_TEST_COUNT       = 1;
+	public static final int OBJECT_RENDER_COUNT     = 2;
 
-	public static final int LIGHT_COUNT				= 2;
-	public static final int LIGHT_RENDER_COUNT		= 3;
+	public static final int LIGHT_COUNT             = 3;
+	public static final int LIGHT_RENDER_COUNT      = 4;
 
-	public static final int EFFECT_COUNT			= 4;
-	public static final int EFFECT_RENDER_COUNT		= 5;
+	public static final int EFFECT_COUNT            = 5;
+	public static final int EFFECT_RENDER_COUNT     = 6;
 
-	public static final int TRIANGLE_RENDER_COUNT	= 6;
+	public static final int TRIANGLE_RENDER_COUNT   = 7;
 
 	public DeferredRendererProfiler() {
 		super("deferred renderer", false);
 
-		registerProperty(OBJECT_COUNT,			OBJECT,		new Color(1.0f, 0.0f, 0.0f, 1.0f),	"object count");
-		registerProperty(OBJECT_RENDER_COUNT,	OBJECT,		new Color(1.0f, 0.4f, 0.0f, 1.0f),	"object render count");
+		registerProperty(OBJECT_COUNT,          OBJECT,     new Color(1.0f, 0.0f, 0.0f, 1.0f), "object count");
+		registerProperty(OBJECT_TEST_COUNT,     OBJECT,     new Color(1.0f, 0.3f, 0.0f, 1.0f), "object test count");
+		registerProperty(OBJECT_RENDER_COUNT,   OBJECT,     new Color(1.0f, 0.6f, 0.0f, 1.0f), "object render count");
 
-		registerProperty(LIGHT_COUNT,			LIGHT,		new Color(1.0f, 1.0f, 0.0f, 1.0f),	"light count");
-		registerProperty(LIGHT_RENDER_COUNT,	LIGHT,		new Color(1.0f, 1.0f, 0.4f, 1.0f),	"light render count");
+		registerProperty(LIGHT_COUNT,           LIGHT,      new Color(1.0f, 1.0f, 0.0f, 1.0f), "light count");
+		registerProperty(LIGHT_RENDER_COUNT,    LIGHT,      new Color(1.0f, 1.0f, 0.4f, 1.0f), "light render count");
 
-		registerProperty(EFFECT_COUNT,			EFFECT,		new Color(0.0f, 1.0f, 0.0f, 1.0f),	"effect count");
-		registerProperty(EFFECT_RENDER_COUNT,	EFFECT,		new Color(0.0f, 1.0f, 0.5f, 1.0f),	"effect render count");
+		registerProperty(EFFECT_COUNT,          EFFECT,     new Color(0.0f, 1.0f, 0.0f, 1.0f), "effect count");
+		registerProperty(EFFECT_RENDER_COUNT,   EFFECT,     new Color(0.0f, 1.0f, 0.5f, 1.0f), "effect render count");
 
-		registerProperty(TRIANGLE_RENDER_COUNT,	TRIANGLES,	new Color(0.0f, 0.5f, 1.0f, 1.0f),	"triangle render count");
+		registerProperty(TRIANGLE_RENDER_COUNT, TRIANGLES,  new Color(0.0f, 0.5f, 1.0f, 1.0f), "triangle render count");
 	}
 
 	@Override
@@ -42,6 +44,7 @@ class DeferredRendererProfiler extends Profiler {
 		super.reset();
 
 		setValue(OBJECT_RENDER_COUNT, 0);
+		setValue(OBJECT_TEST_COUNT, 0);
 
 		setValue(LIGHT_COUNT, 0);
 		setValue(LIGHT_RENDER_COUNT, 0);

@@ -188,4 +188,9 @@ public class Font {
 	protected int getTexturePadding() {
 		return padding;
 	}
+
+	public void cleanup(){
+		texture.cleanup();
+	}
+
 }

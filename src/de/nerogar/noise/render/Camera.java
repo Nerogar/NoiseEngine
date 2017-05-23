@@ -247,20 +247,20 @@ public abstract class Camera {
 		float newX, newY, newZ;
 
 		newX = point.getX() * getViewMatrix().get(0, 0);
-		newY = point.getX() * viewMatrix.get(0, 1);
-		newZ = point.getX() * viewMatrix.get(0, 2);
+		newY = point.getX() * viewMatrix.get(1, 0);
+		newZ = point.getX() * viewMatrix.get(2, 0);
 
-		newX += point.getY() * viewMatrix.get(1, 0);
+		newX += point.getY() * viewMatrix.get(0, 1);
 		newY += point.getY() * viewMatrix.get(1, 1);
-		newZ += point.getY() * viewMatrix.get(1, 2);
+		newZ += point.getY() * viewMatrix.get(2, 1);
 
-		newX += point.getZ() * viewMatrix.get(2, 0);
-		newY += point.getZ() * viewMatrix.get(2, 1);
+		newX += point.getZ() * viewMatrix.get(0, 2);
+		newY += point.getZ() * viewMatrix.get(1, 2);
 		newZ += point.getZ() * viewMatrix.get(2, 2);
 
-		newX += viewMatrix.get(3, 0);
-		newY += viewMatrix.get(3, 1);
-		newZ += viewMatrix.get(3, 2);
+		newX += viewMatrix.get(0, 3);
+		newY += viewMatrix.get(1, 3);
+		newZ += viewMatrix.get(2, 3);
 
 		point.setX(newX);
 		point.setY(newY);
@@ -276,15 +276,15 @@ public abstract class Camera {
 		float newX, newY, newZ;
 
 		newX = direction.getX() * getViewMatrix().get(0, 0);
-		newY = direction.getX() * viewMatrix.get(0, 1);
-		newZ = direction.getX() * viewMatrix.get(0, 2);
+		newY = direction.getX() * viewMatrix.get(1, 0);
+		newZ = direction.getX() * viewMatrix.get(2, 0);
 
-		newX += direction.getY() * viewMatrix.get(1, 0);
+		newX += direction.getY() * viewMatrix.get(0, 1);
 		newY += direction.getY() * viewMatrix.get(1, 1);
-		newZ += direction.getY() * viewMatrix.get(1, 2);
+		newZ += direction.getY() * viewMatrix.get(2, 1);
 
-		newX += direction.getZ() * viewMatrix.get(2, 0);
-		newY += direction.getZ() * viewMatrix.get(2, 1);
+		newX += direction.getZ() * viewMatrix.get(0, 2);
+		newY += direction.getZ() * viewMatrix.get(1, 2);
 		newZ += direction.getZ() * viewMatrix.get(2, 2);
 
 		direction.setX(newX);
@@ -300,20 +300,20 @@ public abstract class Camera {
 	public void pointToWorldSpace(Vector3f point) {
 		float newX, newY, newZ;
 
-		point.addX(-getViewMatrix().get(3, 0));
-		point.addY(-viewMatrix.get(3, 1));
-		point.addZ(-viewMatrix.get(3, 2));
+		point.addX(-getViewMatrix().get(0, 3));
+		point.addY(-viewMatrix.get(1, 3));
+		point.addZ(-viewMatrix.get(2, 3));
 
 		newX = point.getX() * viewMatrix.get(0, 0);
-		newY = point.getX() * viewMatrix.get(1, 0);
-		newZ = point.getX() * viewMatrix.get(2, 0);
+		newY = point.getX() * viewMatrix.get(0, 1);
+		newZ = point.getX() * viewMatrix.get(0, 2);
 
-		newX += point.getY() * viewMatrix.get(0, 1);
+		newX += point.getY() * viewMatrix.get(1, 0);
 		newY += point.getY() * viewMatrix.get(1, 1);
-		newZ += point.getY() * viewMatrix.get(2, 1);
+		newZ += point.getY() * viewMatrix.get(1, 2);
 
-		newX += point.getZ() * viewMatrix.get(0, 2);
-		newY += point.getZ() * viewMatrix.get(1, 2);
+		newX += point.getZ() * viewMatrix.get(2, 0);
+		newY += point.getZ() * viewMatrix.get(2, 1);
 		newZ += point.getZ() * viewMatrix.get(2, 2);
 
 		point.setX(newX);
@@ -330,15 +330,15 @@ public abstract class Camera {
 		float newX, newY, newZ;
 
 		newX = direction.getX() * getViewMatrix().get(0, 0);
-		newY = direction.getX() * viewMatrix.get(1, 0);
-		newZ = direction.getX() * viewMatrix.get(2, 0);
+		newY = direction.getX() * viewMatrix.get(0, 1);
+		newZ = direction.getX() * viewMatrix.get(0, 2);
 
-		newX += direction.getY() * viewMatrix.get(0, 1);
+		newX += direction.getY() * viewMatrix.get(1, 0);
 		newY += direction.getY() * viewMatrix.get(1, 1);
-		newZ += direction.getY() * viewMatrix.get(2, 1);
+		newZ += direction.getY() * viewMatrix.get(1, 2);
 
-		newX += direction.getZ() * viewMatrix.get(0, 2);
-		newY += direction.getZ() * viewMatrix.get(1, 2);
+		newX += direction.getZ() * viewMatrix.get(2, 0);
+		newY += direction.getZ() * viewMatrix.get(2, 1);
 		newZ += direction.getZ() * viewMatrix.get(2, 2);
 
 		direction.setX(newX);
@@ -403,18 +403,33 @@ public abstract class Camera {
 		return directionAt;
 	}
 
+	/**
+	 * returns the equivalent of "unproject(1, 0)-unproject(0, 0)"
+	 *
+	 * @return the ray
+	 */
 	public Ray getUnitRayRight() {
 		if (viewMatrixDirty) setViewMatrix();
 
 		return unitRayRight;
 	}
 
+	/**
+	 * returns the equivalent of "unproject(0, 1)-unproject(0, 0)"
+	 *
+	 * @return the ray
+	 */
 	public Ray getUnitRayTop() {
 		if (viewMatrixDirty) setViewMatrix();
 
 		return unitRayTop;
 	}
 
+	/**
+	 * returns the same as unproject(0, 0)
+	 *
+	 * @return the ray
+	 */
 	public Ray getUnitRayCenter() {
 		if (viewMatrixDirty) setViewMatrix();
 

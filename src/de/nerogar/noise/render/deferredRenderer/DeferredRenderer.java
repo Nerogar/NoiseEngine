@@ -5,6 +5,7 @@ import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -18,10 +19,13 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class DeferredRenderer {
 
-	private static class VboContainer {
+	private class VboContainer {
 
-		public DeferredContainer           container;
-		public List<DeferredRenderable>    renderables;
+		public  DeferredContainer               container;
+		public  SpaceOctree<DeferredRenderable> renderables;
+		private Set<DeferredRenderable>         updatedRenderables;
+		public  Consumer<DeferredRenderable>    renderableListener;
+
 		public VertexBufferObjectInstanced vbo;
 
 		private ArrayList<Matrix4f> instanceModelMatrices;
@@ -29,11 +33,14 @@ public class DeferredRenderer {
 		private float[]             modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
 		private float[] normalMatrix1, normalMatrix2, normalMatrix3;
 
-		private static final int[] instanceComponentCounts = new int[] { 4, 4, 4, 4, 3, 3, 3 };
+		private final int[] instanceComponentCounts = new int[] { 4, 4, 4, 4, 3, 3, 3 };
 
 		public VboContainer(DeferredContainer container) {
 			this.container = container;
-			renderables = new ArrayList<>();
+			renderables = new SpaceOctree<>(DeferredRenderable::getBoundingSphere, 64, 0.1f);
+
+			updatedRenderables = new HashSet<>();
+			renderableListener = (renderable) -> updatedRenderables.add(renderable);
 
 			instanceModelMatrices = new ArrayList<>();
 			instanceNormalMatrices = new ArrayList<>();
@@ -56,9 +63,26 @@ public class DeferredRenderer {
 			instanceModelMatrices.clear();
 			instanceNormalMatrices.clear();
 
-			Vector3f point = new Vector3f();
+			// call update on updated renderables
+			for (DeferredRenderable updatedRenderable : updatedRenderables) {
+				updatedRenderable.update();
+				renderables.update(updatedRenderable);
+			}
+			updatedRenderables.clear();
 
-			for (DeferredRenderable renderable : renderables) {
+			// filter renderables
+			Bounding viewRegion = frustum.getBounding();
+			Set<DeferredRenderable> filteredRenderables;
+			if (renderables.size() >= OCTREE_FILTER_THRESHOLD) {
+				filteredRenderables = renderables.getFiltered(viewRegion);
+			} else {
+				filteredRenderables = renderables;
+			}
+
+			profiler.addValue(DeferredRendererProfiler.OBJECT_TEST_COUNT, filteredRenderables.size());
+
+			Vector3f point = new Vector3f();
+			for (DeferredRenderable renderable : filteredRenderables) {
 				if (!renderable.getRenderProperties().isVisible()) continue;
 
 				point.setX(renderable.getRenderProperties().getX());
@@ -69,9 +93,10 @@ public class DeferredRenderer {
 					instanceModelMatrices.add(renderable.getRenderProperties().getModelMatrix());
 					instanceNormalMatrices.add(renderable.getRenderProperties().getNormalMatrix());
 				}
+
 			}
 
-			//if arrays are too short, resize them
+			// if arrays are too short, resize them
 			if (modelMatrix1 == null || modelMatrix1.length < instanceModelMatrices.size() * 4) {
 				modelMatrix1 = new float[instanceModelMatrices.size() * 4];
 				modelMatrix2 = new float[instanceModelMatrices.size() * 4];
@@ -88,35 +113,35 @@ public class DeferredRenderer {
 				Matrix4f normalMat = instanceNormalMatrices.get(i);
 
 				modelMatrix1[i * 4 + 0] = modelMat.get(0, 0);
-				modelMatrix1[i * 4 + 1] = modelMat.get(0, 1);
-				modelMatrix1[i * 4 + 2] = modelMat.get(0, 2);
-				modelMatrix1[i * 4 + 3] = modelMat.get(0, 3);
+				modelMatrix1[i * 4 + 1] = modelMat.get(1, 0);
+				modelMatrix1[i * 4 + 2] = modelMat.get(2, 0);
+				modelMatrix1[i * 4 + 3] = modelMat.get(3, 0);
 
-				modelMatrix2[i * 4 + 0] = modelMat.get(1, 0);
+				modelMatrix2[i * 4 + 0] = modelMat.get(0, 1);
 				modelMatrix2[i * 4 + 1] = modelMat.get(1, 1);
-				modelMatrix2[i * 4 + 2] = modelMat.get(1, 2);
-				modelMatrix2[i * 4 + 3] = modelMat.get(1, 3);
+				modelMatrix2[i * 4 + 2] = modelMat.get(2, 1);
+				modelMatrix2[i * 4 + 3] = modelMat.get(3, 1);
 
-				modelMatrix3[i * 4 + 0] = modelMat.get(2, 0);
-				modelMatrix3[i * 4 + 1] = modelMat.get(2, 1);
+				modelMatrix3[i * 4 + 0] = modelMat.get(0, 2);
+				modelMatrix3[i * 4 + 1] = modelMat.get(1, 2);
 				modelMatrix3[i * 4 + 2] = modelMat.get(2, 2);
-				modelMatrix3[i * 4 + 3] = modelMat.get(2, 3);
+				modelMatrix3[i * 4 + 3] = modelMat.get(3, 2);
 
-				modelMatrix4[i * 4 + 0] = modelMat.get(3, 0);
-				modelMatrix4[i * 4 + 1] = modelMat.get(3, 1);
-				modelMatrix4[i * 4 + 2] = modelMat.get(3, 2);
+				modelMatrix4[i * 4 + 0] = modelMat.get(0, 3);
+				modelMatrix4[i * 4 + 1] = modelMat.get(1, 3);
+				modelMatrix4[i * 4 + 2] = modelMat.get(2, 3);
 				modelMatrix4[i * 4 + 3] = modelMat.get(3, 3);
 
 				normalMatrix1[i * 3 + 0] = normalMat.get(0, 0);
-				normalMatrix1[i * 3 + 1] = normalMat.get(0, 1);
-				normalMatrix1[i * 3 + 2] = normalMat.get(0, 2);
+				normalMatrix1[i * 3 + 1] = normalMat.get(1, 0);
+				normalMatrix1[i * 3 + 2] = normalMat.get(2, 0);
 
-				normalMatrix2[i * 3 + 0] = normalMat.get(1, 0);
+				normalMatrix2[i * 3 + 0] = normalMat.get(0, 1);
 				normalMatrix2[i * 3 + 1] = normalMat.get(1, 1);
-				normalMatrix2[i * 3 + 2] = normalMat.get(1, 2);
+				normalMatrix2[i * 3 + 2] = normalMat.get(2, 1);
 
-				normalMatrix3[i * 3 + 0] = normalMat.get(2, 0);
-				normalMatrix3[i * 3 + 1] = normalMat.get(2, 1);
+				normalMatrix3[i * 3 + 0] = normalMat.get(0, 2);
+				normalMatrix3[i * 3 + 1] = normalMat.get(1, 2);
 				normalMatrix3[i * 3 + 2] = normalMat.get(2, 2);
 			}
 
@@ -133,33 +158,35 @@ public class DeferredRenderer {
 		}
 	}
 
+	private static final int OCTREE_FILTER_THRESHOLD = 40;
+
 	private Map<DeferredContainer, VboContainer> vboMap;
 	private VertexBufferObjectIndexed            fullscreenQuad;
 	private DeferredRendererProfiler             profiler;
 
-	//gBuffer
+	// gBuffer
 	private Shader            gBufferShader;
 	private FrameBufferObject gBuffer;
 
-	//lights
+	// lights
 	private LightContainer              lightContainer;
 	private VertexBufferObjectInstanced lightVbo;
 	private Shader                      lightShader;
 	private FrameBufferObject           lightFrameBuffer;
 
-	//effects
+	// effects
 	private EffectContainer   effectContainer;
 	private FrameBufferObject effectFrameBuffer;
 
-	//final pass
+	// final pass
 	private Shader            finalShader;
 	private FrameBufferObject finalFrameBuffer;
 
-	//filter
+	// getFiltered
 	private Shader            filterShader;
 	private FrameBufferObject filterFrameBuffer;
 
-	//settings
+	// settings
 	private Map<String, String> settingsParamter;
 
 	private int width;
@@ -178,7 +205,7 @@ public class DeferredRenderer {
 
 	private boolean antiAliasingEnabled;
 
-	//debug
+	// debug
 	private static final boolean SHOW_AXIS = Noise.getSettings().getObject("deferredRenderer").getBoolean("showAxis");
 	private DeferredRenderable originAxis;
 
@@ -261,15 +288,12 @@ public class DeferredRenderer {
 	 * @param object a {@link DeferredRenderable DeferredRenderable} to add
 	 */
 	public void addObject(DeferredRenderable object) {
-		VboContainer container = vboMap.get(object.getContainer());
+		VboContainer container = vboMap.computeIfAbsent(object.getContainer(), VboContainer::new);
 
-		if (container == null) {
-			container = new VboContainer(object.getContainer());
-		}
+		object.update();
+		object.addListener(container.renderableListener);
 
 		container.renderables.add(object);
-
-		vboMap.put(object.getContainer(), container);
 
 		profiler.incrementValue(DeferredRendererProfiler.OBJECT_COUNT);
 	}
@@ -288,7 +312,9 @@ public class DeferredRenderer {
 	 */
 	public void removeObject(DeferredRenderable object) {
 		VboContainer container = vboMap.get(object.getContainer());
+		if (container == null) return;
 		container.renderables.remove(object);
+		object.removeListener(container.renderableListener);
 
 		if (container.renderables.size() == 0) {
 			container.vbo.cleanup();
@@ -516,7 +542,7 @@ public class DeferredRenderer {
 	 * @param camera the camera for viewing the scene
 	 */
 	public void render(Camera camera) {
-		//render gBuffer
+		// render gBuffer
 		gBuffer.bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -562,14 +588,14 @@ public class DeferredRenderer {
 
 		glDisable(GL_DEPTH_TEST);
 
-		//bind gBuffer textures
+		// bind gBuffer textures
 		gBuffer.getTextureAttachment(0).bind(0);
 		gBuffer.getTextureAttachment(1).bind(1);
 		gBuffer.getTextureAttachment(2).bind(2);
 		gBuffer.getTextureAttachment(3).bind(3);
 		gBuffer.getTextureAttachment(-1).bind(7);
 
-		//render lights
+		// render lights
 		lightFrameBuffer.bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -598,7 +624,7 @@ public class DeferredRenderer {
 		lightFrameBuffer.getTextureAttachment(0).bind(4);
 		if (reflectionTexture != null) reflectionTexture.bind(6);
 
-		//render effects
+		// render effects
 		effectFrameBuffer.bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -629,7 +655,7 @@ public class DeferredRenderer {
 
 		effectFrameBuffer.getTextureAttachment(0).bind(5);
 
-		//final pass
+		// final pass
 		finalFrameBuffer.bind();
 
 		// calculate unit rays for depth -> position reconstruction
@@ -660,15 +686,15 @@ public class DeferredRenderer {
 		finalShader.setUniform4f(
 				"inverseDepthFunction",
 				projectMatrix.get(2, 2),
-				projectMatrix.get(3, 2),
 				projectMatrix.get(2, 3),
+				projectMatrix.get(3, 2),
 				projectMatrix.get(3, 3)
 		                        );
 
 		fullscreenQuad.render();
 		finalShader.deactivate();
 
-		//filter
+		// getFiltered
 		if (antiAliasingEnabled) {
 			finalFrameBuffer.getTextureAttachment(0).bind(0);
 			filterFrameBuffer.bind();

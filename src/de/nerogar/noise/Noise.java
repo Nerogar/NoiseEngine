@@ -1,7 +1,7 @@
 package de.nerogar.noise;
 
 import de.nerogar.noise.debug.DebugWindow;
-import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.serialization.NDSFile;
 import de.nerogar.noise.serialization.NDSNodeObject;
 import de.nerogar.noise.serialization.NDSReader;
@@ -30,8 +30,8 @@ public class Noise {
 
 	private static ALContext alContext;
 
-	private static DebugWindow       debugWindow;
-	private static RessourceProfiler ressourceProfiler;
+	private static DebugWindow      debugWindow;
+	private static ResourceProfiler resourceProfiler;
 
 	//hold our own reference, GLFW doesn't like to do that itself
 	private static GLFWErrorCallback errorCallbackFun;
@@ -59,8 +59,8 @@ public class Noise {
 			errorCallbackFun = GLFWErrorCallback.createPrint(Logger.getErrorStream());
 			glfwSetErrorCallback(errorCallbackFun);
 
-			ressourceProfiler = new RessourceProfiler();
-			debugWindow = new DebugWindow(ressourceProfiler);
+			resourceProfiler = new ResourceProfiler();
+			debugWindow = new DebugWindow(resourceProfiler);
 
 			//sleeping thread for timer precision on windows
 			Thread sleepThread = new Thread("sleeping thread") {
@@ -118,8 +118,8 @@ public class Noise {
 		return debugWindow;
 	}
 
-	public static RessourceProfiler getRessourceProfiler() {
-		return ressourceProfiler;
+	public static ResourceProfiler getResourceProfiler() {
+		return resourceProfiler;
 	}
 
 	public static NDSNodeObject getSettings() {

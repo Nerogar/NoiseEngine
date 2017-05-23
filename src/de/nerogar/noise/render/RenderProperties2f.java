@@ -1,13 +1,14 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.*;
+import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noise.util.Vector2f;
 
-public class RenderProperties2f implements RenderProperties {
+public class RenderProperties2f extends RenderProperties<RenderProperties2f> {
 
 	private float roll;
 	private float x, y;
 	private float scaleX, scaleY;
-	private boolean isVisible;
 
 	private Matrix4f positionMatrix;
 	private Matrix4f scaleMatrix;
@@ -32,8 +33,6 @@ public class RenderProperties2f implements RenderProperties {
 
 		scaleX = 1.0f;
 		scaleY = 1.0f;
-
-		isVisible = true;
 
 		setPositionMatrix();
 		setScaleMatrix();
@@ -77,12 +76,14 @@ public class RenderProperties2f implements RenderProperties {
 	}
 
 	/**
-	 * Sets the roll in radiants 
+	 * Sets the roll in radiants
 	 */
 	public void setRoll(float roll) {
 		if (this.roll == roll) return;
 		this.roll = roll;
 		setRollMatrix();
+
+		updateListener(false, true, false);
 	}
 
 	public float getX() {
@@ -93,6 +94,8 @@ public class RenderProperties2f implements RenderProperties {
 		if (this.x == x) return;
 		this.x = x;
 		setPositionMatrix();
+
+		updateListener(true, false, false);
 	}
 
 	public float getY() {
@@ -103,6 +106,8 @@ public class RenderProperties2f implements RenderProperties {
 		if (this.y == y) return;
 		this.y = y;
 		setPositionMatrix();
+
+		updateListener(true, false, false);
 	}
 
 	/**
@@ -113,24 +118,8 @@ public class RenderProperties2f implements RenderProperties {
 		this.x = x;
 		this.y = y;
 		setPositionMatrix();
-	}
 
-	/**
-	 * sets the x, y properties
-	 */
-	public void setScale(float scaleX, float scaleY) {
-		if (this.scaleX == x && this.scaleY == y) return;
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
-		setScaleMatrix();
-	}
-
-	public float getScaleX() {
-		return scaleX;
-	}
-
-	public float getScaleY() {
-		return scaleY;
+		updateListener(true, false, false);
 	}
 
 	/**
@@ -141,16 +130,34 @@ public class RenderProperties2f implements RenderProperties {
 		this.x = v.getX();
 		this.y = v.getY();
 		setPositionMatrix();
+
+		updateListener(true, false, false);
 	}
 
-	@Override
-	public void setVisible(boolean visible) {
-		isVisible = visible;
+	/**
+	 * sets the x, y properties
+	 */
+	public void setScale(float scaleX, float scaleY) {
+		if (this.scaleX == scaleX && this.scaleY == scaleY) return;
+		this.scaleX = scaleX;
+		this.scaleY = scaleY;
+		setScaleMatrix();
+
+		updateListener(false, false, true);
 	}
-	
-	@Override
-	public boolean isVisible() {
-		return isVisible;
+
+	public float getScaleX() {
+		return scaleX;
+	}
+
+	public float getScaleY() {
+		return scaleY;
+	}
+
+	private void updateListener(boolean position, boolean rotation, boolean scale) {
+		if (listener != null) {
+			listener.update(this, position, rotation, scale);
+		}
 	}
 
 }

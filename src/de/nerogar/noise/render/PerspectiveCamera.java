@@ -61,6 +61,7 @@ public class PerspectiveCamera extends Camera {
 
 		projectionMatrixDirty = false;
 
+		setUnitRays();
 		viewRegion.setPlanes(this);
 	}
 

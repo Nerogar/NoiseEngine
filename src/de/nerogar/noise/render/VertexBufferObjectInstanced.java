@@ -1,7 +1,7 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 
@@ -102,7 +102,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 
 		initVAO(buffer, indexBuffer, null);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_COUNT);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_COUNT);
 	}
 
 	private int initVAO(FloatBuffer vboBuffer, IntBuffer indexBuffer, ByteBuffer instanceBuffer) {
@@ -162,16 +162,16 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		glContextInstanceDataDirty.put(currentContext, false);
 
 		if (vboBuffer != null) {
-			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
-			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, vboBuffer.remaining() * Float.BYTES);
+			Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getResourceProfiler().addValue(ResourceProfiler.VBO_UPLOAD_SIZE, vboBuffer.remaining() * Float.BYTES);
 		}
 		if (indexBuffer != null) {
-			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
-			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, indexBuffer.remaining() * Integer.BYTES);
+			Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getResourceProfiler().addValue(ResourceProfiler.VBO_UPLOAD_SIZE, indexBuffer.remaining() * Integer.BYTES);
 		}
 		if (instanceBuffer != null) {
-			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
-			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, instanceBuffer.remaining());
+			Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getResourceProfiler().addValue(ResourceProfiler.VBO_UPLOAD_SIZE, instanceBuffer.remaining());
 		}
 
 		return vaoHandle;
@@ -246,7 +246,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		glDrawElementsInstanced(renderType, indexCount, GL_UNSIGNED_INT, 0, instanceCount);
 		glBindVertexArray(0);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_CALLS);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_CALLS);
 	}
 
 	@Override
@@ -266,7 +266,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 
 		deleted = true;
 
-		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.VBO_COUNT);
+		Noise.getResourceProfiler().decrementValue(ResourceProfiler.VBO_COUNT);
 	}
 
 	@Override

@@ -7,10 +7,10 @@ public interface Matrixf<T extends Matrixf<T>> {
 	public abstract T newInstance();
 
 	//get
-	public abstract float get(int componentLine, int componentCollumn);
+	public abstract float get(int lineIndex, int collumnIndex);
 
 	//set
-	public abstract T set(int componentLine, int componentCollumn, float f);
+	public abstract T set(int lineIndex, int collumnIndex, float f);
 
 	public abstract T set(float allComponents);
 
@@ -43,7 +43,11 @@ public interface Matrixf<T extends Matrixf<T>> {
 
 	//tools
 	public abstract T clone();
-	
+
+	public abstract T invert();
+
+	public abstract T inverted();
+
 	public abstract T transpose();
 	
 	public abstract T transposed();

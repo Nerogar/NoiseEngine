@@ -1,8 +1,8 @@
 package de.nerogar.noise.serialization;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PushbackReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +45,7 @@ import java.util.List;
 		public String getString() {return (String) object;}
 	}
 
-	NDSjsonReader(BufferedReader reader) {
+	NDSjsonReader(Reader reader) {
 		this.reader = new PushbackReader(reader);
 		this.currentChar = -1;
 		sb = new StringBuilder();
@@ -69,8 +69,6 @@ import java.util.List;
 	}
 
 	private void skipWhitespace() throws IOException {
-
-		boolean skipLine = false;
 
 		while (true) {
 			int nextChar = reader.read();
@@ -283,7 +281,11 @@ import java.util.List;
 		} else if (type == TYPE_INT) {
 			int[] array = new int[list.size()];
 			for (int i = 0; i < list.size(); i++) {
-				array[i] = Integer.parseInt(list.get(i).getString());
+				try {
+					array[i] = Integer.parseInt(list.get(i).getString());
+				} catch (NumberFormatException e) {
+					array[i] = -1;
+				}
 			}
 			return new Value(TYPE_INT_ARRAY, array);
 		} else if (type == TYPE_FLOAT) {
@@ -375,7 +377,11 @@ import java.util.List;
 					object.addStringUTF8(childName, childValue.getString());
 					break;
 				case TYPE_INT:
-					object.addInt(childName, Integer.parseInt(childValue.getString()));
+					try {
+						object.addInt(childName, Integer.parseInt(childValue.getString()));
+					} catch (NumberFormatException e) {
+						object.addInt(childName, -1);
+					}
 					break;
 				case TYPE_FLOAT:
 					object.addFloat(childName, Float.parseFloat(childValue.getString()));

@@ -13,7 +13,7 @@ import java.util.HashMap;
 import org.lwjgl.BufferUtils;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.util.Logger;
 
 public class VertexBufferObjectIndexed extends VertexBufferObject {
@@ -88,7 +88,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 
 		initVAO(buffer, indexBuffer);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_COUNT);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_COUNT);
 	}
 
 	private int initVAO(FloatBuffer vboBuffer, IntBuffer indexBuffer) {
@@ -126,12 +126,12 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 		glBindVertexArray(0);
 
 		if (vboBuffer != null) {
-			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
-			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, vboBuffer.remaining() * Float.BYTES);
+			Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getResourceProfiler().addValue(ResourceProfiler.VBO_UPLOAD_SIZE, vboBuffer.remaining() * Float.BYTES);
 		}
 		if (indexBuffer != null) {
-			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
-			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, indexBuffer.remaining() * Integer.BYTES);
+			Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getResourceProfiler().addValue(ResourceProfiler.VBO_UPLOAD_SIZE, indexBuffer.remaining() * Integer.BYTES);
 		}
 
 		return vaoHandle;
@@ -151,7 +151,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 		glDrawElements(renderType, indexCount, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_CALLS);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_CALLS);
 	}
 
 	@Override
@@ -170,7 +170,7 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 
 		deleted = true;
 
-		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.VBO_COUNT);
+		Noise.getResourceProfiler().decrementValue(ResourceProfiler.VBO_COUNT);
 	}
 
 	@Override

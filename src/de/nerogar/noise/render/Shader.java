@@ -12,7 +12,7 @@ import java.util.Map;
 import org.lwjgl.BufferUtils;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.util.Logger;
 
 public class Shader {
@@ -233,8 +233,8 @@ public class Shader {
 			cleanup();
 		}
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.SHADER_COUNT);
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.SHADER_COMPILE_COUNT);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.SHADER_COUNT);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.SHADER_COMPILE_COUNT);
 	}
 
 	private boolean getCompileStatus(int shaderHandle, String shaderName) {
@@ -252,7 +252,7 @@ public class Shader {
 			active = true;
 			glUseProgram(shaderHandle);
 
-			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.SHADER_BINDS);
+			Noise.getResourceProfiler().incrementValue(ResourceProfiler.SHADER_BINDS);
 		} else if (!compiled) {
 			//Logger.log(Logger.DEBUG, "Shader is not compiled. " + toString());
 		}
@@ -270,7 +270,7 @@ public class Shader {
 		uniformCache.clear();
 		compiled = false;
 
-		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.SHADER_COUNT);
+		Noise.getResourceProfiler().decrementValue(ResourceProfiler.SHADER_COUNT);
 	}
 
 	@Override

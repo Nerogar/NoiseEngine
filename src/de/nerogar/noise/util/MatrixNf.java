@@ -28,12 +28,12 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
-	public float get(int collumnIndex, int lineIndex) {
+	public float get(int lineIndex, int collumnIndex) {
 		return components[lineIndex * componentCount + collumnIndex];
 	}
 
 	@Override
-	public MatrixNf set(int collumnIndex, int lineIndex, float f) {
+	public MatrixNf set(int lineIndex, int collumnIndex, float f) {
 		components[lineIndex * componentCount + collumnIndex] = f;
 		return this;
 	}
@@ -51,7 +51,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	public MatrixNf set(MatrixNf m) {
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = 0; j < componentCount; j++) {
-				set(i, j, m.get(i, j));
+				set(j, i, m.get(j, i));
 			}
 		}
 
@@ -71,7 +71,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	public MatrixNf add(MatrixNf m) {
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = 0; j < componentCount; j++) {
-				set(i, j, get(i, j) + m.get(i, j));
+				set(j, i, get(j, i) + m.get(j, i));
 			}
 		}
 
@@ -87,7 +87,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	public MatrixNf subtract(MatrixNf m) {
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = 0; j < componentCount; j++) {
-				set(i, j, get(i, j) - m.get(i, j));
+				set(j, i, get(j, i) - m.get(j, i));
 			}
 		}
 
@@ -127,7 +127,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 				float sum = 0;
 
 				for (int w = 0; w < componentCount; w++) {
-					sum += m.get(i, w) * get(w, j);
+					sum += m.get(w, i) * get(j, w);
 				}
 
 				newMatrix[j * componentCount + i] = sum;
@@ -148,7 +148,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 				float sum = 0;
 
 				for (int w = 0; w < componentCount; w++) {
-					sum += m.get(i, w) * get(w, j);
+					sum += m.get(w, i) * get(j, w);
 				}
 
 				newMatrix[j * componentCount + i] = sum;
@@ -167,7 +167,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 				float sum = 0;
 
 				for (int w = 0; w < componentCount; w++) {
-					sum += get(i, w) * m.get(w, j);
+					sum += get(w, i) * m.get(j, w);
 				}
 
 				newMatrix[j * componentCount + i] = sum;
@@ -188,7 +188,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 				float sum = 0;
 
 				for (int w = 0; w < componentCount; w++) {
-					sum += get(i, w) * m.get(w, j);
+					sum += get(w, i) * m.get(j, w);
 				}
 
 				newMatrix[j * componentCount + i] = sum;
@@ -199,12 +199,22 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 	}
 
 	@Override
+	public MatrixNf invert() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MatrixNf inverted() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public MatrixNf transpose() {
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = i + 1; j < componentCount; j++) {
-				float temp = get(i, j);
-				set(i, j, get(j, i));
-				set(j, i, temp);
+				float temp = get(j, i);
+				set(j, i, get(i, j));
+				set(i, j, temp);
 			}
 		}
 		return null;
@@ -216,7 +226,7 @@ public class MatrixNf implements Matrixf<MatrixNf> {
 
 		for (int i = 0; i < componentCount; i++) {
 			for (int j = 0; j < componentCount; j++) {
-				newMatrix[i + j * componentCount] = get(j, i);
+				newMatrix[i + j * componentCount] = get(i, j);
 			}
 		}
 		return new MatrixNf(newMatrix, componentCount);

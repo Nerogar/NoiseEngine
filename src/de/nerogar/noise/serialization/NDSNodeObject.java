@@ -35,11 +35,29 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	protected NDSNodeValue getChildValue(String name) {
-		return (NDSNodeValue) children.get(name);
+		if (children.containsKey(name)) {
+			NDSNode childNode = children.get(name);
+			if (childNode instanceof NDSNodeValue) {
+				return (NDSNodeValue) childNode;
+			} else {
+				throw new NDSException(NDSConstants.ERROR_WRONG_NODE_TYPE + " '" + name + "'");
+			}
+		} else {
+			throw new NDSException(NDSConstants.ERROR_NO_SUCH_NODE + " '" + name + "'");
+		}
 	}
 
 	protected NDSNodeObject getChildObject(String name) {
-		return (NDSNodeObject) children.get(name);
+		if (children.containsKey(name)) {
+			NDSNode childNode = children.get(name);
+			if (childNode instanceof NDSNodeObject) {
+				return (NDSNodeObject) children.get(name);
+			} else {
+				throw new NDSException(NDSConstants.ERROR_WRONG_NODE_TYPE + " '" + name + "'");
+			}
+		} else {
+			throw new NDSException(NDSConstants.ERROR_NO_SUCH_NODE + " '" + name + "'");
+		}
 	}
 
 	// values
@@ -402,12 +420,31 @@ public class NDSNodeObject extends NDSNode {
 		return getChildValue(childName).getObjectArray();
 	}
 
+	// misc
+
+	public boolean contains(String childName) {
+		return children.containsKey(childName);
+	}
+
 	public Collection<NDSNode> getChildren() {
 		return children.values();
 	}
 
 	public void removeNode(String name) {
 		removeChild(name);
+	}
+
+	public void addAll(NDSNodeObject otherObject, boolean overwrite) {
+		for (NDSNode ndsNode : otherObject.getChildren()) {
+			if (contains(ndsNode.name)) {
+				if (overwrite) {
+					removeChild(ndsNode.name);
+					addChild(ndsNode);
+				}
+			} else {
+				addChild(ndsNode);
+			}
+		}
 	}
 
 	// --- [ write

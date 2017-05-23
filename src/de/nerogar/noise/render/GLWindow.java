@@ -232,7 +232,7 @@ public class GLWindow implements IRenderTarget {
 		}
 
 		glfwPollEvents();
-		Noise.getRessourceProfiler().reset();
+		Noise.getResourceProfiler().reset();
 		Noise.getDebugWindow().update();
 	}
 

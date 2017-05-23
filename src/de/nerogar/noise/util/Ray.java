@@ -1,6 +1,6 @@
 package de.nerogar.noise.util;
 
-public class Ray {
+public class Ray implements Cloneable {
 
 	private Vector3f start;
 	private Vector3f dir;
@@ -17,6 +17,11 @@ public class Ray {
 	public Vector3f getDir()             { return dir; }
 
 	public void setDir(Vector3f dir)     { this.dir = dir; }
+
+	@Override
+	public Ray clone() {
+		return new Ray(start.clone(), dir.clone());
+	}
 
 	@Override
 	public String toString() {

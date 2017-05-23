@@ -1,30 +1,32 @@
 package de.nerogar.noise.render.fontRenderer;
 
-import static org.lwjgl.opengl.GL11.*;
-
-import java.util.HashMap;
-
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Matrix4f;
+
+import java.util.HashMap;
+
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * a class for easy text rendering
  */
 public class FontRenderableString {
 
-	private static final int tabSize = 4;
+	private static final int TAB_SIZE = 4;
 
 	private static HashMap<Long, Shader> glContextShaderMap;
 
-	private Font font;
+	private Font  font;
 	private Color color;
 
 	private VertexBufferObject vbo;
 
 	private Matrix4f projectionMatrix;
-	private float pointSizeX;
-	private float pointSizeY;
+	private float    pointSizeX;
+	private float    pointSizeY;
+
+	private int width, height;
 
 	/**
 	 * pointSizeX and pointSizeY are the sizes of a single point in viewSpace. Example:
@@ -35,13 +37,13 @@ public class FontRenderableString {
 	 * <li>pointSizeX = 1/800</li>
 	 * <li>pointSizeY = 1/600</li>
 	 * </ul>
-	 * 
-	 * @param font the {@link Font Font} for this string
-	 * @param text the text to display
-	 * @param color the {@link Color color}
+	 *
+	 * @param font             the {@link Font Font} for this string
+	 * @param text             the text to display
+	 * @param color            the {@link Color color}
 	 * @param projectionMatrix the projection matrix that will be used to display this string
-	 * @param pointSizeX the size of a point
-	 * @param pointSizeY the size of a point
+	 * @param pointSizeX       the size of a point
+	 * @param pointSizeY       the size of a point
 	 */
 	public FontRenderableString(Font font, String text, Color color, Matrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
 		this.font = font;
@@ -55,6 +57,9 @@ public class FontRenderableString {
 	private VertexBufferObject createVBO(String text) {
 		VertexList vertexList = new VertexList();
 
+		width = 0;
+		height = 0;
+
 		int offsetX = 0;
 		int offsetY = -font.getBaseline();
 
@@ -63,7 +68,7 @@ public class FontRenderableString {
 				offsetX = 0;
 				offsetY -= font.getLineSpace();
 			} else if (c == '\t') {
-				offsetX = ((offsetX / font.getPointSize() / tabSize) + 1) * tabSize * font.getPointSize();
+				offsetX = ((offsetX / font.getPointSize() / TAB_SIZE) + 1) * TAB_SIZE * font.getPointSize();
 			} else {
 
 				float left = font.getCharLeft(c);
@@ -81,7 +86,10 @@ public class FontRenderableString {
 
 				offsetX += font.getCharPixelWidth(c);
 			}
+
+			width = Math.max(width, offsetX);
 		}
+		height = font.getPointSize() - (offsetY + font.getBaseline());
 
 		return new VertexBufferObjectIndexed(
 				new int[] { 3, 2 },
@@ -89,16 +97,26 @@ public class FontRenderableString {
 				vertexList.getVertexCount(),
 				vertexList.getIndexArray(),
 				vertexList.getPositionArray(),
-				vertexList.getUVArray());
+				vertexList.getUVArray()
+		);
 
 	}
 
 	/**
+	 * updates the color set at creation time
+	 *
+	 * @param color the noew color
+	 */
+	public void setColor(Color color) {
+		this.color = color;
+	}
+
+	/**
 	 * updates the projection settings set at creation time
-	 * 
+	 *
 	 * @param projectionMatrix the new projectinoMatrix
-	 * @param pointSizeX the new pointSizeX
-	 * @param pointSizeY the new pointSizeY
+	 * @param pointSizeX       the new pointSizeX
+	 * @param pointSizeY       the new pointSizeY
 	 */
 	public void setRenderDimensions(Matrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
 		this.projectionMatrix = projectionMatrix;
@@ -108,8 +126,8 @@ public class FontRenderableString {
 
 	/**
 	 * parameters are in units set by the projection matrix
-	 * 
-	 * @param left the left border of the string
+	 *
+	 * @param left   the left border of the string
 	 * @param bottom the baseline for the first line in the string
 	 */
 	public void render(int left, int bottom) {
@@ -117,12 +135,7 @@ public class FontRenderableString {
 
 		font.getTexture().bind(0);
 
-		Shader shader = glContextShaderMap.get(currentContext);
-
-		if (shader == null) {
-			shader = loadFontShader();
-			glContextShaderMap.put(currentContext, shader);
-		}
+		Shader shader = glContextShaderMap.computeIfAbsent(currentContext, k -> loadFontShader());
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -136,6 +149,24 @@ public class FontRenderableString {
 		shader.deactivate();
 
 		glDisable(GL_BLEND);
+	}
+
+	/**
+	 * returns the width of this string in view space
+	 *
+	 * @return the width
+	 */
+	public float getWidth() {
+		return (float) width * pointSizeX;
+	}
+
+	/**
+	 * returns the height of this string in view space
+	 *
+	 * @return the height
+	 */
+	public float getHeight() {
+		return (float) height * pointSizeY;
 	}
 
 	private static Shader loadFontShader() {

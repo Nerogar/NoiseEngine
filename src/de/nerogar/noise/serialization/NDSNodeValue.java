@@ -1,6 +1,6 @@
 package de.nerogar.noise.serialization;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import de.nerogar.noise.exception.NotImplementedException;
 
 import java.io.IOException;
 import java.math.BigInteger;

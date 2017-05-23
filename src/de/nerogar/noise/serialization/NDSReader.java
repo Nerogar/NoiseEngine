@@ -1,6 +1,7 @@
 package de.nerogar.noise.serialization;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 import static de.nerogar.noise.serialization.NDSConstants.*;
 
@@ -88,13 +89,12 @@ public class NDSReader {
 	}
 
 	public static NDSFile readFile(String filename) throws FileNotFoundException {
-		return read(new FileInputStream(new File(filename)));
+		return read(new BufferedInputStream(new FileInputStream(new File(filename))));
 	}
 
-	public static NDSFile readJson(InputStream in) {
+	public static NDSFile readJson(Reader reader) {
 
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 			NDSjsonReader jsonReader = new NDSjsonReader(reader);
 			return jsonReader.read();
 		} catch (IOException e) {
@@ -105,7 +105,9 @@ public class NDSReader {
 	}
 
 	public static NDSFile readJsonFile(String filename) throws FileNotFoundException {
-		return readJson(new FileInputStream(filename));
+		FileInputStream in = new FileInputStream(filename);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
+		return readJson(reader);
 	}
 
 }

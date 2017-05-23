@@ -13,7 +13,7 @@ import java.util.HashMap;
 import org.lwjgl.BufferUtils;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.RessourceProfiler;
+import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.util.Logger;
 
 public class VertexBufferObjectStandard extends VertexBufferObject {
@@ -83,7 +83,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 
 		initVAO(buffer);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_COUNT);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_COUNT);
 	}
 
 	private int initVAO(FloatBuffer vboBuffer) {
@@ -111,8 +111,8 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 		glBindVertexArray(0);
 
 		if (vboBuffer != null) {
-			Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_UPLOAD_COUNT);
-			Noise.getRessourceProfiler().addValue(RessourceProfiler.VBO_UPLOAD_SIZE, vboBuffer.remaining() * Float.BYTES);
+			Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_UPLOAD_COUNT);
+			Noise.getResourceProfiler().addValue(ResourceProfiler.VBO_UPLOAD_SIZE, vboBuffer.remaining() * Float.BYTES);
 		}
 
 		return vaoHandle;
@@ -132,7 +132,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 		glDrawArrays(renderType, 0, vertexCount);
 		glBindVertexArray(0);
 
-		Noise.getRessourceProfiler().incrementValue(RessourceProfiler.VBO_CALLS);
+		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_CALLS);
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 
 		deleted = true;
 
-		Noise.getRessourceProfiler().decrementValue(RessourceProfiler.VBO_COUNT);
+		Noise.getResourceProfiler().decrementValue(ResourceProfiler.VBO_COUNT);
 	}
 
 	@Override

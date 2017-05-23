@@ -101,6 +101,16 @@ public class ServerThread extends Thread {
 		}
 	}
 
+	public List<Packet> getPackets(int channelID) {
+		List<Packet> packets = new ArrayList<>();
+
+		for (Connection connection : connections) {
+			packets.addAll(connection.getPackets(channelID));
+		}
+
+		return packets;
+	}
+
 	public void stopThread() {
 		for (Connection connection : connections) {
 			connection.close();

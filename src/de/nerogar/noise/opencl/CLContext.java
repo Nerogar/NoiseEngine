@@ -10,6 +10,7 @@ import java.nio.IntBuffer;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.lwjgl.glfw.GLFWNativeWGL.glfwGetWGLContext;
 import static org.lwjgl.glfw.GLFWNativeX11.glfwGetX11Display;
 import static org.lwjgl.opencl.CL10.*;
 import static org.lwjgl.opencl.KHRGLSharing.*;
@@ -54,22 +55,24 @@ public class CLContext {
 
 		//create a buffer with context creation properties
 		PointerBuffer contextProperties = BufferUtils.createPointerBuffer(7);
-		contextProperties.put(0, CL_CONTEXT_PLATFORM).put(1, platform.getClPlatformPointer());
-		contextProperties.put(2, CL_GL_CONTEXT_KHR).put(3, glContext.getGlContextPointer());
+		contextProperties.put(CL_CONTEXT_PLATFORM).put(platform.getClPlatformPointer());
+		contextProperties.put(CL_GL_CONTEXT_KHR).put(glfwGetWGLContext(glContext.getGlContextPointer()));
 
 		switch (Platform.get()) {
 		case WINDOWS:
-			contextProperties.put(4, CL_WGL_HDC_KHR).put(5, wglGetCurrentDC());
+			contextProperties.put(CL_WGL_HDC_KHR).put(wglGetCurrentDC());
 			break;
 		case LINUX:
-			contextProperties.put(4, CL_GLX_DISPLAY_KHR).put(5, glfwGetX11Display());
+			contextProperties.put(CL_GLX_DISPLAY_KHR).put(glfwGetX11Display());
 			break;
 		case MACOSX:
-			contextProperties.put(4, CL_CGL_SHAREGROUP_KHR).put(5, CGLGetShareGroup(glContext.getGlContextPointer()));
+			contextProperties.put(CL_CGL_SHAREGROUP_KHR).put(CGLGetShareGroup(glContext.getGlContextPointer()));
 			break;
 		}
 
-		contextProperties.put(6, 0); //add a NULL terminator
+		contextProperties.put(0); //add a NULL terminator
+
+		contextProperties.flip();
 
 		checkCLError(errorCode, ERROR_LOCATION);
 

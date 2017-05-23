@@ -1,13 +1,13 @@
 package de.nerogar.noise.opencl;
 
-import static org.lwjgl.opencl.CL10.*;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.opencl.CL10GL;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.opencl.CL10GL;
+import static org.lwjgl.opencl.CL10.*;
 
 public class CLKernel {
 
@@ -18,7 +18,7 @@ public class CLKernel {
 
 	private long clKernel;
 
-	private int workSizeDimensions;
+	private int           workSizeDimensions;
 	private PointerBuffer workSizeBuffer;
 
 	private ArrayList<CLBuffer> glBuffers;
@@ -51,6 +51,10 @@ public class CLKernel {
 				glBuffers.add(null);
 			}
 			glBuffers.set(index, buffer);
+		} else {
+			if (glBuffers.size() > index) {
+				glBuffers.set(index, null);
+			}
 		}
 	}
 

@@ -2,11 +2,36 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.util.Matrix4f;
 
-public interface RenderProperties {
+public abstract class RenderProperties<T extends RenderProperties<T>> {
 
-	public Matrix4f getModelMatrix();
+	private boolean isVisible = true;
 
-	public boolean isVisible();
-	
-	public void setVisible(boolean visible);
+	public interface RenderPropertiesListener<T extends RenderProperties<T>> {
+
+		public void update(T t, boolean position, boolean rotation, boolean scale);
+	}
+
+	protected RenderPropertiesListener<T> listener;
+
+	public abstract Matrix4f getModelMatrix();
+
+	public boolean isVisible() {
+		return isVisible;
+	}
+
+	public void setVisible(boolean isVisible) {
+		this.isVisible = isVisible;
+	}
+
+	/**
+	 * Set the listener for this renderProperties instance.
+	 * Only one listener can be attached.
+	 * Call {@code setListener(null)} to clear the listener
+	 *
+	 * @param listener the new listener
+	 */
+	public void setListener(RenderPropertiesListener<T> listener) {
+		this.listener = listener;
+	}
+
 }

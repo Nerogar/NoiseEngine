@@ -58,6 +58,7 @@ public class OrthographicCamera extends Camera {
 
 		projectionMatrixDirty = false;
 
+		setUnitRays();
 		viewRegion.setPlanes(this);
 	}
 

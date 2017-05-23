@@ -20,6 +20,7 @@ public class NDSConstants {
 	protected static final String ERROR_MAX_TYPE_STRING_LENGTH   = "only " + MAX_TYPE_STRING_LENGTH + " characters are allowed";
 
 	// node
+	protected static final String ERROR_NO_SUCH_NODE       = "no such node";
 	protected static final String ERROR_WRONG_DATA_TYPE    = "wrong datatype";
 	protected static final String ERROR_WRONG_NODE_TYPE    = "wrong node type";
 	protected static final String ERROR_NOT_AN_ARRAY       = "value is not an array type";
