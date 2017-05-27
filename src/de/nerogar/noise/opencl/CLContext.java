@@ -39,12 +39,20 @@ public class CLContext {
 		errorCode = BufferUtils.createIntBuffer(1);
 
 		//get a list with devices for gl sharing
-		CLPlatform platform = CLPlatform.getPlatforms().get(0);
-		List<CLDevice> devices = platform.getDevices(CL_DEVICE_TYPE_GPU)
-				.stream()
-				.filter(device -> device.getCapabilities().cl_khr_gl_sharing)
-				.collect(Collectors.toList());
-		boolean isSharingPossible = !devices.isEmpty();
+		List<CLDevice> devices = null;
+		CLPlatform platform = null;
+
+		for (CLPlatform platformIter : CLPlatform.getPlatforms()) {
+			try {
+				devices = platformIter.getDevices(CL_DEVICE_TYPE_GPU)
+						.stream()
+						.filter(device -> device.getCapabilities().cl_khr_gl_sharing)
+						.collect(Collectors.toList());
+				platform = platformIter;
+			} catch (CLException ignored) {
+			}
+		}
+		boolean isSharingPossible = devices != null && !devices.isEmpty();
 		if (!isSharingPossible) throw new RuntimeException("CL-GL context sharing is not supported.");
 
 		clDevice = devices.get(0);
@@ -59,15 +67,15 @@ public class CLContext {
 		contextProperties.put(CL_GL_CONTEXT_KHR).put(glfwGetWGLContext(glContext.getGlContextPointer()));
 
 		switch (Platform.get()) {
-		case WINDOWS:
-			contextProperties.put(CL_WGL_HDC_KHR).put(wglGetCurrentDC());
-			break;
-		case LINUX:
-			contextProperties.put(CL_GLX_DISPLAY_KHR).put(glfwGetX11Display());
-			break;
-		case MACOSX:
-			contextProperties.put(CL_CGL_SHAREGROUP_KHR).put(CGLGetShareGroup(glContext.getGlContextPointer()));
-			break;
+			case WINDOWS:
+				contextProperties.put(CL_WGL_HDC_KHR).put(wglGetCurrentDC());
+				break;
+			case LINUX:
+				contextProperties.put(CL_GLX_DISPLAY_KHR).put(glfwGetX11Display());
+				break;
+			case MACOSX:
+				contextProperties.put(CL_CGL_SHAREGROUP_KHR).put(CGLGetShareGroup(glContext.getGlContextPointer()));
+				break;
 		}
 
 		contextProperties.put(0); //add a NULL terminator
