@@ -163,11 +163,11 @@ public class CLBuffer {
 	}
 
 	private void enqueueUpdateBuffer(boolean block) {
-		clEnqueueWriteBuffer(clContext.getCLCommandQueue(), bufferPointer, block ? CL_TRUE : CL_FALSE, 0, bufferData, null, null);
+		clEnqueueWriteBuffer(clContext.getCLCommandQueue(), bufferPointer, block, 0, bufferData, null, null);
 	}
 
 	public void enqueueRead(boolean block) {
-		clEnqueueReadBuffer(clContext.getCLCommandQueue(), bufferPointer, block ? CL_TRUE : CL_FALSE, 0, bufferData, null, null);
+		clEnqueueReadBuffer(clContext.getCLCommandQueue(), bufferPointer, block, 0, bufferData, null, null);
 	}
 
 	public byte[] getByteData() {
