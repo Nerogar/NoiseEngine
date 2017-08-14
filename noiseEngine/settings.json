@@ -19,6 +19,46 @@
 	// DeferredRenderer settings
 	"deferredRenderer": {
 		"showAxis": false
+	},
+
+	// logger settings
+	"logger": {
+		"printTimestamp": false,
+		"printName": true,
+
+		/*
+			The logger output targets loaded during startup.
+			Available output types with additional parameters:
+			 - stdOut (writes to the standard out stream)
+			    {}
+			 - stdErr (writes to the standard error stream)
+			    {}
+			 - file   (writes to a file)
+			    {string filename, boolean append}
+		*/
+		"defaultLoggerOutput": [
+			{
+				"type": "stdOut",
+				"minLevel": "debug",
+				"maxLevel": "warning",
+				"parameters": {}
+			},
+			{
+				"type": "stdErr",
+				"minLevel": "error",
+				"maxLevel": "error",
+				"parameters": {}
+			}
+			/*{
+				"type": "file",
+				"minLevel": "debug",
+				"maxLevel": "warning",
+				"parameters": {
+					"filename": "error.log",
+					"append": true
+				}
+			}*/
+		]
 	}
 
 }
