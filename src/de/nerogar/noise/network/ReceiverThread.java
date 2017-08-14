@@ -1,5 +1,6 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.network.Packets.PacketContainer;
 import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.util.Logger;
@@ -37,7 +38,7 @@ public class ReceiverThread extends Thread {
 
 				PacketContainer packetContainer = Packets.byId(packetId);
 				if (packetContainer == null) {
-					Logger.log(Logger.WARNING, "received invalid packet id: " + packetId + ", closing connection.");
+					Noise.getLogger().log(Logger.WARNING, "received invalid packet id: " + packetId + ", closing connection.");
 					socket.close();
 				} else {
 					int length = stream.readInt();
@@ -55,11 +56,11 @@ public class ReceiverThread extends Thread {
 
 			}
 		} catch (SocketException e) {
-			System.err.println("SocketException in ReceiverThread");
-			e.printStackTrace();
+			Noise.getLogger().log(Logger.ERROR, "SocketException in ReceiverThread");
+			e.printStackTrace(Noise.getLogger().getErrorStream());
 		} catch (IOException e) {
-			System.err.println("ReceiverThread crashed (maybe due to connection abort)");
-			e.printStackTrace();
+			Noise.getLogger().log(Logger.ERROR, "ReceiverThread crashed (maybe due to connection abort)");
+			e.printStackTrace(Noise.getLogger().getErrorStream());
 		}
 
 		// make sure socket it closed when reaching this point

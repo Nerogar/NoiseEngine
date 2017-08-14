@@ -1,5 +1,6 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.network.packets.PacketConnectionInfo;
 import de.nerogar.noise.util.Logger;
@@ -32,11 +33,11 @@ public class Packets {
 				p = packetClass.newInstance();
 				p.fromStream(new DataInputStream(new ByteArrayInputStream(data)));
 			} catch (InstantiationException | IllegalAccessException e) {
-				Logger.log(Logger.ERROR, "Error calling constructor of packet class. Make sure every Packet has a default (empty) constructor!");
-				e.printStackTrace(Logger.getErrorStream());
+				Noise.getLogger().log(Logger.ERROR, "Error calling constructor of packet class. Make sure every Packet has a default (empty) constructor!");
+				e.printStackTrace(Noise.getLogger().getErrorStream());
 			} catch (IOException e) {
-				Logger.log(Logger.ERROR, "Error reading packet from stream: " + p);
-				e.printStackTrace(Logger.getErrorStream());
+				Noise.getLogger().log(Logger.ERROR, "Error reading packet from stream: " + p);
+				e.printStackTrace(Noise.getLogger().getErrorStream());
 			}
 			return p;
 		}

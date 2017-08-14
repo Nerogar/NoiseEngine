@@ -1,5 +1,6 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.network.packets.PacketConnectionInfo;
 import de.nerogar.noise.util.Logger;
@@ -26,7 +27,7 @@ public class ServerThread extends Thread {
 		} catch (BindException e) {
 			throw e;
 		} catch (IOException e) {
-			Logger.log(Logger.ERROR, "The server crashed brutally");
+			Noise.getLogger().log(Logger.ERROR, "The server crashed brutally");
 			e.printStackTrace();
 		}
 		this.setDaemon(true);
@@ -44,12 +45,12 @@ public class ServerThread extends Thread {
 			// System.err.println("SocketException in Server");
 			// e.printStackTrace();
 		} catch (IOException e) {
-			Logger.log(Logger.ERROR, "The server crashed brutally");
+			Noise.getLogger().log(Logger.ERROR, "The server crashed brutally");
 			e.printStackTrace();
 		}
 
 		stopThread();
-		Logger.log(Logger.INFO, "SHUTDOWN: Server - " + socket);
+		Noise.getLogger().log(Logger.INFO, "SHUTDOWN: Server - " + socket);
 
 	}
 
@@ -120,7 +121,7 @@ public class ServerThread extends Thread {
 			try {
 				socket.close();
 			} catch (IOException e) {
-				Logger.log(Logger.WARNING, "Could not close Server-Socket");
+				Noise.getLogger().log(Logger.WARNING, "Could not close Server-Socket");
 				e.printStackTrace();
 			}
 		}

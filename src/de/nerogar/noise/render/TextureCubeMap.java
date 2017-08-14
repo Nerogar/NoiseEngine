@@ -56,6 +56,8 @@ public class TextureCubeMap extends Texture {
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer[4]);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer[5]);
 
+		// TODO: use interpolationType
+
 		//if (interpolationType.generateMipMaps) {
 			glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
@@ -137,7 +139,7 @@ public class TextureCubeMap extends Texture {
 
 	@Override
 	protected void finalize() throws Throwable {
-		if (initialized) Logger.log(Logger.WARNING, "Texture not cleaned up. name: " + name);
+		if (initialized) Noise.getLogger().log(Logger.WARNING, "Texture not cleaned up. name: " + name);
 	}
 
 }

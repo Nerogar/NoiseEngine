@@ -1,5 +1,6 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.*;
 
 public class Mesh {
@@ -254,7 +255,7 @@ public class Mesh {
 		avgError /= (float) vertexCount * 3f;
 
 		if (maxError > 1.0e-3f || Float.isNaN(maxError)) {
-			Logger.log(Logger.WARNING, "Problem calculating mesh tangent space: (minError:" + minError + ", avgError:" + avgError + ", maxError:" + maxError + ")");
+			Noise.getLogger().log(Logger.WARNING, "Problem calculating mesh tangent space: (minError:" + minError + ", avgError:" + avgError + ", maxError:" + maxError + ")");
 		}
 
 	}

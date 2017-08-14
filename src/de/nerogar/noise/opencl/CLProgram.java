@@ -1,5 +1,6 @@
 package de.nerogar.noise.opencl;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
@@ -51,7 +52,7 @@ public class CLProgram {
 		}
 		sb.append("\n");
 
-		Logger.log(Logger.ERROR, sb.toString());
+		Noise.getLogger().log(Logger.ERROR, sb.toString());
 	}
 
 	public long getCLProgram() {

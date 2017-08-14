@@ -3,6 +3,7 @@ package de.nerogar.noise.render.deferredRenderer;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Logger;
 
@@ -93,7 +94,7 @@ public class DeferredContainer {
 			textures[slot] = texture;
 			texturesUsed[slot] = true;
 		} else {
-			Logger.log(Logger.ERROR, "Texture slots 0 to " + MAX_RESERVED_TEXTURE_SLOT + " are reserved for internal purposes in the deferred renderer");
+			Noise.getLogger().log(Logger.ERROR, "Texture slots 0 to " + MAX_RESERVED_TEXTURE_SLOT + " are reserved for internal purposes in the deferred renderer");
 		}
 	}
 

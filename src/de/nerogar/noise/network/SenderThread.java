@@ -1,5 +1,6 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.util.Logger;
 
@@ -69,8 +70,8 @@ public class SenderThread extends Thread {
 						stream.writeInt(data.length);
 						stream.write(data);
 					} catch (IOException e) {
-						Logger.log(Logger.ERROR, "Could not send packet " + packet);
-						e.printStackTrace(Logger.getErrorStream());
+						Noise.getLogger().log(Logger.ERROR, "Could not send packet " + packet);
+						e.printStackTrace(Noise.getLogger().getErrorStream());
 					}
 
 				}

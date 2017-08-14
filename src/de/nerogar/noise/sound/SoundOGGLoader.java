@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
+import de.nerogar.noise.Noise;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBVorbisInfo;
 
@@ -74,7 +75,7 @@ public class SoundOGGLoader {
 		long decoderPointer = stb_vorbis_open_memory(vorbisData, error, null);
 
 		if (decoderPointer == 0) {
-			Logger.log(Logger.ERROR, "Could not read Vorbis data.");
+			Noise.getLogger().log(Logger.ERROR, "Could not read Vorbis data.");
 			return null;
 		}
 

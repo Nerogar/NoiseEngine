@@ -1,5 +1,6 @@
 package de.nerogar.noise.network;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.network.packets.PacketConnectionInfo;
 import de.nerogar.noise.util.Logger;
@@ -69,10 +70,10 @@ public class Connection {
 		try {
 			socket.close();
 		} catch (IOException e) {
-			Logger.log(Logger.WARNING, "Could not close socket in Client.");
+			Noise.getLogger().log(Logger.WARNING, "Could not close socket in Client.");
 			e.printStackTrace();
 		}
-		Logger.log(Logger.INFO, "SHUTDOWN: Connection - " + socket.toString());
+		Noise.getLogger().log(Logger.INFO, "SHUTDOWN: Connection - " + socket.toString());
 	}
 
 	public boolean isClosed() {

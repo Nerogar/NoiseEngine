@@ -218,7 +218,7 @@ public class Shader {
 			if (glGetProgrami(shaderHandle, GL_LINK_STATUS) == GL_FALSE) {
 				int errorSize = glGetProgrami(shaderHandle, GL_INFO_LOG_LENGTH);
 
-				Logger.log(Logger.ERROR, "Shader program wasn't linked correctly. Error log:\n" + glGetProgramInfoLog(shaderHandle, errorSize));
+				Noise.getLogger().log(Logger.ERROR, "Shader program wasn't linked correctly. Error log:\n" + glGetProgramInfoLog(shaderHandle, errorSize));
 				compileError = true;
 			}
 		}
@@ -240,7 +240,7 @@ public class Shader {
 	private boolean getCompileStatus(int shaderHandle, String shaderName) {
 		if (glGetShaderi(shaderHandle, GL_COMPILE_STATUS) == GL_FALSE) {
 			int errorSize = glGetShaderi(shaderHandle, GL_INFO_LOG_LENGTH);
-			Logger.log(Logger.ERROR, shaderName + " wasn't able to be compiled correctly. Error log:\n" + glGetShaderInfoLog(shaderHandle, errorSize));
+			Noise.getLogger().log(Logger.ERROR, shaderName + " wasn't able to be compiled correctly. Error log:\n" + glGetShaderInfoLog(shaderHandle, errorSize));
 			return true;
 		}
 
@@ -280,7 +280,7 @@ public class Shader {
 
 	@Override
 	protected void finalize() throws Throwable {
-		if (compiled) Logger.log(Logger.WARNING, "Shader not cleaned up. " + toString());
+		if (compiled) Noise.getLogger().log(Logger.WARNING, "Shader not cleaned up. " + toString());
 	}
 
 }

@@ -1,5 +1,6 @@
 package de.nerogar.noise.opencl;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLContext;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
@@ -86,7 +87,7 @@ public class CLContext {
 
 		//create the context
 		clContextPointer = clCreateContext(contextProperties, deviceBuffer, (errinfo, private_info, cb, user_data) -> {
-			Logger.log(Logger.ERROR, "openCL error: " + memUTF8(errinfo));
+			Noise.getLogger().log(Logger.ERROR, "openCL error: " + memUTF8(errinfo));
 		}, NULL, errorCode);
 
 		checkCLError(errorCode, ERROR_LOCATION);
@@ -116,7 +117,7 @@ public class CLContext {
 
 		//create the context
 		clContextPointer = clCreateContext(contextProperties, deviceBuffer, (errinfo, private_info, cb, user_data) -> {
-			Logger.log(Logger.ERROR, "openCL error: " + memUTF8(errinfo));
+			Noise.getLogger().log(Logger.ERROR, "openCL error: " + memUTF8(errinfo));
 		}, NULL, errorCode);
 
 		checkCLError(errorCode, ERROR_LOCATION);
@@ -151,7 +152,7 @@ public class CLContext {
 
 	public static void checkCLError(int errorCode, String errorLocation) {
 		if (errorCode != CL_SUCCESS) {
-			Logger.log(Logger.ERROR, "OpenCL error: " + errorCode + " in " + errorLocation);
+			Noise.getLogger().log(Logger.ERROR, "OpenCL error: " + errorCode + " in " + errorLocation);
 			throw new CLException("openCL error code " + errorCode);
 		}
 	}

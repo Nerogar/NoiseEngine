@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.FileUtil;
 import org.lwjgl.BufferUtils;
 
@@ -43,12 +44,12 @@ public class Texture2DLoader {
 			retTexture = loadTexture(image, textureName, interpolationType);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Logger.log(Logger.ERROR, "Missing Texture: " + filename);
+			Noise.getLogger().log(Logger.ERROR, "Missing Texture: " + filename);
 		}
 
 		textureMap.put(filename, retTexture);
 
-		Logger.log(Logger.INFO, "loaded texture: " + filename);
+		Noise.getLogger().log(Logger.INFO, "loaded texture: " + filename);
 
 		return retTexture;
 	}

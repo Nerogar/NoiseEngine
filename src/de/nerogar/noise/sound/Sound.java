@@ -1,6 +1,8 @@
 package de.nerogar.noise.sound;
 
 import static org.lwjgl.openal.AL10.*;
+
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.Logger;
 
 public abstract class Sound {
@@ -101,7 +103,7 @@ public abstract class Sound {
 
 	@Override
 	protected void finalize() {
-		if (!cleaned) Logger.log(Logger.WARNING, "Sound not cleaned up.");
+		if (!cleaned) Noise.getLogger().log(Logger.WARNING, "Sound not cleaned up.");
 	}
 
 	@Deprecated

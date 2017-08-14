@@ -277,7 +277,7 @@ public class Texture2D extends Texture {
 
 	@Override
 	protected void finalize() throws Throwable {
-		if (initialized) Logger.log(Logger.WARNING, "Texture not cleaned up. name: " + name);
+		if (initialized) Noise.getLogger().log(Logger.WARNING, "Texture not cleaned up. name: " + name);
 	}
 
 }

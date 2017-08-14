@@ -198,7 +198,7 @@ public class FrameBufferObject implements IRenderTarget {
 
 	@Override
 	protected void finalize() throws Throwable {
-		if (initialized) Logger.log(Logger.WARNING, "render Target not cleaned up. id: " + framebufferID);
+		if (initialized) Noise.getLogger().log(Logger.WARNING, "render Target not cleaned up. id: " + framebufferID);
 	}
 
 }

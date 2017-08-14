@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.Logger;
 
 public class WavefrontLoader {
@@ -183,7 +184,7 @@ public class WavefrontLoader {
 
 		meshMap.put(filename, object);
 
-		Logger.log(Logger.INFO, "loaded .obj file: " + filename);
+		Noise.getLogger().log(Logger.INFO, "loaded .obj file: " + filename);
 
 		return object;
 	}

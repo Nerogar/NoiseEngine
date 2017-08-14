@@ -155,7 +155,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 
 	@Override
 	protected void finalize() throws Throwable {
-		if (!deleted) Logger.log(Logger.WARNING, "VBO not cleaned up. pointer: " + vboHandle);
+		if (!deleted) Noise.getLogger().log(Logger.WARNING, "VBO not cleaned up. pointer: " + vboHandle);
 	}
 
 }

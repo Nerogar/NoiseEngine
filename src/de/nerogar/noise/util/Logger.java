@@ -17,51 +17,87 @@ public class Logger {
 			"error"
 	};
 
+	public static final  Logger instance                    = new Logger("global");
+	private static final int    MAX_TEMPORARY_MESSAGE_COUNT = 128;
+
 	/**
 	 * Information to find bugs during development.
 	 */
-	public static final  int         DEBUG        = 0;
-	private static final PrintStream DEBUG_STREAM = new LogStream(DEBUG);
+	public static final int         DEBUG        = 0;
+	private final       PrintStream DEBUG_STREAM = new LogStream(DEBUG);
 
 	/**
 	 * More important than debug information.
 	 */
-	public static final  int         INFO        = 1;
-	private static final PrintStream INFO_STREAM = new LogStream(INFO);
+	public static final int         INFO        = 1;
+	private final       PrintStream INFO_STREAM = new LogStream(INFO);
 
 	/**
 	 * Warnings about unexpected behavior.
 	 */
-	public static final  int         WARNING        = 2;
-	private static final PrintStream WARNING_STREAM = new LogStream(WARNING);
+	public static final int         WARNING        = 2;
+	private final       PrintStream WARNING_STREAM = new LogStream(WARNING);
 
 	/**
 	 * Problems that can cause a crash.
 	 */
-	public static final  int         ERROR        = 3;
-	private static final PrintStream ERROR_STREAM = new LogStream(ERROR);
+	public static final int         ERROR        = 3;
+	private final       PrintStream ERROR_STREAM = new LogStream(ERROR);
 
-	private static List<LogOutStream> logStreams;
-	private static List<LogListener>  logListener;
+	private List<LogOutStream>       logStreams;
+	private List<LogListener>        logListener;
+	private LimitedQueue<LogMessage> temporaryMessages;
 
-	private static boolean    printTimestamp = false;
+	private boolean printName = true;
+	private final String name;
+
+	private        boolean    printTimestamp = false;
 	private static DateFormat dateFormat     = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private Logger parent;
+
+	public Logger(String name) {
+		this.name = name;
+		logStreams = new ArrayList<>();
+		logListener = new ArrayList<>();
+		temporaryMessages = new LimitedQueue<>(MAX_TEMPORARY_MESSAGE_COUNT);
+	}
+
+	/**
+	 * acitvates or deactivates the output of names in log messages
+	 *
+	 * @param print the new printName value
+	 */
+	public void setPrintName(boolean print) {
+		printName = print;
+	}
 
 	/**
 	 * acitvates or deactivates the output of timestamps in log messages
 	 *
 	 * @param print the new printTimestamp value
 	 */
-	public static void setPrintTimestamp(boolean print) {
+	public void setPrintTimestamp(boolean print) {
 		printTimestamp = print;
+	}
+
+	/**
+	 * Sets the parent of this logger instance.
+	 * All output targets of the parent will be used aswell
+	 *
+	 * @param parent
+	 */
+	public void setParent(Logger parent) {
+		this.parent = parent;
+		if (parent != null) flushTemporaryMessages();
 	}
 
 	/**
 	 * @param minLogLevel the minimum loglevel to print on this stream
 	 * @param stream      the printStream for message output
 	 */
-	public static void addStream(int minLogLevel, PrintStream stream) {
+	public void addStream(int minLogLevel, PrintStream stream) {
 		logStreams.add(new LogOutStream(minLogLevel, ERROR, stream));
+		flushTemporaryMessages();
 	}
 
 	/**
@@ -69,8 +105,9 @@ public class Logger {
 	 * @param maxLogLevel the maximum loglevel to print on this stream
 	 * @param stream      the printStream for message output
 	 */
-	public static void addStream(int minLogLevel, int maxLogLevel, PrintStream stream) {
+	public void addStream(int minLogLevel, int maxLogLevel, PrintStream stream) {
 		logStreams.add(new LogOutStream(minLogLevel, maxLogLevel, stream));
+		flushTemporaryMessages();
 	}
 
 	/**
@@ -79,7 +116,7 @@ public class Logger {
 	 * @param stream the stream to remove
 	 * @return true, if a stream was removed, false otherwise
 	 */
-	public static boolean removeStream(PrintStream stream) {
+	public boolean removeStream(PrintStream stream) {
 		return logStreams.removeIf((a) -> a.stream.equals(stream));
 	}
 
@@ -87,8 +124,9 @@ public class Logger {
 	 * @param minLogLevel the minimum loglevel to print on this listener
 	 * @param listener    the listener for message output
 	 */
-	public static void addListener(int minLogLevel, Consumer<String> listener) {
+	public void addListener(int minLogLevel, Consumer<String> listener) {
 		logListener.add(new LogListener(minLogLevel, ERROR, listener));
+		flushTemporaryMessages();
 	}
 
 	/**
@@ -96,8 +134,9 @@ public class Logger {
 	 * @param maxLogLevel the maximum loglevel to print on this listener
 	 * @param listener    the listener for message output
 	 */
-	public static void addListener(int minLogLevel, int maxLogLevel, Consumer<String> listener) {
+	public void addListener(int minLogLevel, int maxLogLevel, Consumer<String> listener) {
 		logListener.add(new LogListener(minLogLevel, maxLogLevel, listener));
+		flushTemporaryMessages();
 	}
 
 	/**
@@ -106,8 +145,19 @@ public class Logger {
 	 * @param listener the listener to remove
 	 * @return true, if a listener was removed, false otherwise
 	 */
-	public static boolean removeListener(Consumer<String> listener) {
+	public boolean removeListener(Consumer<String> listener) {
 		return logListener.removeIf((a) -> a.listener.equals(listener));
+	}
+
+	/**
+	 * flushes the temporaryMessages list
+	 */
+	private void flushTemporaryMessages() {
+		for (LogMessage temporaryMessage : temporaryMessages) {
+			temporaryMessage.printed = log(temporaryMessage.time, temporaryMessage.name, temporaryMessage.logLevel, temporaryMessage.msg);
+		}
+
+		temporaryMessages.removeIf(lm -> lm.printed);
 	}
 
 	/**
@@ -115,7 +165,7 @@ public class Logger {
 	 *
 	 * @return the debug stream
 	 */
-	public static PrintStream getDebugStream() {
+	public PrintStream getDebugStream() {
 		return DEBUG_STREAM;
 	}
 
@@ -124,7 +174,7 @@ public class Logger {
 	 *
 	 * @return the info stream
 	 */
-	public static PrintStream getInfoStream() {
+	public PrintStream getInfoStream() {
 		return INFO_STREAM;
 	}
 
@@ -133,7 +183,7 @@ public class Logger {
 	 *
 	 * @return the warning stream
 	 */
-	public static PrintStream getWarningStream() {
+	public PrintStream getWarningStream() {
 		return WARNING_STREAM;
 	}
 
@@ -142,79 +192,113 @@ public class Logger {
 	 *
 	 * @return the error stream
 	 */
-	public static PrintStream getErrorStream() {
+	public PrintStream getErrorStream() {
 		return ERROR_STREAM;
 	}
 
 	/**
-	 * prints the message to all attached streams with the correct log level
+	 * prints the message to all attached streams with the correct log level.
+	 * If the message is not a string, <code>msg.toString()</code> is called. If the message is an array, <code>Arrays.deepToString(msg)</code> is called.
 	 *
 	 * @param logLevel the loglevel for this message
-	 * @param msg      the message as a String
+	 * @param msg      the message to log
+	 * @return true, if the message was logged to any output target
 	 */
-	public static void log(int logLevel, String msg) {
-		for (LogOutStream logStream : logStreams) {
-			if (logLevel >= logStream.minLogLevel && logLevel <= logStream.maxLogLevel) {
-				print(logStream.stream, logLevel, msg);
-			}
-		}
-
-		for (LogListener listener : logListener) {
-			if (logLevel >= listener.minLogLevel && logLevel <= listener.maxLogLevel) {
-				print(listener.listener, logLevel, msg);
-			}
-		}
+	public boolean log(int logLevel, Object msg) {
+		Date time = new Date();
+		return log(time, name, logLevel, msg);
 	}
 
 	/**
-	 * calls </code>.toString()</code> on msg and logs it
+	 * prints the message to all attached streams with the correct log level.
+	 * If the message is not a string, <code>msg.toString()</code> is called. If the message is an array, <code>Arrays.deepToString(msg)</code> is called.
 	 *
+	 * @param time     the time of this log message
 	 * @param logLevel the loglevel for this message
-	 * @param msg      the Object to log
+	 * @param msg      the message to log
+	 * @return true, if the message was logged to any output target
 	 */
-	public static void log(int logLevel, Object msg) {
+	private boolean log(Date time, String name, int logLevel, Object msg) {
+		boolean logged = false;
+
 		for (LogOutStream logStream : logStreams) {
 			if (logLevel >= logStream.minLogLevel && logLevel <= logStream.maxLogLevel) {
-				if (msg instanceof Object[]) {
-					print(logStream.stream, logLevel, Arrays.deepToString((Object[]) msg));
+				if (msg instanceof String) {
+					print(logStream.stream, time, name, logLevel, (String) msg);
+				} else if (msg instanceof Object[]) {
+					print(logStream.stream, time, name, logLevel, Arrays.deepToString((Object[]) msg));
 				} else {
-					print(logStream.stream, logLevel, msg.toString());
+					print(logStream.stream, time, name, logLevel, msg.toString());
 				}
+				logged = true;
 			}
 		}
 
 		for (LogListener listener : logListener) {
 			if (logLevel >= listener.minLogLevel && logLevel <= listener.maxLogLevel) {
-				if (msg instanceof Object[]) {
-					print(listener.listener, logLevel, Arrays.deepToString((Object[]) msg));
+				if (msg instanceof String) {
+					print(listener.listener, time, name, logLevel, (String) msg);
+				} else if (msg instanceof Object[]) {
+					print(listener.listener, time, name, logLevel, Arrays.deepToString((Object[]) msg));
 				} else {
-					print(listener.listener, logLevel, msg.toString());
+					print(listener.listener, time, name, logLevel, msg.toString());
 				}
+				logged = true;
+			}
+		}
+
+		if (parent != null) {
+			parent.log(time, name, logLevel, msg);
+			logged = true;
+		}
+
+		if (!logged) temporaryMessages.add(new LogMessage(new Date(), name, logLevel, msg));
+		return logged;
+
+	}
+
+	private void print(PrintStream stream, Date time, String name, int logLevel, String msg) {
+		if (printTimestamp) {
+			stream.print(dateFormat.format(time));
+			stream.print(' ');
+		}
+		if (printName) {
+			stream.print("[");
+			stream.print(name);
+			stream.print("] ");
+		}
+		stream.print("[");
+		stream.print(LOG_LEVEL_STRINGS[logLevel]);
+		stream.print("] ");
+		stream.println(msg);
+	}
+
+	private void print(Consumer<String> listener, Date time, String name, int logLevel, String msg) {
+		if (printTimestamp) {
+			if (printName) {
+				listener.accept(dateFormat.format(time) + " [" + name + "] [" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+			} else {
+				listener.accept(dateFormat.format(time) + " [" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+			}
+		} else {
+			if (printName) {
+				listener.accept("[" + name + "] [" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+			} else {
+				listener.accept("[" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
 			}
 		}
 	}
 
-	private static void print(PrintStream stream, int logLevel, String msg) {
-		if (printTimestamp) {
-			Date date = new Date();
-			stream.println(dateFormat.format(date) + " [" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
-		} else {
-			stream.println("[" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
-		}
-	}
+	public static int getLogLevel(String logLevelName) {
+		logLevelName = logLevelName.toLowerCase();
 
-	private static void print(Consumer<String> listener, int logLevel, String msg) {
-		if (printTimestamp) {
-			Date date = new Date();
-			listener.accept(dateFormat.format(date) + " [" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
-		} else {
-			listener.accept("[" + LOG_LEVEL_STRINGS[logLevel] + "] " + msg);
+		for (int i = 0; i < LOG_LEVEL_STRINGS.length; i++) {
+			if (LOG_LEVEL_STRINGS[i].equals(logLevelName)) {
+				return i;
+			}
 		}
-	}
 
-	static {
-		logStreams = new ArrayList<>();
-		logListener = new ArrayList<>();
+		return -1;
 	}
 
 	/**
@@ -250,35 +334,76 @@ public class Logger {
 	}
 
 	/**
+	 * A class to store a single temporary log message
+	 */
+	private class LogMessage {
+
+		private boolean printed;
+
+		private Date   time;
+		private String name;
+		private int    logLevel;
+		private Object msg;
+
+		public LogMessage(Date time, String name, int logLevel, Object msg) {
+			this.time = time;
+			this.name = name;
+			this.logLevel = logLevel;
+			this.msg = msg;
+		}
+	}
+
+	/**
+	 * A queue implementation that drops head elements if the size exceeds a limit.
+	 */
+	private class LimitedQueue<T> extends LinkedList<T> {
+
+		private final int limit;
+
+		private LimitedQueue(int limit) {
+			this.limit = limit;
+		}
+
+		@Override
+		public boolean add(T t) {
+			boolean added = super.add(t);
+			while (size() > limit) {
+				remove();
+			}
+			return added;
+		}
+	}
+
+	/**
 	 * a stream that does nothing
 	 */
 	private static class NullStream extends OutputStream {
 
 		@Override
 		public void write(int b) throws IOException {
-			//do nothing
+			// do nothing
 		}
 
 		@Override
 		public void flush() throws IOException {
-			//do nothing
+			// do nothing
 		}
 
 		@Override
 		public void close() throws IOException {
-			//do nothing
+			// do nothing
 		}
 
 	}
 
 	/**
-	 * A stream fpr logging different datatypes
+	 * A stream for logging different datatypes
 	 */
-	private static class LogStream extends PrintStream {
+	private class LogStream extends PrintStream {
 
 		private int logLevel;
 
-		public LogStream(int logLevel) {
+		private LogStream(int logLevel) {
 			super(new NullStream());
 			this.logLevel = logLevel;
 		}
@@ -350,7 +475,7 @@ public class Logger {
 
 		@Override
 		public void println(long l) {
-			println(l);
+			print(l);
 		}
 
 		@Override

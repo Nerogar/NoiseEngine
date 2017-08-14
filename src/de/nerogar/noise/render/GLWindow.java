@@ -195,7 +195,7 @@ public class GLWindow implements IRenderTarget {
 
 	@Override
 	protected void finalize() throws Throwable {
-		if (!deleted) Logger.log(Logger.WARNING, "Window not cleaned up: " + title + ", @" + Long.toHexString(windowPointer));
+		if (!deleted) Noise.getLogger().log(Logger.WARNING, "Window not cleaned up: " + title + ", @" + Long.toHexString(windowPointer));
 	}
 
 	public static GLWindow getCurrentWindow() {

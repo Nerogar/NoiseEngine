@@ -1,5 +1,7 @@
 package de.nerogar.noise.util;
 
+import de.nerogar.noise.Noise;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +83,7 @@ public class ProgramLoader {
 
 		text.append("\n");
 
-		Logger.log(Logger.INFO, "loaded program: " + filename);
+		Noise.getLogger().log(Logger.INFO, "loaded program: " + filename);
 
 		return text.toString();
 	}

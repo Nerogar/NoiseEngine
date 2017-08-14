@@ -1,5 +1,6 @@
 package de.nerogar.noise.input;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.glfw.*;
@@ -110,10 +111,10 @@ public final class InputHandler {
 			public void invoke(int id, int status) {
 				if (status == GLFW_CONNECTED) {
 					setJoystickActive(id, true);
-					Logger.log(Logger.DEBUG, "Joystick " + id + " connected");
+					Noise.getLogger().log(Logger.DEBUG, "Joystick " + id + " connected");
 				} else {
 					setJoystickActive(id, false);
-					Logger.log(Logger.DEBUG, "Joystick " + id + " disconnected");
+					Noise.getLogger().log(Logger.DEBUG, "Joystick " + id + " disconnected");
 				}
 			}
 		};

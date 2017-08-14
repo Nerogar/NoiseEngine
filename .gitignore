@@ -1,9 +1,13 @@
-/bin/
-/.idea/
-
-*.classpath
-*.project
+# Intellij
+.idea/
+out/
 *.iml
 
+# Eclipse
+.classpath
+.project
+bin/
+
+# Compiled
 *.jar
 *.bat
