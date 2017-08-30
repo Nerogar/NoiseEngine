@@ -1,6 +1,6 @@
 package de.nerogar.noise.event;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Manager for a single event type.
@@ -16,7 +16,7 @@ public interface ConstraintEventManager<E extends Event, C extends EventListener
 
 	public void updateConstraint(EventListener<E> listener, C constraint);
 
-	public Set<EventConstraintContainer<C>> getFiltered(E event);
+	public List<EventConstraintContainer<EventListenerPositionConstraint>> getFiltered(E event);
 
 	public Class<C> getEventListenerConstraintClass();
 

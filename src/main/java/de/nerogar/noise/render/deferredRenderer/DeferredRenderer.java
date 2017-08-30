@@ -22,6 +22,7 @@ public class DeferredRenderer {
 	private class VboContainer {
 
 		public  DeferredContainer               container;
+		public  List<DeferredRenderable>        filteredRenderables;
 		public  SpaceOctree<DeferredRenderable> renderables;
 		private Set<DeferredRenderable>         updatedRenderables;
 		public  Consumer<DeferredRenderable>    renderableListener;
@@ -38,6 +39,7 @@ public class DeferredRenderer {
 		public VboContainer(DeferredContainer container) {
 			this.container = container;
 			renderables = new SpaceOctree<>(DeferredRenderable::getBoundingSphere, 64, 0.1f);
+			filteredRenderables = new ArrayList<>();
 
 			updatedRenderables = new HashSet<>();
 			renderableListener = (renderable) -> updatedRenderables.add(renderable);
@@ -72,9 +74,9 @@ public class DeferredRenderer {
 
 			// filter renderables
 			Bounding viewRegion = frustum.getBounding();
-			Set<DeferredRenderable> filteredRenderables;
+			Collection<DeferredRenderable> filteredRenderables;
 			if (renderables.size() >= OCTREE_FILTER_THRESHOLD) {
-				filteredRenderables = renderables.getFiltered(viewRegion);
+				filteredRenderables = renderables.getFiltered(this.filteredRenderables, viewRegion);
 			} else {
 				filteredRenderables = renderables;
 			}

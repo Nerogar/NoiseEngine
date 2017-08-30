@@ -45,12 +45,12 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	 * @param componentCounts an array containing all component counts
 	 * @param indexCount      number of vertices specified in indexArray
 	 * @param vertexCount     number of vertices specified in attributes
-	 * @param indexArary      an array containing the index data
-	 * @param attributes      arays containing all components to use for this VBO
+	 * @param indexArray      an array containing the index data
+	 * @param attributes      arrays containing all components to use for this VBO
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
-	public VertexBufferObjectInstanced(int[] componentCounts, int indexCount, int vertexCount, int[] indexArary, float[]... attributes) {
-		this(TRIANGLES, componentCounts, indexCount, vertexCount, indexArary, attributes);
+	public VertexBufferObjectInstanced(int[] componentCounts, int indexCount, int vertexCount, int[] indexArray, float[]... attributes) {
+		this(TRIANGLES, componentCounts, indexCount, vertexCount, indexArray, attributes);
 	}
 
 	/**
@@ -59,11 +59,11 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	 * @param componentCounts an array containing all component counts
 	 * @param indexCount      number of vertices specified in indexArray
 	 * @param vertexCount     number of vertices specified in attributes
-	 * @param indexArary      an array containing the index data
-	 * @param attributes      arays containing all components to use for this VBO
+	 * @param indexArray      an array containing the index data
+	 * @param attributes      arrays containing all components to use for this VBO
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
-	public VertexBufferObjectInstanced(int renderType, int[] componentCounts, int indexCount, int vertexCount, int[] indexArary, float[]... attributes) {
+	public VertexBufferObjectInstanced(int renderType, int[] componentCounts, int indexCount, int vertexCount, int[] indexArray, float[]... attributes) {
 		if (componentCounts.length != attributes.length) throw new ArrayIndexOutOfBoundsException();
 
 		this.renderType = renderType;
@@ -97,7 +97,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 		buffer.flip();
 
 		IntBuffer indexBuffer = BufferUtils.createIntBuffer(indexCount);
-		indexBuffer.put(indexArary, 0, indexCount);
+		indexBuffer.put(indexArray, 0, indexCount);
 		indexBuffer.flip();
 
 		initVAO(buffer, indexBuffer, null);
@@ -183,7 +183,7 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	 *
 	 * @param instanceCount           number of instances to render
 	 * @param componentCountsInstance an array containing all component counts
-	 * @param attributesInstance      arays containing all components to use for this VBO as instance data
+	 * @param attributesInstance      arrays containing all components to use for this VBO as instance data
 	 */
 	public void setInstanceData(int instanceCount, int[] componentCountsInstance, float[]... attributesInstance) {
 		this.componentCountsInstance = componentCountsInstance;

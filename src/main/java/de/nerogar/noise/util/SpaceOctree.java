@@ -107,7 +107,7 @@ public class SpaceOctree<T> implements Set<T> {
 				ArrayList<Node> containingNodes = new ArrayList<>();
 				add(element, bounding, containingNodes, true, true, true, false, false, false, false, false, false);
 				containingNodes.trimToSize();
-				nodeMap.put(element, containingNodes);
+				addLookup(element, containingNodes);
 
 				for (Node containingNode : containingNodes) {
 					if (containingNode.isLeaf && containingNode.elements.size() >= MAX_LEAF_ELEMENTS && containingNode.size >= MIN_NODE_SIZE) {
@@ -222,9 +222,15 @@ public class SpaceOctree<T> implements Set<T> {
 			cleanup();
 		}
 
-		public void collectElements(Set<T> collectedElements, Bounding bounding, boolean force) {
+		public void collectElements(List<T> collectedElements, Bounding bounding, boolean force) {
 			if (force || bounding.overlaps(minX, minY, minZ, minX + size, minY + size, minZ + size)) {
-				collectedElements.addAll(elements);
+				for (T element : elements) {
+					LookupEntry lookupEntry = lookup.get(element);
+					if (!lookupEntry.visitedFlag) {
+						collectedElements.add(element);
+						lookupEntry.visitedFlag = true;
+					}
+				}
 
 				if (!isLeaf) {
 					if (force || bounding.hasInside(minX, minY, minZ, minX + size, minY + size, minZ + size)) force = true;
@@ -351,13 +357,13 @@ public class SpaceOctree<T> implements Set<T> {
 			elements = new HashSet<>();
 
 			for (T oldElement : oldElements) {
-				List<Node> containingNodes = nodeMap.get(oldElement);
+				List<Node> containingNodes = lookup.get(oldElement).containingNodes;
 
 				for (Node containingNode : containingNodes) {
 					containingNode.elements.remove(oldElement);
 				}
 
-				nodeMap.remove(oldElement);
+				lookup.remove(oldElement);
 
 			}
 
@@ -447,10 +453,10 @@ public class SpaceOctree<T> implements Set<T> {
 
 	private class OctreeIterator implements Iterator<T> {
 
-		private Iterator<Map.Entry<T, List<Node>>> inner;
-		private Map.Entry<T, List<Node>>           current;
+		private Iterator<Map.Entry<T, LookupEntry>> inner;
+		private Map.Entry<T, LookupEntry>           current;
 
-		public OctreeIterator(Iterator<Map.Entry<T, List<Node>>> inner) {
+		public OctreeIterator(Iterator<Map.Entry<T, LookupEntry>> inner) {
 			this.inner = inner;
 		}
 
@@ -469,7 +475,7 @@ public class SpaceOctree<T> implements Set<T> {
 		public void remove() {
 			inner.remove();
 
-			for (Node node : current.getValue()) {
+			for (Node node : current.getValue().containingNodes) {
 				node.remove(current.getKey());
 			}
 
@@ -478,17 +484,27 @@ public class SpaceOctree<T> implements Set<T> {
 
 	}
 
+	private class LookupEntry {
+
+		public boolean visitedFlag = false;
+		public List<Node> containingNodes;
+
+		public LookupEntry(List<Node> containingNodes) {
+			this.containingNodes = containingNodes;
+		}
+	}
+
 	private Node                  root;
 	private Function<T, Bounding> boundingGetter;
 
-	private Map<T, List<Node>> nodeMap;
+	private Map<T, LookupEntry> lookup;
 
 	public SpaceOctree(Function<T, Bounding> boundingGetter) {
 		this(boundingGetter, 64, 0.1f);
 	}
 
 	public SpaceOctree(Function<T, Bounding> boundingGetter, int maxLeafElements, float minNodeSize) {
-		nodeMap = new HashMap<>();
+		lookup = new HashMap<>();
 		this.boundingGetter = boundingGetter;
 
 		clear();
@@ -496,9 +512,16 @@ public class SpaceOctree<T> implements Set<T> {
 		MIN_NODE_SIZE = minNodeSize;
 	}
 
+	private void addLookup(T t, List<Node> containingNodes) {
+		if (lookup.containsKey(t)) {
+			lookup.get(t).containingNodes = containingNodes;
+		}
+		lookup.put(t, new LookupEntry(containingNodes));
+	}
+
 	public boolean update(T t) {
-		if (nodeMap.containsKey(t)) {
-			List<Node> nodes = nodeMap.remove(t);
+		if (lookup.containsKey(t)) {
+			List<Node> nodes = lookup.remove(t).containingNodes;
 			for (Node node : nodes) node.elements.remove(t);
 			nodes.get(0).add(t, boundingGetter.apply(t));
 			for (Node node : nodes) node.cleanup();
@@ -512,13 +535,17 @@ public class SpaceOctree<T> implements Set<T> {
 	 * Filters the elements in this octree with a bounding.
 	 * This method can return elements that are not overlapping the bounding.
 	 *
-	 * @param bounding the bounding for filtering
-	 * @return a set containing all elements intersecting with the bounding
+	 * @param collectedElements the list for collected elements
+	 * @param bounding          the bounding for filtering
+	 * @return a list containing all elements intersecting with the bounding
 	 */
-	public Set<T> getFiltered(Bounding bounding) {
-		Set<T> collectedElements = new HashSet<>();
+	public List<T> getFiltered(List<T> collectedElements, Bounding bounding) {
+		collectedElements.clear();
 
-		root.collectElements(collectedElements, bounding, false);
+		//root.collectElements(collectedElements, bounding, false);
+		for (T collectedElement : collectedElements) {
+			lookup.get(collectedElement).visitedFlag = false;
+		}
 
 		return collectedElements;
 	}
@@ -526,13 +553,17 @@ public class SpaceOctree<T> implements Set<T> {
 	/**
 	 * Filters the elements in this octree with a bounding.
 	 *
-	 * @param bounding the bounding for filtering
-	 * @return a set containing all elements intersecting with the bounding
+	 * @param collectedElements the list for collected elements
+	 * @param bounding          the bounding for filtering
+	 * @return a list containing all elements intersecting with the bounding
 	 */
-	public Set<T> getFilteredExact(Bounding bounding) {
-		Set<T> collectedElements = new HashSet<>();
+	public List<T> getFilteredExact(List<T> collectedElements, Bounding bounding) {
+		collectedElements.clear();
 
 		root.collectElements(collectedElements, bounding, false);
+		for (T collectedElement : collectedElements) {
+			lookup.get(collectedElement).visitedFlag = false;
+		}
 
 		collectedElements.removeIf(b -> !boundingGetter.apply(b).overlapsBounding(bounding));
 
@@ -540,19 +571,19 @@ public class SpaceOctree<T> implements Set<T> {
 	}
 
 	@Override
-	public int size() { return nodeMap.size(); }
+	public int size() { return lookup.size(); }
 
 	@Override
 	public boolean isEmpty() { return size() == 0; }
 
 	@Override
 	public boolean contains(Object o) {
-		return nodeMap.containsKey(o);
+		return lookup.containsKey(o);
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		return new OctreeIterator(nodeMap.entrySet().iterator());
+		return new OctreeIterator(lookup.entrySet().iterator());
 	}
 
 	@Override
@@ -581,14 +612,14 @@ public class SpaceOctree<T> implements Set<T> {
 
 	@Override
 	public boolean add(T t) {
-		if (nodeMap.containsKey(t)) remove(t);
+		remove(t);
 		return root.add(t, boundingGetter.apply(t));
 	}
 
 	@Override
 	public boolean remove(Object o) {
-		if (nodeMap.containsKey(o)) {
-			List<Node> nodes = nodeMap.remove(o);
+		if (lookup.containsKey(o)) {
+			List<Node> nodes = lookup.remove(o).containingNodes;
 			for (Node node : nodes) node.remove(o);
 			return true;
 		} else {
@@ -646,7 +677,7 @@ public class SpaceOctree<T> implements Set<T> {
 
 	@Override
 	public void clear() {
-		nodeMap.clear();
+		lookup.clear();
 		root = new Node(0, 1, 0, 0, 0);
 	}
 

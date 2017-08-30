@@ -169,7 +169,7 @@ public class EventManager {
 
 			DefaultEventManager<T> defaultConstraintEventManager = (DefaultEventManager<T>) defaultConstraintListenerMap.get(eventClass);
 
-			Set<EventConstraintContainer> listener = constraintEventManager.getFiltered(event);
+			List<EventConstraintContainer> listener = constraintEventManager.getFiltered(event);
 
 			for (EventConstraintContainer l : listener) {
 				if (defaultConstraintEventManager.isValid(event, l.getListener())) {

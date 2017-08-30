@@ -2,9 +2,10 @@ package de.nerogar.noise.event;
 
 import de.nerogar.noise.util.SpaceOctree;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class PositionEventManager<E extends Event & EventPositionConstraint> implements ConstraintEventManager<E, EventListenerPositionConstraint> {
 
@@ -41,8 +42,8 @@ public class PositionEventManager<E extends Event & EventPositionConstraint> imp
 	}
 
 	@Override
-	public Set<EventConstraintContainer<EventListenerPositionConstraint>> getFiltered(E event) {
-		return octree.getFiltered(event.getBounding());
+	public List<EventConstraintContainer<EventListenerPositionConstraint>> getFiltered(E event) {
+		return octree.getFiltered(new ArrayList<>(), event.getBounding());
 	}
 
 	@Override

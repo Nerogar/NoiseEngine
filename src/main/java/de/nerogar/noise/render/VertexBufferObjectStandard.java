@@ -27,7 +27,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 
 	/**
 	 * @param componentCounts an array containing all component counts
-	 * @param attributes arays containing all components to use for this VBO
+	 * @param attributes arrays containing all components to use for this VBO
 	 * 
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
@@ -39,7 +39,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 	 * @param renderType type of rendered primitives. Either {@link VertexBufferObject#POINTS POINTS},
 	 * {@link VertexBufferObject#TRIANGLES TRIANGLES} or {@link VertexBufferObject#LINES LINES}
 	 * @param componentCounts an array containing all component counts
-	 * @param attributes arays containing all components to use for this VBO
+	 * @param attributes arrays containing all components to use for this VBO
 	 * 
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
