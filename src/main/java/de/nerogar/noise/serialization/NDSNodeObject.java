@@ -40,7 +40,11 @@ public class NDSNodeObject extends NDSNode {
 			if (childNode instanceof NDSNodeValue) {
 				return (NDSNodeValue) childNode;
 			} else {
-				throw new NDSException(NDSConstants.ERROR_WRONG_NODE_TYPE + " '" + name + "'");
+				if (childNode.isNull()) {
+					return null;
+				} else {
+					throw new NDSException(NDSConstants.ERROR_WRONG_NODE_TYPE + " '" + name + "'");
+				}
 			}
 		} else {
 			throw new NDSException(NDSConstants.ERROR_NO_SUCH_NODE + " '" + name + "'");
@@ -204,7 +208,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public BigInteger getBigInt(String childName) {
-		return getChildValue(childName).getBigInt();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getBigInt();
 	}
 
 	// boolean
@@ -226,7 +232,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public String getStringUTF8(String childName) {
-		return getChildValue(childName).getStringUTF8();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getStringUTF8();
 	}
 
 	// --- [ array
@@ -239,7 +247,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public byte[] getNibbleArray(String childName) {
-		return getChildValue(childName).getNibbleArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getNibbleArray();
 	}
 
 	// unsignedNibble
@@ -250,7 +260,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public byte[] getUnsignedNibbleArray(String childName) {
-		return getChildValue(childName).getUnsignedNibbleArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getUnsignedNibbleArray();
 	}
 
 	// byte
@@ -261,7 +273,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public byte[] getByteArray(String childName) {
-		return getChildValue(childName).getByteArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getByteArray();
 	}
 
 	// unsignedByte
@@ -272,7 +286,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public short[] getUnsignedByteArray(String childName) {
-		return getChildValue(childName).getUnsignedByteArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getUnsignedByteArray();
 	}
 
 	// short
@@ -283,7 +299,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public short[] getShortArray(String childName) {
-		return getChildValue(childName).getShortArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getShortArray();
 	}
 
 	// unsignedShort
@@ -294,7 +312,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public int[] getUnsignedShortArray(String childName) {
-		return getChildValue(childName).getUnsignedShortArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getUnsignedShortArray();
 	}
 
 	// int
@@ -305,7 +325,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public int[] getIntArray(String childName) {
-		return getChildValue(childName).getIntArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getIntArray();
 	}
 
 	// unsignedInt
@@ -316,7 +338,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public long[] getUnsignedIntArray(String childName) {
-		return getChildValue(childName).getUnsignedIntArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getUnsignedIntArray();
 	}
 
 	// long
@@ -327,7 +351,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public long[] getLongArray(String childName) {
-		return getChildValue(childName).getLongArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getLongArray();
 	}
 
 	// unsignedLong
@@ -338,7 +364,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public long[] getUnsignedLongArray(String childName) {
-		return getChildValue(childName).getUnsignedLongArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getUnsignedLongArray();
 	}
 
 	// float
@@ -349,7 +377,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public float[] getFloatArray(String childName) {
-		return getChildValue(childName).getFloatArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getFloatArray();
 	}
 
 	// double
@@ -360,7 +390,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public double[] getDoubleArray(String childName) {
-		return getChildValue(childName).getDoubleArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getDoubleArray();
 	}
 
 	// bigInt
@@ -371,7 +403,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public BigInteger[] getBigIntArray(String childName) {
-		return getChildValue(childName).getBigIntArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getBigIntArray();
 	}
 
 	// boolean
@@ -382,7 +416,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public boolean[] getBooleanArray(String childName) {
-		return getChildValue(childName).getBooleanArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getBooleanArray();
 	}
 
 	// string
@@ -393,7 +429,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public String[] getStringUTF8Array(String childName) {
-		return getChildValue(childName).getStringUTF8Array();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getStringUTF8Array();
 	}
 
 	public boolean isEmpty() {
@@ -417,7 +455,9 @@ public class NDSNodeObject extends NDSNode {
 	}
 
 	public NDSNodeObject[] getObjectArray(String childName) {
-		return getChildValue(childName).getObjectArray();
+		NDSNodeValue childValue = getChildValue(childName);
+		if (childValue == null || childValue.isNull()) return null;
+		return childValue.getObjectArray();
 	}
 
 	// misc
