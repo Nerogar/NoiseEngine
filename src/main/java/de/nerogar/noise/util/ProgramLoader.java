@@ -1,8 +1,13 @@
 package de.nerogar.noise.util;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.file.FileUtil;
+import de.nerogar.noise.file.ResourceDescriptor;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,25 +19,22 @@ import java.util.Map;
  * <li>{@code #parameter foo}	(takes "foo" as the key for looking up the parameter in the parameter list and replaces the line with the parameter.)
  * <li>{@code #pinclude foo}	(takes "foo" as the key for looking up the file path in the parameter list and includes the file specified by the file path.)
  * </ul>
- *
+ * <p>
  * </ol>
  */
 public class ProgramLoader {
 
-	private static final Map<String, String> EMPTY_PARAMETERS = new HashMap<String, String>();
+	private static final Map<String, String> EMPTY_PARAMETERS = new HashMap<>();
 
-	public static String readFile(String filename, Map<String, String> parameters) {
+	public static String readFile(ResourceDescriptor resourceDescriptor, Map<String, String> parameters) {
 		if (parameters == null) parameters = EMPTY_PARAMETERS;
 
-		filename = filename.replaceAll("\\\\", "/"); //replace \ with /
-
-		File file = new File(filename);
-		String folder = file.getParent();
+		InputStream inputStream = resourceDescriptor.asStream();
 
 		StringBuilder text = new StringBuilder();
 
 		try {
-			BufferedReader fileReader = new BufferedReader(new FileReader(filename));
+			BufferedReader fileReader = new BufferedReader(new InputStreamReader(inputStream));
 			String line;
 			int lineNumber = 1;
 
@@ -45,21 +47,21 @@ public class ProgramLoader {
 
 					line = line.substring(9);
 
-					String nextFilename = FileUtil.decodeFilename(folder, FileUtil.SHADER_SUBFOLDER, line);
+					ResourceDescriptor nextFile = resourceDescriptor.getRelative(line);
 
 					text.append("#line 1\n");
-					text.append(readFile(nextFilename, parameters)).append('\n');
+					text.append(readFile(nextFile, parameters)).append('\n');
 					text.append("#line ").append(lineNumber + 1).append('\n');
 				} else if (line.startsWith("#pinclude ")) {
 					int commentIndex = line.indexOf("//");
 					if (commentIndex >= 0) line = line.substring(0, commentIndex);
 
-					line = line.substring(10);
+					line = line.substring(10).trim();
 
-					String parameter = readFile(FileUtil.decodeFilename(folder, FileUtil.SHADER_SUBFOLDER, parameters.get(line.trim())), parameters);
+					ResourceDescriptor nextFile = resourceDescriptor.getRelative(parameters.get(line));
 
 					text.append("#line 1\n");
-					text.append(parameter).append('\n');
+					text.append(readFile(nextFile, parameters)).append('\n');
 					text.append("#line ").append(lineNumber + 1).append('\n');
 				} else if (line.startsWith("#parameter ")) {
 					int commentIndex = line.indexOf("//");
@@ -83,7 +85,7 @@ public class ProgramLoader {
 
 		text.append("\n");
 
-		Noise.getLogger().log(Logger.INFO, "loaded program: " + filename);
+		Noise.getLogger().log(Logger.INFO, "loaded program: " + resourceDescriptor.getFilename());
 
 		return text.toString();
 	}

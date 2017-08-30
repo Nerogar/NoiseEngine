@@ -257,7 +257,6 @@ public class Texture2D extends Texture {
 	@Override
 	public void cleanup() {
 		glDeleteTextures(id);
-		Texture2DLoader.unloadTexture(name);
 		initialized = false;
 
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.util.Logger;
 
 public class WavefrontLoader {
@@ -46,12 +47,7 @@ public class WavefrontLoader {
 
 	}
 
-	private static HashMap<String, Mesh> meshMap = new HashMap<String, Mesh>();
-
 	public static Mesh loadObject(String filename) {
-
-		Mesh object = meshMap.get(filename);
-		if (object != null) return object;
 
 		ArrayList<float[]> vertices = new ArrayList<float[]>();
 		ArrayList<float[]> normals = new ArrayList<float[]>();
@@ -64,7 +60,7 @@ public class WavefrontLoader {
 
 		try {
 
-			BufferedReader reader = new BufferedReader(new FileReader(filename));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(FileUtil.get(filename, FileUtil.MESH_SUBFOLDER).asStream()));
 
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -180,13 +176,11 @@ public class WavefrontLoader {
 			indices[i * 3 + 2] = face[2];
 		}
 
-		object = new Mesh(indices.length, vertexTuples.size(), indices, verticesFinal, texCoordsFinal, normalsFinal);
-
-		meshMap.put(filename, object);
+		Mesh mesh = new Mesh(indices.length, vertexTuples.size(), indices, verticesFinal, texCoordsFinal, normalsFinal);
 
 		Noise.getLogger().log(Logger.INFO, "loaded .obj file: " + filename);
 
-		return object;
+		return mesh;
 	}
 
 	private static boolean calcUVDirection(ArrayList<float[]> texCoords, int uIndex, int vIndex, int wIndex) {

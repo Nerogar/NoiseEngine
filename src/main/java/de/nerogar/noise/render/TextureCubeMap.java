@@ -16,7 +16,6 @@ import static org.lwjgl.opengl.GL32.*;
 public class TextureCubeMap extends Texture {
 
 	private int id;
-	private String[] filenames;
 	private String name;
 	private int width;
 	private int height;
@@ -40,10 +39,6 @@ public class TextureCubeMap extends Texture {
 		createTexture(colorBuffer);
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_COUNT);
-	}
-
-	protected void setFilenames(String[] filenames) {
-		this.filenames = filenames;
 	}
 
 	protected void createTexture(ByteBuffer[] colorBuffer) {
@@ -88,10 +83,6 @@ public class TextureCubeMap extends Texture {
 		return name;
 	}
 
-	public String getFilename() {
-		return filenames[0];
-	}
-
 	public void setWidth(int width) {
 		this.width = width;
 	}
@@ -119,7 +110,6 @@ public class TextureCubeMap extends Texture {
 	@Override
 	public void cleanup() {
 		glDeleteTextures(id);
-		Texture2DLoader.unloadTexture(filenames[0]);
 		initialized = false;
 
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);

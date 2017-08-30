@@ -6,8 +6,10 @@
 
 {
 	"noise": {
-		// the location of default engine ressources
-		"resourceDir": "noiseEngine/"
+		// the location of default engine resources
+		// set this to null to use the default resources
+		// set this to the path of another folder to use custom resources
+		"resourceDir": null
 	},
 
 	// profiler settings

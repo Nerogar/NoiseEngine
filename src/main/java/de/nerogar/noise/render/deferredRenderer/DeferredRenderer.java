@@ -242,7 +242,7 @@ public class DeferredRenderer {
 
 		lightContainer = new LightContainer();
 		effectContainer = new EffectContainer();
-		Mesh sphere = WavefrontLoader.loadObject(Noise.RESOURCE_DIR + "meshes/icoSphere.obj");
+		Mesh sphere = WavefrontLoader.loadObject("<icoSphere.obj>");
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
 		gBuffer = new FrameBufferObject(width, height, true,
@@ -274,11 +274,11 @@ public class DeferredRenderer {
 
 	private void loadOriginAxis() {
 		DeferredContainer axisContainer = new DeferredContainer(
-				WavefrontLoader.loadObject(Noise.RESOURCE_DIR + "deferredRenderer/originAxis/mesh.obj"),
+				WavefrontLoader.loadObject("<deferredRenderer/originAxis.obj>"),
 				null,
-				Texture2DLoader.loadTexture(Noise.RESOURCE_DIR + "deferredRenderer/originAxis/color.png"),
-				Texture2DLoader.loadTexture(Noise.RESOURCE_DIR + "deferredRenderer/originAxis/normal.png"),
-				Texture2DLoader.loadTexture(Noise.RESOURCE_DIR + "deferredRenderer/originAxis/light.png")
+				Texture2DLoader.loadTexture("<deferredRenderer/originAxis/color.png>"),
+				Texture2DLoader.loadTexture("<deferredRenderer/originAxis/normal.png>"),
+				Texture2DLoader.loadTexture("<deferredRenderer/originAxis/light.png>")
 		);
 
 		originAxis = new DeferredRenderable(axisContainer, new RenderProperties3f());

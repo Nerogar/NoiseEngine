@@ -1,24 +1,19 @@
 package de.nerogar.noise.render;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-
-import javax.imageio.ImageIO;
-
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.util.FileUtil;
-import org.lwjgl.BufferUtils;
-
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.util.Logger;
+import org.lwjgl.BufferUtils;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 public class Texture2DLoader {
-
-	private static HashMap<String, Texture2D> textureMap = new HashMap<>();
 
 	public static Texture2D loadTexture(String filename) {
 		return loadTexture(filename, filename);
@@ -33,25 +28,21 @@ public class Texture2DLoader {
 	}
 
 	public static Texture2D loadTexture(String filename, String textureName, InterpolationType interpolationType) {
-		filename = FileUtil.decodeFilename(null, FileUtil.TEXTURE_SUBFOLDER, filename);
+		InputStream inputStream = FileUtil.get(filename, FileUtil.TEXTURE_SUBFOLDER).asStream();
 
-		Texture2D retTexture = textureMap.get(filename);
-
-		if (retTexture != null) return retTexture;
+		Texture2D texture = null;
 
 		try {
-			BufferedImage image = ImageIO.read(new File(filename));
-			retTexture = loadTexture(image, textureName, interpolationType);
+			BufferedImage image = ImageIO.read(inputStream);
+			texture = loadTexture(image, textureName, interpolationType);
 		} catch (IOException e) {
 			e.printStackTrace();
 			Noise.getLogger().log(Logger.ERROR, "Missing Texture: " + filename);
 		}
 
-		textureMap.put(filename, retTexture);
-
 		Noise.getLogger().log(Logger.INFO, "loaded texture: " + filename);
 
-		return retTexture;
+		return texture;
 	}
 
 	public static Texture2D loadTexture(BufferedImage image, String textureName, InterpolationType interpolationType) {
@@ -70,10 +61,6 @@ public class Texture2DLoader {
 		buffer.asIntBuffer().put(pixels);
 		buffer.rewind();
 		return new Texture2D(textureName, image.getWidth(), image.getHeight(), buffer, interpolationType, DataType.BGRA_8_8_8_8I);
-	}
-
-	protected static void unloadTexture(String filename) {
-		textureMap.remove(filename);
 	}
 
 }

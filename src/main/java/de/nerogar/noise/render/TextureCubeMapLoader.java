@@ -1,19 +1,16 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.FileUtil;
+import de.nerogar.noise.file.FileUtil;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.HashMap;
 
 public class TextureCubeMapLoader {
-
-	private static HashMap<String, TextureCubeMap> textureMap = new HashMap<String, TextureCubeMap>();
 
 	/**
 	 * Call this method with 6 filenames of textures in this order:
@@ -30,21 +27,15 @@ public class TextureCubeMapLoader {
 	 * @return The CubeMap
 	 */
 	public static TextureCubeMap loadTexture(String... filename) {
-		for (int i = 0; i < filename.length; i++) {
-			filename[i] = FileUtil.decodeFilename(null, FileUtil.TEXTURE_SUBFOLDER, filename[i]);
-		}
-
-		TextureCubeMap retTexture = textureMap.get(filename[0]);
-
-		if (retTexture != null) return retTexture;
 
 		BufferedImage[] image = new BufferedImage[6];
 		ByteBuffer[] buffer = new ByteBuffer[6];
 
 		for (int i = 0; i < 6; i++) {
 			try {
+				InputStream inputStream = FileUtil.get(filename[i], FileUtil.TEXTURE_SUBFOLDER).asStream();
 
-				image[i] = ImageIO.read(new File(filename[i]));
+				image[i] = ImageIO.read(inputStream);
 				buffer[i] = BufferUtils.createByteBuffer(image[i].getWidth() * image[i].getHeight() * Integer.BYTES);
 
 				int[] pixels = image[i].getRGB(0, 0, image[i].getWidth(), image[i].getHeight(), null, 0, image[i].getWidth());
@@ -80,17 +71,7 @@ public class TextureCubeMapLoader {
 			}
 		}
 
-		retTexture = new TextureCubeMap(filename[0], image[0].getWidth(), image[0].getHeight(), buffer);
-		retTexture.setFilenames(filename);
-
-		textureMap.put(filename[0], retTexture);
-
-		return retTexture;
-
-	}
-
-	protected static void unloadTexture(String filename) {
-		textureMap.remove(filename);
+		return new TextureCubeMap(filename[0], image[0].getWidth(), image[0].getHeight(), buffer);
 	}
 
 }

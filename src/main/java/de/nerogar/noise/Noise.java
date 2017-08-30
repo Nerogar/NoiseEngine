@@ -11,23 +11,33 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Noise {
 
+	public static final int    ERROR_CODE_NO_SETTINGS_FILE         = 10001;
+	public static final String ERROR_NO_SETTINGS_FILE              = "Could not load settings file, aborting!";
+	public static final int    ERROR_CODE_NO_DEFAULT_SETTINGS_FILE = 10002;
+	public static final String ERROR_NO_DEFAULT_SETTINGS_FILE      = "Could not load default settings file, aborting!";
+
 	/**
-	 * the location of default engine ressources.
+	 * the location of default engine resources.
+	 * null, if the packed resources are used
 	 */
 	public static String RESOURCE_DIR;
 
+	/**
+	 * the location of default engine resources.
+	 * null, if the packed resources are used
+	 */
+	public static String DEFAULT_RESOURCE_DIR = "/noiseEngine/";
+
 	private static Logger logger;
 
-	private static final String SETTINGS_PROPERTY = "noise.settings";
-	private static final String SETTINGS_FILENAME = "noiseEngine/settings.json";
+	private static final String SETTINGS_PROPERTY         = "noise.settings";
+	private static final String DEFAULT_SETTINGS_FILENAME = "noiseEngine/settings.json";
 	private static NDSNodeObject settings;
 
 	private static boolean initialized = false;
@@ -44,7 +54,13 @@ public class Noise {
 	 * Initialize the Noise library. The default settings file is used.
 	 */
 	public static void init() {
-		init(SETTINGS_FILENAME);
+		InputStream settingsInputStream = Noise.class.getResourceAsStream(DEFAULT_SETTINGS_FILENAME);
+		if (settingsInputStream == null) {
+			Noise.getLogger().log(Logger.ERROR, ERROR_NO_DEFAULT_SETTINGS_FILE);
+			System.exit(ERROR_CODE_NO_DEFAULT_SETTINGS_FILE);
+		}
+
+		doInit(settingsInputStream);
 	}
 
 	/**
@@ -53,8 +69,17 @@ public class Noise {
 	 * @param settingsFilename the filename of the settings file
 	 */
 	public static void init(String settingsFilename) {
+		try {
+			doInit(new FileInputStream(settingsFilename));
+		} catch (FileNotFoundException e) {
+			Noise.getLogger().log(Logger.ERROR, ERROR_NO_SETTINGS_FILE);
+			System.exit(ERROR_CODE_NO_SETTINGS_FILE);
+		}
+	}
+
+	private static void doInit(InputStream settingsInputStream) {
 		if (!initialized) {
-			loadSettings(settingsFilename);
+			loadSettings(settingsInputStream);
 
 			glfwInit();
 
@@ -90,27 +115,23 @@ public class Noise {
 		initialized = true;
 	}
 
-	private static void loadSettings(String settingsFilename) {
+	private static void loadSettings(InputStream settingsInputStream) {
 
 		NDSFile settingsFile = null;
 
 		if (System.getProperties().containsKey(SETTINGS_PROPERTY)) {
-			settingsFilename = System.getProperty(SETTINGS_PROPERTY);
-			Noise.getLogger().log(Logger.DEBUG, "settings file was overwritten by parameter (file: \"" + settingsFilename + "\")");
-		}
-
-		try {
-			settingsFile = NDSReader.readJsonFile(settingsFilename);
-		} catch (FileNotFoundException e) {
-			Noise.getLogger().log(Logger.WARNING, "could not find settings file, loading default");
 			try {
-				settingsFile = NDSReader.readJsonFile(SETTINGS_FILENAME);
-			} catch (FileNotFoundException e1) {
-				Noise.getLogger().log(Logger.ERROR, "could not load default settings file, aborting");
-				System.exit(1);
+				String settingsFilenameOverride = System.getProperty(SETTINGS_PROPERTY);
+				InputStream settingsInputStreamOverride = new FileInputStream(settingsFilenameOverride);
+				Noise.getLogger().log(Logger.INFO, "settings file was overwritten by parameter (file: \"" + settingsFilenameOverride + "\")");
+				settingsInputStream = settingsInputStreamOverride;
+			} catch (FileNotFoundException e) {
+				Noise.getLogger().log(Logger.ERROR, ERROR_NO_SETTINGS_FILE);
+				System.exit(ERROR_CODE_NO_SETTINGS_FILE);
 			}
-
 		}
+
+		settingsFile = NDSReader.readJson(new BufferedReader(new InputStreamReader(settingsInputStream)));
 
 		settings = settingsFile.getData();
 

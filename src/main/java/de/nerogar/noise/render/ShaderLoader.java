@@ -1,6 +1,6 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.FileUtil;
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.util.ProgramLoader;
 
 import java.util.Map;
@@ -33,8 +33,8 @@ public class ShaderLoader {
 	 * @return the new shader
 	 */
 	public static Shader loadShader(String vertexShaderFile, String fragmentShaderFile, Map<String, String> parameters) {
-		String vertexShader = ProgramLoader.readFile(FileUtil.decodeFilename(null, FileUtil.SHADER_SUBFOLDER, vertexShaderFile), parameters);
-		String fragmentShader = ProgramLoader.readFile(FileUtil.decodeFilename(null, FileUtil.SHADER_SUBFOLDER, fragmentShaderFile), parameters);
+		String vertexShader = ProgramLoader.readFile(FileUtil.get(vertexShaderFile, FileUtil.SHADER_SUBFOLDER), parameters);
+		String fragmentShader = ProgramLoader.readFile(FileUtil.get(fragmentShaderFile, FileUtil.SHADER_SUBFOLDER), parameters);
 
 		Shader shader = new Shader(vertexShaderFile + " " + fragmentShaderFile);
 		shader.setVertexShader(vertexShader);
@@ -69,9 +69,9 @@ public class ShaderLoader {
 	 * @return the new shader
 	 */
 	public static Shader loadShader(String vertexShaderFile, String geometryShaderFile, String fragmentShaderFile, Map<String, String> parameters) {
-		String vertexShader = ProgramLoader.readFile(FileUtil.decodeFilename(null, FileUtil.SHADER_SUBFOLDER, vertexShaderFile), parameters);
-		String geometryShader = ProgramLoader.readFile(FileUtil.decodeFilename(null,FileUtil.SHADER_SUBFOLDER,  geometryShaderFile), parameters);
-		String fragmentShader = ProgramLoader.readFile(FileUtil.decodeFilename(null, FileUtil.SHADER_SUBFOLDER, fragmentShaderFile), parameters);
+		String vertexShader = ProgramLoader.readFile(FileUtil.get(vertexShaderFile, FileUtil.SHADER_SUBFOLDER), parameters);
+		String geometryShader = ProgramLoader.readFile(FileUtil.get(geometryShaderFile, FileUtil.SHADER_SUBFOLDER), parameters);
+		String fragmentShader = ProgramLoader.readFile(FileUtil.get(fragmentShaderFile, FileUtil.SHADER_SUBFOLDER), parameters);
 
 		Shader shader = new Shader(vertexShaderFile + " " + fragmentShaderFile);
 		shader.setVertexShader(vertexShader);
