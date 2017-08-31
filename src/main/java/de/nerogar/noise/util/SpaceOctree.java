@@ -30,7 +30,7 @@ public class SpaceOctree<T> implements Set<T> {
 		private float halfSize;
 		private float minX, minY, minZ;
 
-		private Set<T> elements = new HashSet<>();
+		private List<T> elements = new ArrayList<>();
 
 		public Node(int depth, float size, float minX, float minY, float minZ) {
 			this.depth = depth;
@@ -224,13 +224,35 @@ public class SpaceOctree<T> implements Set<T> {
 
 		public void collectElements(List<T> collectedElements, Bounding bounding, boolean force) {
 			if (force || bounding.overlaps(minX, minY, minZ, minX + size, minY + size, minZ + size)) {
-				for (T element : elements) {
+				// 3 versions of the same loop with different runtime overhead.
+				// A simple for loop seems to be the only version that does not
+				// allocate extra objects.
+
+				/*for (T element : elements) {
+					LookupEntry lookupEntry = lookup.get(element);
+					if (!lookupEntry.visitedFlag) {
+						collectedElements.add(element);
+						lookupEntry.visitedFlag = true;
+					}
+				}*/
+
+				for (int i = 0; i < elements.size(); i++) {
+					T element = elements.get(i);
 					LookupEntry lookupEntry = lookup.get(element);
 					if (!lookupEntry.visitedFlag) {
 						collectedElements.add(element);
 						lookupEntry.visitedFlag = true;
 					}
 				}
+
+				/*elements.forEach(element -> {
+					                 LookupEntry lookupEntry = lookup.get(element);
+					                 if (!lookupEntry.visitedFlag) {
+						                 collectedElements.add(element);
+						                 lookupEntry.visitedFlag = true;
+					                 }
+				                 }
+				                );*/
 
 				if (!isLeaf) {
 					if (force || bounding.hasInside(minX, minY, minZ, minX + size, minY + size, minZ + size)) force = true;
@@ -353,8 +375,8 @@ public class SpaceOctree<T> implements Set<T> {
 			childPPN = new Node(this, halfSize, minX + halfSize, minY + halfSize, minZ);
 			childPPP = new Node(this, halfSize, minX + halfSize, minY + halfSize, minZ + halfSize);
 
-			Set<T> oldElements = elements;
-			elements = new HashSet<>();
+			List<T> oldElements = elements;
+			elements = new ArrayList<>();
 
 			for (T oldElement : oldElements) {
 				List<Node> containingNodes = lookup.get(oldElement).containingNodes;
@@ -543,9 +565,7 @@ public class SpaceOctree<T> implements Set<T> {
 		collectedElements.clear();
 
 		root.collectElements(collectedElements, bounding, false);
-		for (T collectedElement : collectedElements) {
-			lookup.get(collectedElement).visitedFlag = false;
-		}
+		collectedElements.forEach(e -> lookup.get(e).visitedFlag = false);
 
 		return collectedElements;
 	}
@@ -561,9 +581,7 @@ public class SpaceOctree<T> implements Set<T> {
 		collectedElements.clear();
 
 		root.collectElements(collectedElements, bounding, false);
-		for (T collectedElement : collectedElements) {
-			lookup.get(collectedElement).visitedFlag = false;
-		}
+		collectedElements.forEach(e -> lookup.get(e).visitedFlag = false);
 
 		collectedElements.removeIf(b -> !boundingGetter.apply(b).overlapsBounding(bounding));
 
