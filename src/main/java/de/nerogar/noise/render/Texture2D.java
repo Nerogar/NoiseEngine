@@ -255,11 +255,19 @@ public class Texture2D extends Texture {
 	}
 
 	@Override
-	public void cleanup() {
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
 		glDeleteTextures(id);
 		initialized = false;
 
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);
+
+		return true;
+	}
+
+	@Override
+	public String getCleanupError() {
+		return "Texture not cleaned up. name: " + name;
 	}
 
 	@Override
@@ -272,11 +280,6 @@ public class Texture2D extends Texture {
 		if (obj instanceof Texture2D) return ((Texture2D) obj).id == id;
 
 		return super.equals(obj);
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		if (initialized) Noise.getLogger().log(Logger.WARNING, "Texture not cleaned up. name: " + name);
 	}
 
 }

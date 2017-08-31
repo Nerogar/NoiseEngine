@@ -1,5 +1,12 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.debug.ResourceProfiler;
+import org.lwjgl.BufferUtils;
+
+import java.nio.FloatBuffer;
+import java.util.HashMap;
+
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL15.*;
@@ -7,28 +14,18 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
 
-import java.nio.FloatBuffer;
-import java.util.HashMap;
-
-import org.lwjgl.BufferUtils;
-
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.ResourceProfiler;
-import de.nerogar.noise.util.Logger;
-
 public class VertexBufferObjectStandard extends VertexBufferObject {
 
 	private int vboHandle;
 
-	private int vertexCount;
-	private int totalComponents;
+	private int   vertexCount;
+	private int   totalComponents;
 	private int[] componentCounts;
 	private int[] incrementalComponentCounts;
 
 	/**
 	 * @param componentCounts an array containing all component counts
-	 * @param attributes arrays containing all components to use for this VBO
-	 * 
+	 * @param attributes      arrays containing all components to use for this VBO
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
 	public VertexBufferObjectStandard(int[] componentCounts, float[]... attributes) {
@@ -36,11 +33,10 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 	}
 
 	/**
-	 * @param renderType type of rendered primitives. Either {@link VertexBufferObject#POINTS POINTS},
-	 * {@link VertexBufferObject#TRIANGLES TRIANGLES} or {@link VertexBufferObject#LINES LINES}
+	 * @param renderType      type of rendered primitives. Either {@link VertexBufferObject#POINTS POINTS},
+	 *                        {@link VertexBufferObject#TRIANGLES TRIANGLES} or {@link VertexBufferObject#LINES LINES}
 	 * @param componentCounts an array containing all component counts
-	 * @param attributes arrays containing all components to use for this VBO
-	 * 
+	 * @param attributes      arrays containing all components to use for this VBO
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
 	public VertexBufferObjectStandard(int renderType, int[] componentCounts, float[]... attributes) {
@@ -122,7 +118,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 	public int getBufferName() {
 		return vboHandle;
 	}
-	
+
 	@Override
 	public void render() {
 		Integer vaoHandle = glContextVaoHandles.get(GLWindow.getCurrentContext());
@@ -136,7 +132,9 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 	}
 
 	@Override
-	public void cleanup() {
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
+
 		long currentContext = GLWindow.getCurrentContext();
 		glDeleteBuffers(vboHandle);
 
@@ -148,14 +146,14 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 
 		GLWindow.makeContextCurrent(currentContext);
 
-		deleted = true;
-
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.VBO_COUNT);
+
+		return true;
 	}
 
 	@Override
-	protected void finalize() throws Throwable {
-		if (!deleted) Noise.getLogger().log(Logger.WARNING, "VBO not cleaned up. pointer: " + vboHandle);
+	public String getCleanupError() {
+		return "VBO not cleaned up. pointer: " + vboHandle;
 	}
 
 }

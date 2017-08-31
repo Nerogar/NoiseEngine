@@ -1,10 +1,12 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.util.NoiseResource;
+
 import static org.lwjgl.opengl.GL11.*;
 
 import java.util.HashMap;
 
-public abstract class VertexBufferObject {
+public abstract class VertexBufferObject extends NoiseResource {
 
 	/**Renders points using 1 vertex. Equal to GL_POINTS*/
 	public static final int POINTS = GL_POINTS;
@@ -15,12 +17,9 @@ public abstract class VertexBufferObject {
 
 	protected int renderType;
 	protected HashMap<Long, Integer> glContextVaoHandles;
-	protected boolean deleted;
-	
+
 	public abstract int getBufferName();
 	
 	public abstract void render();
-
-	public abstract void cleanup();
 
 }

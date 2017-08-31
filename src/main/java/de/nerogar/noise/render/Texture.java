@@ -1,8 +1,10 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.util.NoiseResource;
+
 import static org.lwjgl.opengl.GL13.*;
 
-public abstract class Texture {
+public abstract class Texture extends NoiseResource {
 
 	public static final int MAX_TEXTURE_COUNT = 32;
 
@@ -16,8 +18,6 @@ public abstract class Texture {
 			GL_TEXTURE24, GL_TEXTURE25, GL_TEXTURE26, GL_TEXTURE27,
 			GL_TEXTURE28, GL_TEXTURE29, GL_TEXTURE30, GL_TEXTURE31,
 	};
-
-	public abstract void cleanup();
 
 	public abstract void bind(int slot);
 

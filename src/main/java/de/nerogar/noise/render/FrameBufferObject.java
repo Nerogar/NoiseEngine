@@ -1,22 +1,22 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glViewport;
-import static org.lwjgl.opengl.GL20.glDrawBuffers;
-import static org.lwjgl.opengl.GL30.*;
-
-import java.nio.IntBuffer;
-
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
 import de.nerogar.noise.util.Logger;
+import de.nerogar.noise.util.NoiseResource;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
-public class FrameBufferObject implements IRenderTarget {
+import java.nio.IntBuffer;
+
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL20.glDrawBuffers;
+import static org.lwjgl.opengl.GL30.*;
+
+public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 
 	private static final int[] glColorAttachments = {
 			GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
@@ -39,7 +39,7 @@ public class FrameBufferObject implements IRenderTarget {
 
 	private int width, height;
 
-	private Texture2D depthTexture;
+	private Texture2D   depthTexture;
 	private Texture2D[] textures;
 
 	public FrameBufferObject(int width, int height, boolean useDepthTexture, Texture2D.DataType... textures) {
@@ -68,7 +68,7 @@ public class FrameBufferObject implements IRenderTarget {
 
 	/**
 	 * Returns the specified texture attachment.
-	 * 
+	 *
 	 * @param slot the slot of the texture, -1 for depth texture
 	 * @return the texture
 	 */
@@ -181,7 +181,9 @@ public class FrameBufferObject implements IRenderTarget {
 		return framebufferID;
 	}
 
-	public void cleanup() {
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
+
 		if (depthTexture != null) {
 			depthTexture.cleanup();
 		}
@@ -194,11 +196,13 @@ public class FrameBufferObject implements IRenderTarget {
 		initialized = false;
 
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.FRAMEBUFFER_COUNT);
+
+		return false;
 	}
 
 	@Override
-	protected void finalize() throws Throwable {
-		if (initialized) Noise.getLogger().log(Logger.WARNING, "render Target not cleaned up. id: " + framebufferID);
+	public String getCleanupError() {
+		return "render Target not cleaned up. id: " + framebufferID;
 	}
 
 }

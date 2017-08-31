@@ -1,26 +1,26 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
-import static org.lwjgl.opengl.GL13.*;
-
-import java.nio.ByteBuffer;
-
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.util.Logger;
 
+import java.nio.ByteBuffer;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_WRAP_R;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
-import static org.lwjgl.opengl.GL32.*;
+import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 
 public class TextureCubeMap extends Texture {
 
-	private int id;
-	private String name;
-	private int width;
-	private int height;
+	private int                         id;
+	private String                      name;
+	private int                         width;
+	private int                         height;
 	private Texture2D.InterpolationType interpolationType;
-	private Texture2D.DataType dataType;
+	private Texture2D.DataType          dataType;
 
 	private boolean initialized;
 
@@ -54,8 +54,8 @@ public class TextureCubeMap extends Texture {
 		// TODO: use interpolationType
 
 		//if (interpolationType.generateMipMaps) {
-			glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 		//}
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -67,7 +67,6 @@ public class TextureCubeMap extends Texture {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 		initialized = true;
-
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_UPLOAD_COUNT);
 		for (ByteBuffer buff : colorBuffer) {
@@ -108,11 +107,20 @@ public class TextureCubeMap extends Texture {
 	}
 
 	@Override
-	public void cleanup() {
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
+
 		glDeleteTextures(id);
 		initialized = false;
 
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);
+
+		return true;
+	}
+
+	@Override
+	public String getCleanupError() {
+		return "Texture not cleaned up. name: " + name;
 	}
 
 	@Override
@@ -125,11 +133,6 @@ public class TextureCubeMap extends Texture {
 		if (obj instanceof TextureCubeMap) return ((TextureCubeMap) obj).id == id;
 
 		return super.equals(obj);
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		if (initialized) Noise.getLogger().log(Logger.WARNING, "Texture not cleaned up. name: " + name);
 	}
 
 }

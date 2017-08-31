@@ -2,7 +2,6 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
-import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
@@ -250,7 +249,9 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	}
 
 	@Override
-	public void cleanup() {
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
+
 		long currentContext = GLWindow.getCurrentContext();
 		glDeleteBuffers(vboHandle);
 		glDeleteBuffers(indexBufferHandle);
@@ -264,14 +265,14 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 
 		GLWindow.makeContextCurrent(currentContext);
 
-		deleted = true;
-
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.VBO_COUNT);
+
+		return true;
 	}
 
 	@Override
-	protected void finalize() throws Throwable {
-		if (!deleted) Noise.getLogger().log(Logger.WARNING, "VBO not cleaned up. pointer: " + vboHandle);
+	public String getCleanupError() {
+		return "VBO not cleaned up. pointer: " + vboHandle;
 	}
 
 }

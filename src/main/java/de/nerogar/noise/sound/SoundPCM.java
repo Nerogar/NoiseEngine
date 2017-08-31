@@ -9,8 +9,6 @@ public class SoundPCM extends Sound {
 	protected int alBufferHandle;
 
 	public SoundPCM(ShortBuffer pcmData, int channels, int sampleRate, int samples) {
-		super();
-
 		setInfo(channels,
 				sampleRate,
 				samples,
@@ -28,14 +26,14 @@ public class SoundPCM extends Sound {
 	}
 
 	@Override
-	public void cleanup() {
-		if (cleaned) return;
+	public boolean cleanup() {
+		if(!super.cleanup()) return false;
 
 		alDeleteSources(alSourceHandle);
 
 		alDeleteBuffers(alBufferHandle);
 
-		cleaned = true;
+		return true;
 	}
 
 }

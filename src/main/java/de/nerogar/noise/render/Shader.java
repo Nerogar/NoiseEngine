@@ -1,21 +1,21 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.opengl.GL11.GL_FALSE;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL32.*;
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.debug.ResourceProfiler;
+import de.nerogar.noise.util.Logger;
+import de.nerogar.noise.util.NoiseResource;
+import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lwjgl.BufferUtils;
+import static org.lwjgl.opengl.GL11.GL_FALSE;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
 
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.debug.ResourceProfiler;
-import de.nerogar.noise.util.Logger;
-
-public class Shader {
+public class Shader extends NoiseResource {
 
 	private int shaderHandle;
 
@@ -265,22 +265,26 @@ public class Shader {
 		}
 	}
 
-	public void cleanup() {
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
+
 		glDeleteProgram(shaderHandle);
 		uniformCache.clear();
 		compiled = false;
 
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.SHADER_COUNT);
+
+		return true;
+	}
+
+	@Override
+	public String getCleanupError() {
+		return "Shader not cleaned up. " + toString();
 	}
 
 	@Override
 	public String toString() {
 		return "[" + shaderHandle + ", " + name + "]";
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		if (compiled) Noise.getLogger().log(Logger.WARNING, "Shader not cleaned up. " + toString());
 	}
 
 }

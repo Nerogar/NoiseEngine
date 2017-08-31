@@ -1,11 +1,10 @@
 package de.nerogar.noise.sound;
 
+import de.nerogar.noise.util.NoiseResource;
+
 import static org.lwjgl.openal.AL10.*;
 
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.util.Logger;
-
-public abstract class Sound {
+public abstract class Sound extends NoiseResource {
 
 	protected int alSourceHandle;
 
@@ -20,8 +19,6 @@ public abstract class Sound {
 	protected int sampleRate;
 	protected int samples;
 	protected int format;
-
-	protected boolean cleaned;
 
 	public Sound() {
 		volume = 1.0f;
@@ -99,11 +96,9 @@ public abstract class Sound {
 
 	public abstract void update();
 
-	public abstract void cleanup();
-
 	@Override
-	protected void finalize() {
-		if (!cleaned) Noise.getLogger().log(Logger.WARNING, "Sound not cleaned up.");
+	public String getCleanupError() {
+		return "Sound not cleaned up.";
 	}
 
 	@Deprecated

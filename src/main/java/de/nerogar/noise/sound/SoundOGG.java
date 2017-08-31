@@ -1,22 +1,23 @@
 package de.nerogar.noise.sound;
 
-import static org.lwjgl.openal.AL10.*;
-import static org.lwjgl.stb.STBVorbis.*;
-
-import java.nio.*;
-
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBVorbisInfo;
 
-import de.nerogar.noise.util.Logger;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+
+import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.stb.STBVorbis.*;
 
 public class SoundOGG extends Sound {
 
-	/**The buffer size in samples.*/
+	/** The buffer size in samples. */
 	private static final int BUFFER_SIZE = 1024 * 32;
 
-	protected int[] alBufferHandles;
+	protected int[]       alBufferHandles;
 	protected ShortBuffer sampleBuffer;
 
 	private long decoderPointer;
@@ -26,25 +27,25 @@ public class SoundOGG extends Sound {
 	private boolean decodingStopped;
 
 	public SoundOGG(ByteBuffer vorbisData) {
-		super();
-
 		IntBuffer error = BufferUtils.createIntBuffer(1);
 		decoderPointer = stb_vorbis_open_memory(vorbisData, error, null);
 
 		if (decoderPointer == 0) {
 			Noise.getLogger().log(Logger.ERROR, "Could not read Vorbis data.");
 
-			cleaned = true;
+			super.cleanup();
 			return;
 		}
 
 		STBVorbisInfo vorbisInfo = STBVorbisInfo.create();
 		stb_vorbis_get_info(decoderPointer, vorbisInfo);
 
-		setInfo(vorbisInfo.channels(),
+		setInfo(
+				vorbisInfo.channels(),
 				vorbisInfo.sample_rate(),
 				stb_vorbis_stream_length_in_samples(decoderPointer),
-				getFormat(vorbisInfo.channels()));
+				getFormat(vorbisInfo.channels())
+		       );
 
 		sampleBuffer = BufferUtils.createShortBuffer(BUFFER_SIZE);
 
@@ -89,7 +90,7 @@ public class SoundOGG extends Sound {
 
 	@Override
 	public void update() {
-		if (cleaned) return;
+		if (super.isCleaned()) return;
 
 		int processed = alGetSourcei(alSourceHandle, AL_BUFFERS_PROCESSED);
 
@@ -113,8 +114,8 @@ public class SoundOGG extends Sound {
 	}
 
 	@Override
-	public void cleanup() {
-		if (cleaned) return;
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
 
 		alDeleteSources(alSourceHandle);
 
@@ -124,7 +125,7 @@ public class SoundOGG extends Sound {
 
 		stb_vorbis_close(decoderPointer);
 
-		cleaned = true;
+		return true;
 	}
 
 }

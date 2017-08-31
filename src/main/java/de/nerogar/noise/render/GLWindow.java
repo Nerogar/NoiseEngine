@@ -2,7 +2,7 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.input.InputHandler;
-import de.nerogar.noise.util.Logger;
+import de.nerogar.noise.util.NoiseResource;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class GLWindow implements IRenderTarget {
+public class GLWindow extends NoiseResource implements IRenderTarget {
 
 	private static List<GLWindow> windows;
 	private static GLWindow       currentWindow;
@@ -38,7 +38,7 @@ public class GLWindow implements IRenderTarget {
 
 	private GLFWFramebufferSizeCallback frameBufferCallback;
 
-	private boolean deleted;
+	private boolean isClosed;
 
 	/**
 	 * Creates a new window for OpenGL. A new GLContext will be created.
@@ -136,7 +136,7 @@ public class GLWindow implements IRenderTarget {
 	}
 
 	public boolean isClosed() {
-		return deleted;
+		return isClosed;
 	}
 
 	public void setTitle(String title) {
@@ -186,16 +186,20 @@ public class GLWindow implements IRenderTarget {
 		currentWindow = this;
 	}
 
-	public void cleanup() {
+	public boolean cleanup() {
+		if (!super.cleanup()) return false;
+
 		glfwDestroyWindow(windowPointer);
 		windows.remove(this);
 
-		deleted = true;
+		isClosed = true;
+
+		return true;
 	}
 
 	@Override
-	protected void finalize() throws Throwable {
-		if (!deleted) Noise.getLogger().log(Logger.WARNING, "Window not cleaned up: " + title + ", @" + Long.toHexString(windowPointer));
+	public String getCleanupError() {
+		return "Window not cleaned up: " + title + ", @" + Long.toHexString(windowPointer);
 	}
 
 	public static GLWindow getCurrentWindow() {
