@@ -779,7 +779,7 @@ public class DeferredRenderer {
 	}
 
 	/**
-	 * Cleans all internal opengl ressources. This renderer is unuseable after this call.
+	 * Cleans all internal opengl resources. This renderer is unusable after this call.
 	 */
 	public void cleanup() {
 		for (VboContainer container : vboMap.values()) {

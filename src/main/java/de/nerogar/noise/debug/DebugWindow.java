@@ -34,8 +34,9 @@ public class DebugWindow {
 	private VertexList vertexList;
 
 	private Font                       font;
-	private List<FontRenderableString> stringList;
+	private List<FontRenderableString> stringNameList;
 	private List<FontRenderableString> stringValueList;
+	private List<FontRenderableString> stringMaxHistoryValueList;
 
 	private float scrollOffset;
 	private float renderedScrollOffset;
@@ -58,38 +59,49 @@ public class DebugWindow {
 		projectionMatrix = new Matrix4f();
 		setProjectionMatrix(window.getWidth(), window.getHeight());
 
-		window.setSizeChangeListener(new GLWindowSizeChangeListener() {
-			@Override
-			public void onChange(int width, int height) {
-				setProjectionMatrix(width, height);
-			}
-		});
+		window.setSizeChangeListener(this::setProjectionMatrix);
 
 		font = new Font("calibri", 14);
-		stringList = new ArrayList<FontRenderableString>();
-		stringValueList = new ArrayList<FontRenderableString>();
-		createFontSidebar();
+		stringNameList = new ArrayList<>();
+		stringValueList = new ArrayList<>();
+		stringMaxHistoryValueList = new ArrayList<>();
+
+		createStrings();
 	}
 
 	private void setProjectionMatrix(int width, int height) {
 		Matrix4fUtils.setOrthographicProjection(projectionMatrix, 0f, width, height, 0, 1, -1);
 	}
 
-	private void createFontSidebar() {
-		for (FontRenderableString s : stringList) {
+	private void createStrings() {
+		for (FontRenderableString s : stringNameList) {
 			if (s != null) s.cleanup();
 		}
 
-		stringList.clear();
+		for (FontRenderableString s : stringValueList) {
+			if (s != null) s.cleanup();
+		}
+
+		for (FontRenderableString s : stringMaxHistoryValueList) {
+			if (s != null) s.cleanup();
+		}
+
+		stringNameList.clear();
+		stringValueList.clear();
+		stringMaxHistoryValueList.clear();
 
 		for (ProfilerStatisticsCategory category : profilerList.get(activeProfiler).getProfilerCategories()) {
 			for (ProfilerStatistic statistic : category.statisticList) {
 				String s = statistic.name;
 
-				stringList.add(new FontRenderableString(font, s, statistic.color, projectionMatrix, 1.0f, 1.0f));
+				stringNameList.add(new FontRenderableString(font, s, statistic.color, projectionMatrix, 1.0f, 1.0f));
+				stringValueList.add(new FontRenderableString(font, "", PROFILER_COLOR, projectionMatrix, 1.0f, 1.0f));
 			}
 
-			stringList.add(null);
+			stringMaxHistoryValueList.add(new FontRenderableString(font, "", PROFILER_COLOR, projectionMatrix, 1.0f, 1.0f));
+
+			stringNameList.add(null);
+			stringValueList.add(null);
 		}
 	}
 
@@ -99,11 +111,6 @@ public class DebugWindow {
 
 	public void removeProfiler(Profiler profiler) {
 		profilerList.remove(profiler);
-
-		if (activeProfiler >= profilerList.size()) {
-			activeProfiler = 0;
-			createFontSidebar();
-		}
 	}
 
 	public void update() {
@@ -141,9 +148,15 @@ public class DebugWindow {
 			}
 		}
 
+		// test, if a profiler was removed and the current active profiler is too big
+		if (activeProfiler >= profilerList.size()) {
+			activeProfiler = 0;
+			activeProfilerChanged = true;
+		}
+
 		if (activeProfilerChanged) {
 			activeProfiler = ((activeProfiler % profilerList.size()) + profilerList.size()) % profilerList.size();
-			createFontSidebar();
+			createStrings();
 		}
 
 		Profiler profiler = profilerList.get(activeProfiler);
@@ -151,9 +164,10 @@ public class DebugWindow {
 		window.setTitle("Debug (Profiler: " + profiler.getName() + "), Arrow keys to navigate, R to reset max values");
 
 		vertexList.clear();
-		stringValueList.clear();
 
 		float yOffset = -renderedScrollOffset;
+		int categoryIndex = 0;
+		int profilerIndex = 0;
 		for (ProfilerStatisticsCategory category : profiler.getProfilerCategories()) {
 			for (ProfilerStatistic statistic : category.statisticList) {
 
@@ -184,15 +198,17 @@ public class DebugWindow {
 				int vertex = vertexList.addVertex(1f, (float) value / category.maxHistory + yOffset, 0f, 0f, 0f, statistic.color.getR(), statistic.color.getG(), statistic.color.getB());
 				vertexList.addIndex(lastVertex, vertex);
 
-				FontRenderableString maxHistoryString = new FontRenderableString(font, String.valueOf(category.maxHistory), PROFILER_COLOR, projectionMatrix, 1.0f, 1.0f);
-				maxHistoryString.render(RENDER_PADDING + 3, (int) ((yOffset + 1.0f) * PROFILER_HEIGHT) - font.getPointSize() + RENDER_PADDING);
-				maxHistoryString.cleanup();
+				FontRenderableString valueString = stringValueList.get(profilerIndex);
+				valueString.setText(String.valueOf(value));
 
-				FontRenderableString valueString = new FontRenderableString(font, String.valueOf(value), PROFILER_COLOR, projectionMatrix, 1f, 1f);
-				stringValueList.add(valueString);
+				profilerIndex++;
 			}
 
-			stringValueList.add(null);
+			// render max history value
+
+			FontRenderableString maxHistoryString = stringMaxHistoryValueList.get(categoryIndex);
+			maxHistoryString.setText(String.valueOf(category.maxHistory));
+			maxHistoryString.render(RENDER_PADDING + 3, (int) ((yOffset + 1.0f) * PROFILER_HEIGHT) - font.getPointSize() + RENDER_PADDING);
 
 			//render border
 			int v1 = vertexList.addVertex(0f, 0f + yOffset, 0f, 0f, 0f, PROFILER_COLOR.getR(), PROFILER_COLOR.getG(), PROFILER_COLOR.getB());
@@ -206,6 +222,10 @@ public class DebugWindow {
 			vertexList.addIndex(v4, v1);
 
 			yOffset += 1.0f;
+
+			// increment profilerIndex, to render empty line
+			profilerIndex++;
+			categoryIndex++;
 		}
 
 		VertexBufferObjectIndexed vbo = new VertexBufferObjectIndexed(
@@ -228,14 +248,13 @@ public class DebugWindow {
 
 		int y = RENDER_PADDING;
 
-		for (int i = 0; i < stringList.size(); i++) {
-			FontRenderableString s = stringList.get(i);
+		for (int i = 0; i < stringNameList.size(); i++) {
+			FontRenderableString s = stringNameList.get(i);
 			FontRenderableString v = stringValueList.get(i);
 
 			if (s != null) {
 				s.render(window.getWidth() - SIDEBAR_WIDTH + 70, y);
 				v.render(window.getWidth() - SIDEBAR_WIDTH, y);
-				v.cleanup();
 			}
 			y += 20;
 		}

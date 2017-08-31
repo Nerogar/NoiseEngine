@@ -17,9 +17,12 @@ public class FontRenderableString {
 
 	private static HashMap<Long, Shader> glContextShaderMap;
 
+	private String text;
+
 	private Font  font;
 	private Color color;
 
+	private VertexList         vertexList;
 	private VertexBufferObject vbo;
 
 	private Matrix4f projectionMatrix;
@@ -54,8 +57,23 @@ public class FontRenderableString {
 		vbo = createVBO(text);
 	}
 
+	public void setText(String text) {
+		if (this.text != null && this.text.equals(text)) {
+			return;
+		}
+
+		this.text = text;
+
+		vbo.cleanup();
+		vbo = createVBO(text);
+	}
+
 	private VertexBufferObject createVBO(String text) {
-		VertexList vertexList = new VertexList();
+		if (vertexList == null) {
+			vertexList = new VertexList();
+		} else {
+			vertexList.clear();
+		}
 
 		width = 0;
 		height = 0;
@@ -179,7 +197,7 @@ public class FontRenderableString {
 	}
 
 	/**
-	 * Cleans all internal opengl ressources. This string is unuseable after this call.
+	 * Cleans all internal opengl resources. This string is unusable after this call.
 	 */
 	public void cleanup() {
 		vbo.cleanup();
