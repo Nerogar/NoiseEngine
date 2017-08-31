@@ -3,6 +3,7 @@ package de.nerogar.noise.render;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.system.jemalloc.JEmalloc;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -91,15 +92,20 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 			}
 		}
 
-		FloatBuffer buffer = BufferUtils.createFloatBuffer(totalComponents * vertexCount);
+		// allocate buffers and fill them
+		FloatBuffer buffer = JEmalloc.je_malloc(totalComponents * vertexCount * Float.BYTES).asFloatBuffer();
 		buffer.put(attribArray, 0, totalComponents * vertexCount);
 		buffer.flip();
 
-		IntBuffer indexBuffer = BufferUtils.createIntBuffer(indexCount);
+		IntBuffer indexBuffer = JEmalloc.je_malloc(indexCount * Integer.BYTES).asIntBuffer();
 		indexBuffer.put(indexArray, 0, indexCount);
 		indexBuffer.flip();
 
 		initVAO(buffer, indexBuffer, null);
+
+		// free buffers again
+		JEmalloc.je_free(buffer);
+		JEmalloc.je_free(indexBuffer);
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_COUNT);
 	}

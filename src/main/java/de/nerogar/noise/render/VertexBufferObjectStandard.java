@@ -3,6 +3,7 @@ package de.nerogar.noise.render;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.system.jemalloc.JEmalloc;
 
 import java.nio.FloatBuffer;
 import java.util.HashMap;
@@ -73,11 +74,15 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 			}
 		}
 
-		FloatBuffer buffer = BufferUtils.createFloatBuffer(attribArray.length);
+		// allocate the buffer and fill it
+		FloatBuffer buffer = JEmalloc.je_malloc(attribArray.length * Float.BYTES).asFloatBuffer();
 		buffer.put(attribArray);
 		buffer.flip();
 
 		initVAO(buffer);
+
+		// free the buffer again
+		JEmalloc.je_free(buffer);
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_COUNT);
 	}
