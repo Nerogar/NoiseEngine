@@ -33,7 +33,7 @@ public class ResourceProfiler extends Profiler {
 	public static final int SHADER_COMPILE_COUNT	= 13;
 
 	public ResourceProfiler() {
-		super("ressource", false);
+		super("resource", false);
 
 		registerProperty(TEXTURE_COUNT,			TEXTURE,			new Color(0.0f, 0.0f, 0.8f, 1.0f),	"texture count");
 		registerProperty(TEXTURE_BINDS,			TEXTURE,			new Color(0.3f, 0.0f, 1.0f, 1.0f),	"texture binds");

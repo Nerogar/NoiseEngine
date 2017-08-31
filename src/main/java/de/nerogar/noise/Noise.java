@@ -1,6 +1,7 @@
 package de.nerogar.noise;
 
 import de.nerogar.noise.debug.DebugWindow;
+import de.nerogar.noise.debug.JavaProfiler;
 import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.serialization.NDSFile;
 import de.nerogar.noise.serialization.NDSNodeObject;
@@ -89,7 +90,7 @@ public class Noise {
 			glfwSetErrorCallback(errorCallbackFun);
 
 			resourceProfiler = new ResourceProfiler();
-			debugWindow = new DebugWindow(resourceProfiler);
+			debugWindow = new DebugWindow(resourceProfiler, new JavaProfiler());
 
 			//sleeping thread for timer precision on windows
 			Thread sleepThread = new Thread("sleeping thread") {

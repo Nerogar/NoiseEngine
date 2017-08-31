@@ -542,7 +542,7 @@ public class SpaceOctree<T> implements Set<T> {
 	public List<T> getFiltered(List<T> collectedElements, Bounding bounding) {
 		collectedElements.clear();
 
-		//root.collectElements(collectedElements, bounding, false);
+		root.collectElements(collectedElements, bounding, false);
 		for (T collectedElement : collectedElements) {
 			lookup.get(collectedElement).visitedFlag = false;
 		}
