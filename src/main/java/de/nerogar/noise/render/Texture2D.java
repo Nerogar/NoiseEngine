@@ -2,7 +2,6 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
-import de.nerogar.noise.util.Logger;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 
 import java.nio.ByteBuffer;
@@ -137,6 +136,8 @@ public class Texture2D extends Texture {
 	 * @param anisotropicFiltering the amount of anisotropic filtering
 	 */
 	public Texture2D(String name, int width, int height, ByteBuffer colorBuffer, InterpolationType interpolationType, DataType dataType, float anisotropicFiltering) {
+		super(name);
+
 		this.name = name;
 		this.width = width;
 		this.height = height;
@@ -263,11 +264,6 @@ public class Texture2D extends Texture {
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);
 
 		return true;
-	}
-
-	@Override
-	public String getCleanupError() {
-		return "Texture not cleaned up. name: " + name;
 	}
 
 	@Override

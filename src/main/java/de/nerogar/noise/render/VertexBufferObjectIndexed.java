@@ -176,9 +176,4 @@ public class VertexBufferObjectIndexed extends VertexBufferObject {
 		return true;
 	}
 
-	@Override
-	public String getCleanupError() {
-		return "VBO not cleaned up. pointer: " + vboHandle;
-	}
-
 }

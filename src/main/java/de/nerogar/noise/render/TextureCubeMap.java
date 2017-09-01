@@ -2,7 +2,6 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
-import de.nerogar.noise.util.Logger;
 
 import java.nio.ByteBuffer;
 
@@ -29,6 +28,8 @@ public class TextureCubeMap extends Texture {
 	}
 
 	public TextureCubeMap(String name, int width, int height, ByteBuffer[] colorBuffer, Texture2D.InterpolationType interpolationType, Texture2D.DataType dataType) {
+		super(name);
+
 		this.name = name;
 		this.width = width;
 		this.height = height;
@@ -116,11 +117,6 @@ public class TextureCubeMap extends Texture {
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);
 
 		return true;
-	}
-
-	@Override
-	public String getCleanupError() {
-		return "Texture not cleaned up. name: " + name;
 	}
 
 	@Override

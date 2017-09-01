@@ -19,6 +19,10 @@ public abstract class Texture extends NoiseResource {
 			GL_TEXTURE28, GL_TEXTURE29, GL_TEXTURE30, GL_TEXTURE31,
 	};
 
+	public Texture(String name) {
+		super(name);
+	}
+
 	public abstract void bind(int slot);
 
 }

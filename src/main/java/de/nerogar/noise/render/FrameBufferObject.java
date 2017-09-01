@@ -200,9 +200,4 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 		return false;
 	}
 
-	@Override
-	public String getCleanupError() {
-		return "render Target not cleaned up. id: " + framebufferID;
-	}
-
 }

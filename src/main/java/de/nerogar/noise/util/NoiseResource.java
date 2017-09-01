@@ -13,7 +13,15 @@ public abstract class NoiseResource {
 	private boolean cleaned = false;
 	private PhantomReference<NoiseResource> reference;
 
+	private String resourceName;
+
 	public NoiseResource() {
+		this(null);
+	}
+
+	public NoiseResource(String resourceName) {
+		this.resourceName = resourceName;
+
 		add(this);
 	}
 
@@ -21,7 +29,13 @@ public abstract class NoiseResource {
 		return cleaned;
 	}
 
-	public abstract String getCleanupError();
+	public String getCleanupError() {
+		if (resourceName == null) {
+			return getClass().getSimpleName() + " not cleaned up.";
+		} else {
+			return getClass().getSimpleName() + " not cleaned up. Name: " + resourceName;
+		}
+	}
 
 	/**
 	 * cleans all resources allocated by this object

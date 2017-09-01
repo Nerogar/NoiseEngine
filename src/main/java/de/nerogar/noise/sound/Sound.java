@@ -96,11 +96,6 @@ public abstract class Sound extends NoiseResource {
 
 	public abstract void update();
 
-	@Override
-	public String getCleanupError() {
-		return "Sound not cleaned up.";
-	}
-
 	@Deprecated
 	public static void checkError() {
 		int err;

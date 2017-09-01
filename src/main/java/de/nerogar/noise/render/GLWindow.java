@@ -53,6 +53,8 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 	 * @param parentWindow the window to share opengl objects with, null otherwise
 	 */
 	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval, Monitor monitor, GLWindow parentWindow) {
+		super(title);
+
 		windows.add(this);
 		this.title = title;
 		this.resizable = resizable;
@@ -195,11 +197,6 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 		isClosed = true;
 
 		return true;
-	}
-
-	@Override
-	public String getCleanupError() {
-		return "Window not cleaned up: " + title + ", @" + Long.toHexString(windowPointer);
 	}
 
 	public static GLWindow getCurrentWindow() {

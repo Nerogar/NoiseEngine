@@ -35,9 +35,10 @@ public class Shader extends NoiseResource {
 	private String name;
 
 	public Shader(String name) {
+		super(name);
 		this.name = name;
 
-		uniformCache = new HashMap<String, Integer>();
+		uniformCache = new HashMap<>();
 	}
 
 	//---[uniforms]---
@@ -275,11 +276,6 @@ public class Shader extends NoiseResource {
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.SHADER_COUNT);
 
 		return true;
-	}
-
-	@Override
-	public String getCleanupError() {
-		return "Shader not cleaned up. " + toString();
 	}
 
 	@Override
