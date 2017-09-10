@@ -99,13 +99,13 @@ public class Profiler {
 			}
 		}
 
-		ArrayList<Integer> newValues = new ArrayList<>();
+		/*ArrayList<Integer> newValues = new ArrayList<>();
 
 		for (Integer value : values) {
 			newValues.add(value);
 		}
 
-		values = newValues;
+		values = newValues;*/
 	}
 
 	public void resetMax() {
