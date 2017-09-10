@@ -38,7 +38,7 @@ public class Noise {
 	private static Logger logger;
 
 	private static final String SETTINGS_PROPERTY         = "noise.settings";
-	private static final String DEFAULT_SETTINGS_FILENAME = "noiseEngine/settings.json";
+	private static final String DEFAULT_SETTINGS_FILENAME = "/noiseEngine/settings.json";
 	private static NDSNodeObject settings;
 
 	private static boolean initialized = false;
