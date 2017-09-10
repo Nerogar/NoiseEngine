@@ -48,11 +48,14 @@ public class Logger {
 	private List<LogListener>        logListener;
 	private LimitedQueue<LogMessage> temporaryMessages;
 
+	private boolean active = true;
+
 	private boolean printName = true;
 	private final String name;
 
 	private        boolean    printTimestamp = false;
 	private static DateFormat dateFormat     = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 	private Logger parent;
 
 	public Logger(String name) {
@@ -63,7 +66,17 @@ public class Logger {
 	}
 
 	/**
-	 * acitvates or deactivates the output of names in log messages
+	 * activates or deactivates this logger
+	 * a deactivated logger will ignore all log messages
+	 *
+	 * @param active the new active value
+	 */
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+	/**
+	 * activates or deactivates the output of names in log messages
 	 *
 	 * @param print the new printName value
 	 */
@@ -72,7 +85,7 @@ public class Logger {
 	}
 
 	/**
-	 * acitvates or deactivates the output of timestamps in log messages
+	 * activates or deactivates the output of timestamps in log messages
 	 *
 	 * @param print the new printTimestamp value
 	 */
@@ -210,7 +223,7 @@ public class Logger {
 	}
 
 	/**
-	 * prints the message to all attached streams with the correct log level.
+	 * prints the message to all attached streams and listeners with the correct log level.
 	 * If the message is not a string, <code>msg.toString()</code> is called. If the message is an array, <code>Arrays.deepToString(msg)</code> is called.
 	 *
 	 * @param time     the time of this log message
@@ -219,6 +232,8 @@ public class Logger {
 	 * @return true, if the message was logged to any output target
 	 */
 	private boolean log(Date time, String name, int logLevel, Object msg) {
+		if (!active) return false;
+
 		boolean logged = false;
 
 		for (LogOutStream logStream : logStreams) {
