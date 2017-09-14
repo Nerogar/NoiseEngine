@@ -2,7 +2,6 @@ package de.nerogar.noise.network;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.network.Packets.PacketContainer;
-import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.util.Logger;
 
 import java.io.DataInputStream;
@@ -19,7 +18,7 @@ public class ReceiverThread extends Thread {
 	private       ArrayList<Packet> polledPackets = new ArrayList<>();
 
 	public ReceiverThread(Socket socket, SenderThread send) {
-		setName("Reveiver Thread for " + socket.toString());
+		setName("Receiver Thread for " + socket.toString());
 		this.socket = socket;
 		this.send = send;
 		this.setDaemon(true);

@@ -1,11 +1,9 @@
 package de.nerogar.noise.network;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.util.Logger;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -62,10 +60,7 @@ public class SenderThread extends Thread {
 					try {
 						stream.writeInt(Packets.byClass(packet.getClass()).getID());
 
-						ByteArrayOutputStream arrayOut = new ByteArrayOutputStream();
-						DataOutputStream out = new DataOutputStream(arrayOut);
-						packet.toStream(out);
-						byte[] data = arrayOut.toByteArray();
+						byte[] data = packet.getBuffer();
 
 						stream.writeInt(data.length);
 						stream.write(data);

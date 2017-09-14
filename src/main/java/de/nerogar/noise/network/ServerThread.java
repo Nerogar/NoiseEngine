@@ -1,7 +1,6 @@
 package de.nerogar.noise.network;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.network.packets.Packet;
 import de.nerogar.noise.network.packets.PacketConnectionInfo;
 import de.nerogar.noise.util.Logger;
 

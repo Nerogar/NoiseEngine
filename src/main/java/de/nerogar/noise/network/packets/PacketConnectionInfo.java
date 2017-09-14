@@ -1,10 +1,12 @@
 package de.nerogar.noise.network.packets;
 
+import de.nerogar.noise.network.Packet;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class PacketConnectionInfo implements Packet {
+public class PacketConnectionInfo extends Packet {
 
 	public int version;
 
