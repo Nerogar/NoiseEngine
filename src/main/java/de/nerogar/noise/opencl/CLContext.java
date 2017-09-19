@@ -39,7 +39,7 @@ public class CLContext {
 
 		errorCode = BufferUtils.createIntBuffer(1);
 
-		//get a list with devices for gl sharing
+		// get a list with devices for gl sharing
 		List<CLDevice> devices = null;
 		CLPlatform platform = null;
 
@@ -54,15 +54,15 @@ public class CLContext {
 			}
 		}
 		boolean isSharingPossible = devices != null && !devices.isEmpty();
-		if (!isSharingPossible) throw new RuntimeException("CL-GL context sharing is not supported.");
+		if (!isSharingPossible) throw new CLException("CL-GL context sharing is not supported.");
 
 		clDevice = devices.get(0);
 
-		//fill a buffer with the first filtered device
+		// fill a buffer with the first filtered device
 		PointerBuffer deviceBuffer = BufferUtils.createPointerBuffer(1);
 		deviceBuffer.put(0, clDevice.getClDevicePointer());
 
-		//create a buffer with context creation properties
+		// create a buffer with context creation properties
 		PointerBuffer contextProperties = BufferUtils.createPointerBuffer(7);
 		contextProperties.put(CL_CONTEXT_PLATFORM).put(platform.getClPlatformPointer());
 		contextProperties.put(CL_GL_CONTEXT_KHR).put(glfwGetWGLContext(glContext.getGlContextPointer()));
@@ -79,13 +79,13 @@ public class CLContext {
 				break;
 		}
 
-		contextProperties.put(0); //add a NULL terminator
+		contextProperties.put(0); // add a NULL terminator
 
 		contextProperties.flip();
 
 		checkCLError(errorCode, ERROR_LOCATION);
 
-		//create the context
+		// create the context
 		clContextPointer = clCreateContext(contextProperties, deviceBuffer, (errinfo, private_info, cb, user_data) -> {
 			Noise.getLogger().log(Logger.ERROR, "openCL error: " + memUTF8(errinfo));
 		}, NULL, errorCode);

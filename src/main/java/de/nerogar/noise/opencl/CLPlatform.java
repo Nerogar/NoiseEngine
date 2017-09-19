@@ -2,6 +2,7 @@ package de.nerogar.noise.opencl;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.opencl.CL10;
 import org.lwjgl.opencl.CLCapabilities;
 
 import java.nio.IntBuffer;
@@ -38,6 +39,9 @@ public class CLPlatform {
 		int[] length = new int[1];
 
 		int error = clGetDeviceIDs(clPlatformPointer, type, null, length);
+		if (error == CL10.CL_DEVICE_NOT_FOUND) {
+			throw new CLException("could not create openCL device for type: " + type);
+		}
 		CLContext.checkCLError(error, ERROR_LOCATION);
 
 		PointerBuffer buffer = BufferUtils.createPointerBuffer(length[0]);
