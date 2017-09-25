@@ -4,8 +4,9 @@ import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.*;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -19,148 +20,25 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class DeferredRenderer {
 
-	private class VboContainer {
+	private static final int TEXTURE_ATTACHMENT_GBUFFER_COLOR  = 0;
+	private static final int TEXTURE_ATTACHMENT_GBUFFER_NORMAL = 1;
+	private static final int TEXTURE_ATTACHMENT_GBUFFER_LIGHT  = 2;
+	private static final int TEXTURE_ATTACHMENT_GBUFFER_DEPTH  = -1;
+	private static final int TEXTURE_ATTACHMENT_LIGHTS         = 0;
+	private static final int TEXTURE_ATTACHMENT_EFFECTS        = 0;
+	private static final int TEXTURE_ATTACHMENT_FINAL          = 0;
+	private static final int TEXTURE_ATTACHMENT_FILTER         = 0;
 
-		public  DeferredContainer               container;
-		public  List<DeferredRenderable>        filteredRenderables;
-		public  SpaceOctree<DeferredRenderable> renderables;
-		private Set<DeferredRenderable>         updatedRenderables;
-		public  Consumer<DeferredRenderable>    renderableListener;
 
-		public VertexBufferObjectInstanced vbo;
+	private static final int TEXTURE_SLOT_COLOR           = 0;
+	private static final int TEXTURE_SLOT_NORMAL          = 1;
+	private static final int TEXTURE_SLOT_LIGHT           = 2;
+	private static final int TEXTURE_SLOT_LIGHTS          = 3;
+	private static final int TEXTURE_SLOT_EFFECTS         = 4;
+	private static final int TEXTURE_SLOT_REFLECTION_CUBE = 5;
+	private static final int TEXTURE_SLOT_DEPTH           = 6;
 
-		private ArrayList<Matrix4f> instanceModelMatrices;
-		private ArrayList<Matrix4f> instanceNormalMatrices;
-		private float[]             modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
-		private float[] normalMatrix1, normalMatrix2, normalMatrix3;
-
-		private final int[] instanceComponentCounts = new int[] { 4, 4, 4, 4, 3, 3, 3 };
-
-		public VboContainer(DeferredContainer container) {
-			this.container = container;
-			renderables = new SpaceOctree<>(DeferredRenderable::getBoundingSphere, 64, 0.1f);
-			filteredRenderables = new ArrayList<>();
-
-			updatedRenderables = new HashSet<>();
-			renderableListener = (renderable) -> updatedRenderables.add(renderable);
-
-			instanceModelMatrices = new ArrayList<>();
-			instanceNormalMatrices = new ArrayList<>();
-
-			vbo = new VertexBufferObjectInstanced(
-					new int[] { 3, 2, 3, 3, 3 },
-					container.getMesh().getIndexCount(),
-					container.getMesh().getVertexCount(),
-					container.getMesh().getIndexArray(),
-					container.getMesh().getPositionArray(),
-					container.getMesh().getUVArray(),
-					container.getMesh().getNormalArray(),
-					container.getMesh().getTangentArray(),
-					container.getMesh().getBitangentArray()
-			);
-		}
-
-		public int rebuildInstanceData(IViewRegion frustum) {
-
-			instanceModelMatrices.clear();
-			instanceNormalMatrices.clear();
-
-			// call update on updated renderables
-			for (DeferredRenderable updatedRenderable : updatedRenderables) {
-				updatedRenderable.update();
-				renderables.update(updatedRenderable);
-			}
-			updatedRenderables.clear();
-
-			// filter renderables
-			Bounding viewRegion = frustum.getBounding();
-			Collection<DeferredRenderable> filteredRenderables;
-			if (renderables.size() >= OCTREE_FILTER_THRESHOLD) {
-				filteredRenderables = renderables.getFiltered(this.filteredRenderables, viewRegion);
-			} else {
-				filteredRenderables = renderables;
-			}
-
-			profiler.addValue(DeferredRendererProfiler.OBJECT_TEST_COUNT, filteredRenderables.size());
-
-			Vector3f point = new Vector3f();
-			for (DeferredRenderable renderable : filteredRenderables) {
-				if (!renderable.getRenderProperties().isVisible()) continue;
-
-				point.setX(renderable.getRenderProperties().getX());
-				point.setY(renderable.getRenderProperties().getY());
-				point.setZ(renderable.getRenderProperties().getZ());
-
-				if (frustum.getPointDistance(point) < renderable.getContainer().getMesh().getBoundingRadius() * renderable.getRenderProperties().getMaxScaleComponent()) {
-					instanceModelMatrices.add(renderable.getRenderProperties().getModelMatrix());
-					instanceNormalMatrices.add(renderable.getRenderProperties().getNormalMatrix());
-				}
-
-			}
-
-			// if arrays are too short, resize them
-			if (modelMatrix1 == null || modelMatrix1.length < instanceModelMatrices.size() * 4) {
-				modelMatrix1 = new float[instanceModelMatrices.size() * 4];
-				modelMatrix2 = new float[instanceModelMatrices.size() * 4];
-				modelMatrix3 = new float[instanceModelMatrices.size() * 4];
-				modelMatrix4 = new float[instanceModelMatrices.size() * 4];
-
-				normalMatrix1 = new float[instanceModelMatrices.size() * 3];
-				normalMatrix2 = new float[instanceModelMatrices.size() * 3];
-				normalMatrix3 = new float[instanceModelMatrices.size() * 3];
-			}
-
-			for (int i = 0; i < instanceModelMatrices.size(); i++) {
-				Matrix4f modelMat = instanceModelMatrices.get(i);
-				Matrix4f normalMat = instanceNormalMatrices.get(i);
-
-				modelMatrix1[i * 4 + 0] = modelMat.get(0, 0);
-				modelMatrix1[i * 4 + 1] = modelMat.get(1, 0);
-				modelMatrix1[i * 4 + 2] = modelMat.get(2, 0);
-				modelMatrix1[i * 4 + 3] = modelMat.get(3, 0);
-
-				modelMatrix2[i * 4 + 0] = modelMat.get(0, 1);
-				modelMatrix2[i * 4 + 1] = modelMat.get(1, 1);
-				modelMatrix2[i * 4 + 2] = modelMat.get(2, 1);
-				modelMatrix2[i * 4 + 3] = modelMat.get(3, 1);
-
-				modelMatrix3[i * 4 + 0] = modelMat.get(0, 2);
-				modelMatrix3[i * 4 + 1] = modelMat.get(1, 2);
-				modelMatrix3[i * 4 + 2] = modelMat.get(2, 2);
-				modelMatrix3[i * 4 + 3] = modelMat.get(3, 2);
-
-				modelMatrix4[i * 4 + 0] = modelMat.get(0, 3);
-				modelMatrix4[i * 4 + 1] = modelMat.get(1, 3);
-				modelMatrix4[i * 4 + 2] = modelMat.get(2, 3);
-				modelMatrix4[i * 4 + 3] = modelMat.get(3, 3);
-
-				normalMatrix1[i * 3 + 0] = normalMat.get(0, 0);
-				normalMatrix1[i * 3 + 1] = normalMat.get(1, 0);
-				normalMatrix1[i * 3 + 2] = normalMat.get(2, 0);
-
-				normalMatrix2[i * 3 + 0] = normalMat.get(0, 1);
-				normalMatrix2[i * 3 + 1] = normalMat.get(1, 1);
-				normalMatrix2[i * 3 + 2] = normalMat.get(2, 1);
-
-				normalMatrix3[i * 3 + 0] = normalMat.get(0, 2);
-				normalMatrix3[i * 3 + 1] = normalMat.get(1, 2);
-				normalMatrix3[i * 3 + 2] = normalMat.get(2, 2);
-			}
-
-			// don't update instance data, if no instance will be drawn
-			// outdated data doesn't matter in that case
-			if (instanceModelMatrices.size() > 0) {
-				vbo.setInstanceData(instanceModelMatrices.size(), instanceComponentCounts,
-				                    modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4,
-				                    normalMatrix1, normalMatrix2, normalMatrix3
-				                   );
-			}
-
-			return instanceModelMatrices.size();
-		}
-	}
-
-	private static final int OCTREE_FILTER_THRESHOLD = 40;
+	private static final int TEXTURE_SLOT_FINAL = 0;
 
 	private Map<DeferredContainer, VboContainer> vboMap;
 	private VertexBufferObjectIndexed            fullscreenQuad;
@@ -168,6 +46,7 @@ public class DeferredRenderer {
 
 	// gBuffer
 	private Shader            gBufferShader;
+	private Shader            gBufferShaderSingle;
 	private FrameBufferObject gBuffer;
 
 	// lights
@@ -189,7 +68,7 @@ public class DeferredRenderer {
 	private FrameBufferObject filterFrameBuffer;
 
 	// settings
-	private Map<String, String> settingsParamter;
+	private Map<String, String> settingsParameter;
 
 	private int width;
 	private int height;
@@ -248,10 +127,9 @@ public class DeferredRenderer {
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
 		gBuffer = new FrameBufferObject(width, height, true,
-		                                Texture2D.DataType.BGRA_8_8_8_8I, //color
-		                                Texture2D.DataType.BGRA_10_10_10_2, //normal
-		                                Texture2D.DataType.BGRA_32_32_32F, //position TODO: remove and reconstruct from depth buffer
-		                                Texture2D.DataType.BGRA_8_8_8_8I //light
+		                                Texture2D.DataType.BGRA_8_8_8_8I, // color
+		                                Texture2D.DataType.BGRA_10_10_10_2, // normal
+		                                Texture2D.DataType.BGRA_8_8_8_8I // light
 		);
 
 		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
@@ -290,12 +168,29 @@ public class DeferredRenderer {
 	 * @param object a {@link DeferredRenderable DeferredRenderable} to add
 	 */
 	public void addObject(DeferredRenderable object) {
-		VboContainer container = vboMap.computeIfAbsent(object.getContainer(), VboContainer::new);
+		VboContainer container = vboMap.get(object.getContainer());
+		if (container == null) {
+			if (object.getContainer().getOptimization() == DeferredContainer.OptimizationStrategy.OPTIMIZATION_ONE) {
+				container = new VboContainerOne(profiler, object.getContainer(), gBufferShaderSingle);
+			} else if (object.getContainer().getOptimization() == DeferredContainer.OptimizationStrategy.OPTIMIZATION_FEW) {
+				container = new VboContainerFew(profiler, object.getContainer(), gBufferShader);
+			} else if (object.getContainer().getOptimization() == DeferredContainer.OptimizationStrategy.OPTIMIZATION_MANY) {
+				container = new VboContainerMany(profiler, object.getContainer(), gBufferShader);
+			} else {
+				container = new VboContainerMany(profiler, object.getContainer(), gBufferShader);
+			}
+
+			if (object.getContainer().isDeleteMesh()) {
+				object.getContainer().clearMesh();
+			}
+
+			vboMap.put(object.getContainer(), container);
+		}
 
 		object.update();
-		object.addListener(container.renderableListener);
+		object.addListener(container.getRenderableListener());
 
-		container.renderables.add(object);
+		container.addObject(object);
 
 		profiler.incrementValue(DeferredRendererProfiler.OBJECT_COUNT);
 	}
@@ -315,11 +210,11 @@ public class DeferredRenderer {
 	public void removeObject(DeferredRenderable object) {
 		VboContainer container = vboMap.get(object.getContainer());
 		if (container == null) return;
-		container.renderables.remove(object);
-		object.removeListener(container.renderableListener);
+		container.removeObject(object);
+		object.removeListener(container.getRenderableListener());
 
-		if (container.renderables.size() == 0) {
-			container.vbo.cleanup();
+		if (container.isEmpty()) {
+			container.cleanup();
 			vboMap.remove(object.getContainer());
 		}
 
@@ -340,7 +235,7 @@ public class DeferredRenderer {
 	 */
 	public void clear() {
 		for (VboContainer container : vboMap.values()) {
-			container.vbo.cleanup();
+			container.cleanup();
 		}
 
 		vboMap.clear();
@@ -403,46 +298,56 @@ public class DeferredRenderer {
 	}
 
 	private void loadShaders() {
-		if (settingsParamter == null) settingsParamter = new HashMap<>();
-		settingsParamter.clear();
-		settingsParamter.put("AO_ENABLED", "#define AO_ENABLED " + (ambientOcclusionEnabled ? 1 : 0));
+		if (settingsParameter == null) settingsParameter = new HashMap<>();
+		settingsParameter.clear();
+		settingsParameter.put("AO_ENABLED", "#define AO_ENABLED " + (ambientOcclusionEnabled ? 1 : 0));
 
 		if (gBufferShader != null) gBufferShader.cleanup();
+		if (gBufferShaderSingle != null) gBufferShaderSingle.cleanup();
 		if (lightShader != null) lightShader.cleanup();
 		if (finalShader != null) finalShader.cleanup();
 		if (filterShader != null) filterShader.cleanup();
 
-		gBufferShader = ShaderLoader.loadShader("<deferredRenderer/gBuffer.vert>", "<deferredRenderer/gBuffer.frag>");
+		Map<String, String> gBufferShaderParameters = new HashMap<>();
+		gBufferShaderParameters.put("useUniforms", "#define UNIFORM_MATRICES 0");
+		gBufferShader = ShaderLoader.loadShader("<deferredRenderer/gBuffer.vert>", "<deferredRenderer/gBuffer.frag>", gBufferShaderParameters);
 		gBufferShader.activate();
-		gBufferShader.setUniform1i("textureColor_N", 0);
-		gBufferShader.setUniform1i("textureNormal_N", 1);
-		gBufferShader.setUniform1i("textureLight_N", 2);
+		gBufferShader.setUniform1i("textureColor_N", TEXTURE_SLOT_COLOR);
+		gBufferShader.setUniform1i("textureNormal_N", TEXTURE_SLOT_NORMAL);
+		gBufferShader.setUniform1i("textureLight_N", TEXTURE_SLOT_LIGHT);
 		gBufferShader.deactivate();
+
+		gBufferShaderParameters.put("useUniforms", "#define UNIFORM_MATRICES 1");
+		gBufferShaderSingle = ShaderLoader.loadShader("<deferredRenderer/gBuffer.vert>", "<deferredRenderer/gBuffer.frag>", gBufferShaderParameters);
+		gBufferShaderSingle.activate();
+		gBufferShaderSingle.setUniform1i("textureColor_N", TEXTURE_SLOT_COLOR);
+		gBufferShaderSingle.setUniform1i("textureNormal_N", TEXTURE_SLOT_NORMAL);
+		gBufferShaderSingle.setUniform1i("textureLight_N", TEXTURE_SLOT_LIGHT);
+		gBufferShaderSingle.deactivate();
 
 		lightShader = ShaderLoader.loadShader("<deferredRenderer/lights.vert>", "<deferredRenderer/lights.frag>");
 		lightShader.activate();
-		lightShader.setUniform1i("textureNormal", 1);
-		lightShader.setUniform1i("texturePosition", 2);
+		lightShader.setUniform1i("textureNormal", TEXTURE_SLOT_NORMAL);
+		lightShader.setUniform1i("textureDepth", TEXTURE_SLOT_DEPTH);
 		lightShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		lightShader.deactivate();
 
-		finalShader = ShaderLoader.loadShader("<deferredRenderer/final.vert>", "<deferredRenderer/final.frag>", settingsParamter);
+		finalShader = ShaderLoader.loadShader("<deferredRenderer/final.vert>", "<deferredRenderer/final.frag>", settingsParameter);
 		finalShader.activate();
-		finalShader.setUniform1i("textureColor", 0);
-		finalShader.setUniform1i("textureNormal", 1);
-		finalShader.setUniform1i("texturePosition", 2);
-		finalShader.setUniform1i("textureLight", 3);
-		finalShader.setUniform1i("textureLights", 4);
-		finalShader.setUniform1i("textureEffects", 5);
-		finalShader.setUniform1i("textureReflection", 6);
-		finalShader.setUniform1i("textureDepth", 7);
+		finalShader.setUniform1i("textureColor", TEXTURE_SLOT_COLOR);
+		finalShader.setUniform1i("textureNormal", TEXTURE_SLOT_NORMAL);
+		finalShader.setUniform1i("textureLight", TEXTURE_SLOT_LIGHT);
+		finalShader.setUniform1i("textureLights", TEXTURE_SLOT_LIGHTS);
+		finalShader.setUniform1i("textureEffects", TEXTURE_SLOT_EFFECTS);
+		finalShader.setUniform1i("textureReflection", TEXTURE_SLOT_REFLECTION_CUBE);
+		finalShader.setUniform1i("textureDepth", TEXTURE_SLOT_DEPTH);
 		finalShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
 		finalShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		finalShader.deactivate();
 
 		filterShader = ShaderLoader.loadShader("<deferredRenderer/filter.vert>", "<deferredRenderer/filter.frag>");
 		filterShader.activate();
-		filterShader.setUniform1i("textureColor", 0);
+		filterShader.setUniform1i("textureColor", TEXTURE_SLOT_COLOR);
 		filterShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());
 		filterShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		filterShader.deactivate();
@@ -533,6 +438,22 @@ public class DeferredRenderer {
 		this.antiAliasingEnabled = antiAliasingEnabled;
 	}
 
+	private void setPositionReconstructionUniforms(Shader shader, Ray unitRayCenter, Ray unitRayRight, Ray unitRayTop, Matrix4f projectionMatrix) {
+		shader.setUniform3f("unitRayCenterStart", unitRayCenter.getStart().getX(), unitRayCenter.getStart().getY(), unitRayCenter.getStart().getZ());
+		shader.setUniform3f("unitRayCenterDir", unitRayCenter.getDir().getX(), unitRayCenter.getDir().getY(), unitRayCenter.getDir().getZ());
+		shader.setUniform3f("unitRayRightStart", unitRayRight.getStart().getX(), unitRayRight.getStart().getY(), unitRayRight.getStart().getZ());
+		shader.setUniform3f("unitRayRightDir", unitRayRight.getDir().getX(), unitRayRight.getDir().getY(), unitRayRight.getDir().getZ());
+		shader.setUniform3f("unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
+		shader.setUniform3f("unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
+		shader.setUniform4f(
+				"inverseDepthFunction",
+				projectionMatrix.get(2, 2),
+				projectionMatrix.get(2, 3),
+				projectionMatrix.get(3, 2),
+				projectionMatrix.get(3, 3)
+		                        );
+	}
+
 	/**
 	 * Renders everything onto internal {@link FrameBufferObject FrameBufferObjects}.<br>
 	 * Access them with
@@ -560,42 +481,33 @@ public class DeferredRenderer {
 		gBufferShader.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
 		gBufferShader.deactivate();
 
-		Shader currentShader;
+		gBufferShaderSingle.activate();
+		gBufferShaderSingle.setUniformMat4f("viewMatrix_N", camera.getViewMatrix().asBuffer());
+		gBufferShaderSingle.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
+		gBufferShaderSingle.deactivate();
 
 		for (VboContainer container : vboMap.values()) {
-			int instanceCount = container.rebuildInstanceData(camera.getViewRegion());
-			if (instanceCount == 0) continue;
-
-			if (container.container.getSurfaceShader() == null) {
-				currentShader = gBufferShader;
-			} else {
-				currentShader = container.container.getSurfaceShader();
-			}
-			currentShader.activate();
-
-			if (currentShader != gBufferShader) {
-				currentShader.setUniformMat4f("viewMatrix_N", camera.getViewMatrix().asBuffer());
-				currentShader.setUniformMat4f("projectionMatrix_N", camera.getProjectionMatrix().asBuffer());
-			}
-
-			container.container.bindTextures();
-
-			container.vbo.render();
-
-			currentShader.deactivate();
-
-			profiler.addValue(DeferredRendererProfiler.OBJECT_RENDER_COUNT, instanceCount);
-			profiler.addValue(DeferredRendererProfiler.TRIANGLE_RENDER_COUNT, instanceCount * container.container.getMesh().getTriangleCount());
+			boolean shouldRender = container.prepareRender(camera.getViewRegion());
+			if (!shouldRender) continue;
+			container.render(camera);
 		}
 
 		glDisable(GL_DEPTH_TEST);
 
 		// bind gBuffer textures
-		gBuffer.getTextureAttachment(0).bind(0);
-		gBuffer.getTextureAttachment(1).bind(1);
-		gBuffer.getTextureAttachment(2).bind(2);
-		gBuffer.getTextureAttachment(3).bind(3);
-		gBuffer.getTextureAttachment(-1).bind(7);
+		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_COLOR).bind(TEXTURE_SLOT_COLOR);
+		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_NORMAL).bind(TEXTURE_SLOT_NORMAL);
+		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_LIGHT).bind(TEXTURE_SLOT_LIGHT);
+		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_DEPTH).bind(TEXTURE_SLOT_DEPTH);
+
+		// calculate unit rays for depth -> position reconstruction
+		Ray unitRayCenter = camera.unproject(0, 0);
+		Ray unitRayRight = camera.unproject(1, 0);
+		Ray unitRayTop = camera.unproject(0, 1);
+		unitRayRight.getStart().subtract(unitRayCenter.getStart());
+		unitRayRight.getDir().subtract(unitRayCenter.getDir());
+		unitRayTop.getStart().subtract(unitRayCenter.getStart());
+		unitRayTop.getDir().subtract(unitRayCenter.getDir());
 
 		// render lights
 		lightFrameBuffer.bind();
@@ -614,6 +526,7 @@ public class DeferredRenderer {
 			lightShader.activate();
 			lightShader.setUniformMat4f("viewMatrix", camera.getViewMatrix().asBuffer());
 			lightShader.setUniformMat4f("projectionMatrix", camera.getProjectionMatrix().asBuffer());
+			setPositionReconstructionUniforms(lightShader, unitRayCenter, unitRayRight, unitRayTop, camera.getProjectionMatrix());
 
 			lightVbo.render();
 			lightShader.deactivate();
@@ -623,8 +536,8 @@ public class DeferredRenderer {
 
 		glDisable(GL_CULL_FACE);
 
-		lightFrameBuffer.getTextureAttachment(0).bind(4);
-		if (reflectionTexture != null) reflectionTexture.bind(6);
+		lightFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_LIGHTS).bind(TEXTURE_SLOT_LIGHTS);
+		if (reflectionTexture != null) reflectionTexture.bind(TEXTURE_SLOT_REFLECTION_CUBE);
 
 		// render effects
 		effectFrameBuffer.bind();
@@ -655,19 +568,10 @@ public class DeferredRenderer {
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 
-		effectFrameBuffer.getTextureAttachment(0).bind(5);
+		effectFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_EFFECTS).bind(TEXTURE_SLOT_EFFECTS);
 
 		// final pass
 		finalFrameBuffer.bind();
-
-		// calculate unit rays for depth -> position reconstruction
-		Ray unitRayCenter = camera.unproject(0, 0);
-		Ray unitRayRight = camera.unproject(1, 0);
-		Ray unitRayTop = camera.unproject(0, 1);
-		unitRayRight.getStart().subtract(unitRayCenter.getStart());
-		unitRayRight.getDir().subtract(unitRayCenter.getDir());
-		unitRayTop.getStart().subtract(unitRayCenter.getStart());
-		unitRayTop.getDir().subtract(unitRayCenter.getDir());
 
 		finalShader.activate();
 		finalShader.setUniform3f("sunLightColor", sunLightColor.getR(), sunLightColor.getG(), sunLightColor.getB());
@@ -678,27 +582,14 @@ public class DeferredRenderer {
 		finalShader.setUniform1f("aoSize", ambientOcclusionSize);
 		finalShader.setUniform1f("aoStrength", ambientOcclusionStrength);
 
-		finalShader.setUniform3f("unitRayCenterStart", unitRayCenter.getStart().getX(), unitRayCenter.getStart().getY(), unitRayCenter.getStart().getZ());
-		finalShader.setUniform3f("unitRayCenterDir", unitRayCenter.getDir().getX(), unitRayCenter.getDir().getY(), unitRayCenter.getDir().getZ());
-		finalShader.setUniform3f("unitRayRightStart", unitRayRight.getStart().getX(), unitRayRight.getStart().getY(), unitRayRight.getStart().getZ());
-		finalShader.setUniform3f("unitRayRightDir", unitRayRight.getDir().getX(), unitRayRight.getDir().getY(), unitRayRight.getDir().getZ());
-		finalShader.setUniform3f("unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
-		finalShader.setUniform3f("unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
-		Matrix4f projectMatrix = camera.getProjectionMatrix();
-		finalShader.setUniform4f(
-				"inverseDepthFunction",
-				projectMatrix.get(2, 2),
-				projectMatrix.get(2, 3),
-				projectMatrix.get(3, 2),
-				projectMatrix.get(3, 3)
-		                        );
+		setPositionReconstructionUniforms(finalShader, unitRayCenter, unitRayRight, unitRayTop, camera.getProjectionMatrix());
 
 		fullscreenQuad.render();
 		finalShader.deactivate();
 
 		// getFiltered
 		if (antiAliasingEnabled) {
-			finalFrameBuffer.getTextureAttachment(0).bind(0);
+			finalFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_FINAL).bind(TEXTURE_SLOT_FINAL);
 			filterFrameBuffer.bind();
 			filterShader.activate();
 			fullscreenQuad.render();
@@ -717,9 +608,9 @@ public class DeferredRenderer {
 	 */
 	public Texture2D getColorOutput() {
 		if (antiAliasingEnabled) {
-			return filterFrameBuffer.getTextureAttachment(0);
+			return filterFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_FINAL);
 		} else {
-			return finalFrameBuffer.getTextureAttachment(0);
+			return finalFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_FILTER);
 		}
 	}
 
@@ -727,28 +618,21 @@ public class DeferredRenderer {
 	 * @return the depth buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getDepthBuffer() {
-		return gBuffer.getTextureAttachment(-1);
+		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_DEPTH);
 	}
 
 	/**
 	 * @return the color buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getColorBuffer() {
-		return gBuffer.getTextureAttachment(0);
+		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_COLOR);
 	}
 
 	/**
 	 * @return the normal buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getNormalBuffer() {
-		return gBuffer.getTextureAttachment(1);
-	}
-
-	/**
-	 * @return the position buffer as a {@link Texture2D Texture2D}
-	 */
-	public Texture2D getPositionBuffer() {
-		return gBuffer.getTextureAttachment(2);
+		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_NORMAL);
 	}
 
 	/**
@@ -757,7 +641,7 @@ public class DeferredRenderer {
 	 * @return the light buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getLightBuffer() {
-		return gBuffer.getTextureAttachment(3);
+		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_LIGHT);
 	}
 
 	/**
@@ -766,7 +650,7 @@ public class DeferredRenderer {
 	 * @return the light buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getLightsBuffer() {
-		return lightFrameBuffer.getTextureAttachment(0);
+		return lightFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_LIGHTS);
 	}
 
 	/**
@@ -775,7 +659,7 @@ public class DeferredRenderer {
 	 * @return the depth buffer as a {@link Texture2D Texture2D}
 	 */
 	public Texture2D getEffectsBuffer() {
-		return effectFrameBuffer.getTextureAttachment(0);
+		return effectFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_EFFECTS);
 	}
 
 	/**
@@ -783,7 +667,7 @@ public class DeferredRenderer {
 	 */
 	public void cleanup() {
 		for (VboContainer container : vboMap.values()) {
-			container.vbo.cleanup();
+			container.cleanup();
 		}
 
 		gBuffer.cleanup();
@@ -792,6 +676,7 @@ public class DeferredRenderer {
 		filterFrameBuffer.cleanup();
 
 		gBufferShader.cleanup();
+		gBufferShaderSingle.cleanup();
 		lightShader.cleanup();
 		finalShader.cleanup();
 		filterShader.cleanup();

@@ -1,7 +1,8 @@
 #version 330 core
 
+#include positionReconstruction.glsl
+
 uniform sampler2D textureNormal;
-uniform sampler2D texturePosition;
 
 uniform vec2 inverseResolution;
 
@@ -34,7 +35,7 @@ vec4 calcLight(vec3 lightPos, vec3 lightColor, vec3 worldPosition, vec3 worldNor
 void main(){
 	vec2 screenPosition = gl_FragCoord.xy * inverseResolution;
 	vec3 worldNormal = (texture(textureNormal, screenPosition).xyz * 2.0) - 1.0;
-	vec3 worldPosition = texture(texturePosition, screenPosition).xyz;
+	vec3 worldPosition = getPositionReconstruct(screenPosition);
 
 	//sunlight is currently calculated in final.frag
 	/*vec3 sunLightDirection = normalize(vec3(-1.0, -1.0, -1.0)) * 1.0;

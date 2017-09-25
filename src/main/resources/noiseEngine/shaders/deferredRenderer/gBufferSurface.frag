@@ -6,12 +6,10 @@ uniform sampler2D textureLight_N;
 
 layout (location = 0) out vec4 color_out_N;
 layout (location = 1) out vec4 normal_out_N;
-layout (location = 2) out vec3 position_out_N;
-layout (location = 3) out vec4 light_out_N; //ambient, reflection
+layout (location = 2) out vec4 light_out_N; //ambient, reflection
 
 in DATA_N
 {
-	vec3 position;
 	vec3 normal;
 	vec3 tangent;
 	vec3 bitangent;
@@ -29,8 +27,6 @@ void main(){
 	mat3 worldSpaceMat = mat3(frag_in_N.tangent, frag_in_N.bitangent, frag_in_N.normal);
 	normalSample = normalSample * 2.0 - 1.0;
 	normal_out_N.xyz = normalize(worldSpaceMat * normalSample);
-
-	position_out_N = frag_in_N.position;
 
 	light_out_N = texture(textureLight_N, frag_in_N.uv);
 
