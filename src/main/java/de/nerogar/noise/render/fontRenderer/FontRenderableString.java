@@ -7,6 +7,7 @@ import de.nerogar.noise.util.Matrix4f;
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
 
 /**
  * a class for easy text rendering
@@ -157,6 +158,7 @@ public class FontRenderableString {
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
 
 		shader.activate();
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());

@@ -1,19 +1,20 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.util.Matrix4fUtils;
+
 import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
-
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
 
 public class RenderHelper {
 
 	private static Matrix4f projectionMatrix;
 
-	//do this for an instance of RenderHelper per context later
+	// do this for an instance of RenderHelper per context later
 	private static HashMap<Long, VertexBufferObject> glContextVboMap;
-	private static HashMap<Long, Shader> glContextShaderMap;
+	private static HashMap<Long, Shader>             glContextShaderMap;
 
 	public static void blitTexture(Texture2D texture) {
 		long currentContext = GLWindow.getCurrentContext();
@@ -37,7 +38,7 @@ public class RenderHelper {
 
 	public static void overlayTexture(Texture2D texture) {
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
 
 		blitTexture(texture);
 
@@ -65,8 +66,8 @@ public class RenderHelper {
 	}
 
 	static {
-		glContextVboMap = new HashMap<Long, VertexBufferObject>();
-		glContextShaderMap = new HashMap<Long, Shader>();
+		glContextVboMap = new HashMap<>();
+		glContextShaderMap = new HashMap<>();
 
 		projectionMatrix = Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
 	}
