@@ -67,9 +67,9 @@ public interface Bounding {
 	 * and this bounding box overlap. That means, if there is a point (x, y, z) that is inside this bounding box
 	 * and the sphere
 	 *
-	 * @param centerX the x value of the center of the sphere
-	 * @param centerY the y value of the center of the sphere
-	 * @param centerZ the z value of the center of the sphere
+	 * @param centerX     the x value of the center of the sphere
+	 * @param centerY     the y value of the center of the sphere
+	 * @param centerZ     the z value of the center of the sphere
 	 * @param otherRadius the radius of the sphere
 	 * @return true, if this and the other boundingSphere overlap
 	 */
@@ -144,6 +144,10 @@ public interface Bounding {
 		if (bounding instanceof BoundingAABB) return overlapsAABB((BoundingAABB) bounding);
 		if (bounding instanceof BoundingSphere) return overlapsSphere((BoundingSphere) bounding);
 		if (bounding instanceof BoundingHexahedron) return overlapsHexahedron((BoundingHexahedron) bounding);
+		if (bounding instanceof BoundingPoint) {
+			Vector3f position = ((BoundingPoint) bounding).getPosition();
+			return hasPoint(position.getX(), position.getY(), position.getZ());
+		}
 		return false;
 	}
 
