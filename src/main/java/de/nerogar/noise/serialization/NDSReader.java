@@ -2,6 +2,7 @@ package de.nerogar.noise.serialization;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.zip.GZIPInputStream;
 
 import static de.nerogar.noise.serialization.NDSConstants.*;
 
@@ -72,6 +73,8 @@ public class NDSReader {
 				return new NDSDataInputStream(in);
 			case NDSConstants.COMPRESSION_METHOD_RUNLENGTH_1:
 				return new NDSDataInputStream(new RunlengthInputStream(in));
+			case NDSConstants.COMPRESSION_METHOD_GZIP:
+				return new NDSDataInputStream(new BufferedInputStream(new GZIPInputStream(in)));
 		}
 	}
 

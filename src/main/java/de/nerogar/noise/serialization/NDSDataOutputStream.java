@@ -115,26 +115,26 @@ public class NDSDataOutputStream extends FilterOutputStream {
 	}
 
 	public void writeShort(short value) throws IOException {
-		write((value >> 8) & 0xFF);
-		write((value >> 0) & 0xFF);
+		write((value >>> 8) & 0xFF);
+		write((value >>> 0) & 0xFF);
 	}
 
 	public void writeInt(int value) throws IOException {
-		write((value >> 24) & 0xFF);
-		write((value >> 16) & 0xFF);
-		write((value >> 8) & 0xFF);
-		write((value >> 0) & 0xFF);
+		write((value >>> 24) & 0xFF);
+		write((value >>> 16) & 0xFF);
+		write((value >>> 8) & 0xFF);
+		write((value >>> 0) & 0xFF);
 	}
 
 	public void writeLong(long value) throws IOException {
-		write((int) (value >> 56) & 0xFF);
-		write((int) (value >> 48) & 0xFF);
-		write((int) (value >> 40) & 0xFF);
-		write((int) (value >> 32) & 0xFF);
-		write((int) (value >> 24) & 0xFF);
-		write((int) (value >> 16) & 0xFF);
-		write((int) (value >> 8) & 0xFF);
-		write((int) (value >> 0) & 0xFF);
+		write((int) (value >>> 56) & 0xFF);
+		write((int) (value >>> 48) & 0xFF);
+		write((int) (value >>> 40) & 0xFF);
+		write((int) (value >>> 32) & 0xFF);
+		write((int) (value >>> 24) & 0xFF);
+		write((int) (value >>> 16) & 0xFF);
+		write((int) (value >>> 8) & 0xFF);
+		write((int) (value >>> 0) & 0xFF);
 	}
 
 	// unsigned
@@ -199,13 +199,23 @@ public class NDSDataOutputStream extends FilterOutputStream {
 	}
 
 	public void writeShortArray(short[] value) throws IOException {
-		writeInt(value.length);
+		int length = value.length;
+
+		writeInt(length);
 
 		for (int b = 8; b >= 0; b -= 8) {
-			for (short aValue : value) {
-				write(aValue >> b);
+			for (int i = 0; i < length; i++) {
+				write(value[i] >>> b);
 			}
 		}
+
+		/*
+		writeInt(length);
+
+		for (int i = 0; i < length; i++) {
+			writeShort(value[i]);
+		}
+		*/
 	}
 
 	public void writeUnsignedShortArray(int[] value) throws IOException {
@@ -213,7 +223,7 @@ public class NDSDataOutputStream extends FilterOutputStream {
 
 		for (int b = 8; b >= 0; b -= 8) {
 			for (int aValue : value) {
-				write(aValue >> b);
+				write(aValue >>> b);
 			}
 		}
 	}
@@ -223,7 +233,7 @@ public class NDSDataOutputStream extends FilterOutputStream {
 
 		for (int b = 24; b >= 0; b -= 8) {
 			for (int aValue : value) {
-				write(aValue >> b);
+				write(aValue >>> b);
 			}
 		}
 	}
@@ -233,7 +243,7 @@ public class NDSDataOutputStream extends FilterOutputStream {
 
 		for (int b = 24; b >= 0; b -= 8) {
 			for (long aValue : value) {
-				write((int) (aValue >> b));
+				write((int) (aValue >>> b));
 			}
 		}
 	}
@@ -243,7 +253,7 @@ public class NDSDataOutputStream extends FilterOutputStream {
 
 		for (int b = 56; b >= 0; b -= 8) {
 			for (long aValue : value) {
-				write((int) (aValue >> b));
+				write((int) (aValue >>> b));
 			}
 		}
 	}
@@ -258,7 +268,7 @@ public class NDSDataOutputStream extends FilterOutputStream {
 		for (int b = 24; b >= 0; b -= 8) {
 			for (float aValue : value) {
 				int raw = Float.floatToRawIntBits(aValue);
-				write(raw >> b);
+				write(raw >>> b);
 			}
 		}
 	}
@@ -269,7 +279,7 @@ public class NDSDataOutputStream extends FilterOutputStream {
 		for (int b = 56; b >= 0; b -= 8) {
 			for (double aValue : value) {
 				long raw = Double.doubleToRawLongBits(aValue);
-				write((int) (raw >> b ));
+				write((int) (raw >>> b));
 			}
 		}
 	}

@@ -1,0 +1,169 @@
+THE FORMAT
+===========
+
+
+An NDS file consists out of 4 sections:
+1. Header        (A constant size header with meta information about the file)
+2. ASCII Header  (A text section that can be used to store meta information as ascii text)
+3. Data          (A tree structure containing the data)
+4. Raw           (A raw data block containing big arrays and special data)
+
+features marked with <opt> are optional.
+
+1. Header
+----------
+
+ - file description
+4 byte: "NDS\n"
+
+ - version
+1 byte: major version (version changes are not compatible)
+1 byte: minor version (version changes are backwards compatible)
+1 byte "\n"
+
+ - type
+8 byte: type (ascii string right padded with \0 to exactly 8 byte)
+
+ - compression
+4 bit : data compression type
+4 bit : raw  compression type
+         - 0000 none
+         - 0001 runlength (version 1)
+   <opt> - 0010 gzip
+
+3 byte: (reserved)
+
+ - bit flags
+1 byte: feature flags (files using optional features set these flags to 1)
+         - 0000 0001 compression features
+         - 0000 0010 int features
+         - 0000 0100 float features
+
+2 byte: (reserved)
+
+1 byte: section flags (files using the sections 2 to 4 set these flags to 1)
+         - 0000 0001 ASCII Header
+         - 0000 0010 Data
+         - 0000 0100 Raw
+
+
+2. ASCII Header
+----------------
+
+ascii text, null terminated
+
+
+3. Data
+--------
+
+The main data containing the structure of the file, small values and pointers to the raw data section.
+The data is saved in nodes, each node has the same layout.
+
+1 byte: type      (indicates the type of data saved in this node)
+string: name      (a null terminated ascii string)
+<data>: the data  (variable length data, the length depends on the type of data)
+
+The type is split into 3 sections
+    2 bit: array indicator (indicating the amount of elements saved)
+            - 00 single value
+            - 01 array
+            - 10 multi dimensional array
+    2 bit: type indicator
+            - 00 integer
+            - 01 float
+            - 11 special
+    4 bit: sub type (depending on the type, these bits have e different meaning)
+            - integer:
+                1 bit: sign flag
+                        - 0 unsigned
+                        - 1 signed
+                3 bit length (let XXX be the 3 bits: the length of the integer in bits is (2^XXX))
+                        - 1   <opt>
+                        - 2   <opt>
+                        - 4   nibble
+                        - 8   byte
+                        - 16  short
+                        - 32  int
+                        - 64  long
+                        - 128 <opt>
+            - float:
+                1 bit: <not used>
+                3 bit length (let XXX be the 3 bits: the length of the integer in bits is (2^XXX))
+                       - 1   <not used>
+                       - 2   <not used>
+                       - 4   <not used>
+                       - 8   <not used>
+                       - 16  <opt>
+                       - 32  float
+                       - 64  double
+                       - 128 <opt>
+            - special:
+                - 0000 object
+                - 0001 big integer
+                - 0010 boolean
+                - 0011 utf8 string
+
+The name is a null terminated ascii string
+
+The format of the data depends on the type of data
+    single values:
+        - integer
+            saved in big endian byte order
+        - float
+            saved in the IEEE 754 format
+        - object
+            a single node
+        - big integer
+            1 unsigned byte: the length of the integer in bytes
+            n byte: the data for this big integer in big endian byte order
+        - boolean
+            1 byte: 0 -> false, 1 -> true
+        - utf8 string
+            4 byte: number of codepoints
+            utf8 encoded unicode string
+            1 byte: null terminator
+    arrays:
+        - object
+            4 byte: number of elements in this array, saved as a signed 32 bit integer (-1 if the array is null)
+            all objects as nodes without padding
+        - everything else
+            8 byte: pointer into the raw data as a signed 64 bit integer (-1 if the data is null)
+
+
+
+4. Raw
+-------
+
+The raw section is a block of data containing arrays and big chunks of data.
+Pointers into this section are offsets from the start of the section, starting with 0.
+
+Arrays are saved in the following format:
+    4 byte: number of elements in this array, saved as a signed 32 bit integer
+    the data:
+        - integer
+            the elements without any padding with an interleaved format:
+                If the integers are multiple bytes long, then the most significant bytes of all integers are saved first
+                then the next most significant byte of all integers and so on.
+            padding:
+                0 bits if the end of the array does not align with a byte border.
+                This is useful for small integers shorter than 8 bit.
+        - float / big integer / boolean / utf8 string
+            the elements without any padding
+
+
+NOTES
+======
+
+
+runlength encoding
+-------------------
+
+The runlength encoding (version 1) compresses the data in the following format:
+The data is split into multiple sections. Each section starts with a single byte describing the type of the section.
+The first bit indicates whether the section is a run or not. The next 7 bits indicate the length.
+Let 'runIndicatorByte' be this byte, then these two values are calculated like this:
+    run    = (runIndicatorByte & 0x80) != 0;
+    length = (runIndicatorByte & 0x7F) + 1;
+
+If the section is a run, then the next byte is repeated 'length' times
+If the section is not a run, then the next 'length' bytes are used as the data

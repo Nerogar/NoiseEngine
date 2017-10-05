@@ -10,6 +10,7 @@ public class NDSConstants {
 	// compression
 	public static final int COMPRESSION_METHOD_NONE        = 0b0000;
 	public static final int COMPRESSION_METHOD_RUNLENGTH_1 = 0b0001;
+	public static final int COMPRESSION_METHOD_GZIP        = 0b0010;
 
 	// file
 	protected static final String ERROR_UNSUPPORTED_FILE_VERSION = "unsupported file version";
@@ -66,12 +67,12 @@ public class NDSConstants {
 
 	// --- [ header flags
 	// sections
-	protected static final int HAS_ASCII_HEADER              = 0x00_00_00_01;
-	protected static final int HAS_TREE_DATA                 = 0x00_00_00_02;
-	protected static final int HAS_RAW_DATA                  = 0x00_00_00_04;
+	protected static final int HAS_ASCII_HEADER              = 0x01;
+	protected static final int HAS_TREE_DATA                 = 0x02;
+	protected static final int HAS_RAW_DATA                  = 0x04;
 	// features
-	protected static final int USE_FULL_COMPRESSION_FEATURES = 0x01_00_00_00;
-	protected static final int USE_FULL_INT_FEATURES         = 0x02_00_00_00;
-	protected static final int USE_FULL_FLOAT_FEATURES       = 0x04_00_00_00;
-	protected static final int SUPPORTED_FEATURES            = 0;
+	protected static final int USE_FULL_COMPRESSION_FEATURES = 0x01;
+	protected static final int USE_FULL_INT_FEATURES         = 0x02;
+	protected static final int USE_FULL_FLOAT_FEATURES       = 0x04;
+	protected static final int SUPPORTED_FEATURES            = USE_FULL_COMPRESSION_FEATURES;
 }

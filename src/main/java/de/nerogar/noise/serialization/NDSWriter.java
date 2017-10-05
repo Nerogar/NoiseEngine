@@ -1,13 +1,14 @@
 package de.nerogar.noise.serialization;
 
 import java.io.*;
+import java.util.zip.GZIPOutputStream;
 
 import static de.nerogar.noise.serialization.NDSConstants.NDS_FILE_SPECIFIER;
 
 public class NDSWriter {
 
 	private static void writeToStream(NDSFile ndsFile, OutputStream out) throws IOException {
-		NDSDataOutputStream headerOut = getOutputStream(out, NDSConstants.COMPRESSION_METHOD_NONE);
+		NDSDataOutputStream headerOut = new NDSDataOutputStream(getOutputStream(out, NDSConstants.COMPRESSION_METHOD_NONE));
 
 		// NDS string
 		headerOut.writeASCIIString(NDS_FILE_SPECIFIER, false);
@@ -31,7 +32,7 @@ public class NDSWriter {
 		headerOut.write(0);
 		headerOut.write(0);
 
-		// bitflags
+		// bit flags
 		headerOut.write(ndsFile.getFeatureFlags());
 		headerOut.write(0);
 		headerOut.write(0);
@@ -45,29 +46,41 @@ public class NDSWriter {
 		headerOut.flush();
 
 		// tree data
-		NDSDataOutputStream dataOut = getOutputStream(out, ndsFile.getDataCompressionFlags());
+		OutputStream dataOut0 = getOutputStream(out, ndsFile.getDataCompressionFlags());
+		NDSDataOutputStream dataOut = new NDSDataOutputStream(dataOut0);
 		if ((ndsFile.getSectionFlags() & NDSConstants.HAS_TREE_DATA) != 0) {
 			ndsFile.getData().writeTree(dataOut);
 		}
 
 		dataOut.flush();
+		finish(dataOut0);
 
 		// raw data
-		NDSDataOutputStream rawOut = getOutputStream(out, ndsFile.getRawCompressionFlags());
+		OutputStream rawOut0 = getOutputStream(out, ndsFile.getRawCompressionFlags());
+		NDSDataOutputStream rawOut = new NDSDataOutputStream(rawOut0);
 		if ((ndsFile.getSectionFlags() & NDSConstants.HAS_RAW_DATA) != 0) {
 			ndsFile.getData().writeRaw(rawOut);
 		}
 
 		rawOut.flush();
+		finish(rawOut0);
 	}
 
-	private static NDSDataOutputStream getOutputStream(OutputStream out, int compression) throws IOException {
+	private static OutputStream getOutputStream(OutputStream out, int compression) throws IOException {
 		switch (compression) {
 			default:
 			case NDSConstants.COMPRESSION_METHOD_NONE:
-				return new NDSDataOutputStream(out);
+				return out;
 			case NDSConstants.COMPRESSION_METHOD_RUNLENGTH_1:
-				return new NDSDataOutputStream(new RunlengthOutputStream(out));
+				return new RunlengthOutputStream(out);
+			case NDSConstants.COMPRESSION_METHOD_GZIP:
+				return new BufferedOutputStream(new GZIPOutputStream(out));
+		}
+	}
+
+	private static void finish(OutputStream out) throws IOException {
+		if (out instanceof GZIPOutputStream) {
+			((GZIPOutputStream) out).finish();
 		}
 	}
 
@@ -94,7 +107,7 @@ public class NDSWriter {
 
 	public static void writeFile(NDSFile ndsFile, String filename, int dataCompressionFlags, int rawCompressionFlags) {
 		try {
-			OutputStream out = new BufferedOutputStream(new FileOutputStream(new File(filename)));
+			OutputStream out = new BufferedOutputStream(new FileOutputStream(new File(filename)), 1024 * 64);
 			write(ndsFile, out, dataCompressionFlags, rawCompressionFlags);
 		} catch (IOException e) {
 			e.printStackTrace();
