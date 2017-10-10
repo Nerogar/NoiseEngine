@@ -1,17 +1,22 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.render.Texture2D.DataType;
 import de.nerogar.noise.render.Texture2D.InterpolationType;
-import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.system.MemoryStack;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
+import static org.lwjgl.stb.STBImage.*;
 
 public class Texture2DLoader {
 
@@ -29,20 +34,51 @@ public class Texture2DLoader {
 
 	public static Texture2D loadTexture(String filename, String textureName, InterpolationType interpolationType) {
 		InputStream inputStream = FileUtil.get(filename, FileUtil.TEXTURE_SUBFOLDER).asStream();
-
-		Texture2D texture = null;
+		ByteBuffer imageBuffer = null;
 
 		try {
-			BufferedImage image = ImageIO.read(inputStream);
-			texture = loadTexture(image, textureName, interpolationType);
+			try (ReadableByteChannel in = Channels.newChannel(inputStream)) {
+				imageBuffer = BufferUtils.createByteBuffer(16 * 1024);
+				while (true) {
+					int bytes = in.read(imageBuffer);
+					if (bytes == -1) {
+						break;
+					}
+					if (imageBuffer.remaining() == 0) {
+						ByteBuffer oldBuffer = imageBuffer;
+						imageBuffer = BufferUtils.createByteBuffer(imageBuffer.capacity() * 2);
+						oldBuffer.flip();
+						imageBuffer.put(oldBuffer);
+					}
+				}
+				imageBuffer.flip();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			Noise.getLogger().log(Logger.ERROR, "Missing Texture: " + filename);
 		}
 
-		Noise.getLogger().log(Logger.INFO, "loaded texture: " + filename);
+		if (imageBuffer == null) return null;
 
-		return texture;
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+
+			IntBuffer w = stack.mallocInt(1);
+			IntBuffer h = stack.mallocInt(1);
+			IntBuffer comp = stack.mallocInt(1);
+
+			stbi_set_flip_vertically_on_load(true);
+			if (!stbi_info_from_memory(imageBuffer, w, h, comp)) {
+				Noise.getLogger().log(Logger.ERROR, "Could not read image information: " + filename + ", reason: " + stbi_failure_reason());
+			}
+
+			// Decode the image
+			ByteBuffer image = stbi_load_from_memory(imageBuffer, w, h, comp, 4);
+			if (image == null) {
+				Noise.getLogger().log(Logger.ERROR, "Could not load image: " + filename + ", reason: " + stbi_failure_reason());
+			}
+
+			Noise.getLogger().log(Logger.INFO, "loaded texture: " + filename);
+			return new Texture2D(textureName, w.get(0), h.get(0), image, interpolationType, DataType.BGRA_8_8_8_8I);
+		}
 	}
 
 	public static Texture2D loadTexture(BufferedImage image, String textureName, InterpolationType interpolationType) {

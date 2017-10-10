@@ -7,7 +7,6 @@ import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_BGRA;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT32;
 import static org.lwjgl.opengl.GL30.*;
@@ -36,31 +35,31 @@ public class Texture2D extends Texture {
 
 	public enum DataType {
 		/** 1 component, 8 bit, range is [0, 1], input is BGRA */
-		BGRA_8I(GL_R8, GL_BGRA, GL_UNSIGNED_BYTE),
+		BGRA_8I(GL_R8, GL_RGBA, GL_UNSIGNED_BYTE),
 
 		/** 2 components, 8 bit each, range is [0, 1], input is BGRA */
-		BGRA_8_8I(GL_RG8, GL_BGRA, GL_UNSIGNED_BYTE),
+		BGRA_8_8I(GL_RG8, GL_RGBA, GL_UNSIGNED_BYTE),
 
 		/** 3 components, 8 bit each, range is [0, 1], input is BGRA */
-		BGRA_8_8_8I(GL_RGB8, GL_BGRA, GL_UNSIGNED_BYTE),
+		BGRA_8_8_8I(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE),
 
 		/** 4 components, 8 bit each, range is [0, 1], input is BGRA */
-		BGRA_8_8_8_8I(GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE),
+		BGRA_8_8_8_8I(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE),
 
 		/** 4 components, 10 bits for R, G and B, 2 bits for A, range ist [0, 1], input is BGRA */
-		BGRA_10_10_10_2(GL_RGB10_A2, GL_BGRA, GL_FLOAT),
+		BGRA_10_10_10_2(GL_RGB10_A2, GL_RGBA, GL_FLOAT),
 
 		/** 1 component, 16 bit, half floating point precision, input is BGRA */
-		BGRA_16F(GL_R16F, GL_BGRA, GL_HALF_FLOAT),
+		BGRA_16F(GL_R16F, GL_RGBA, GL_HALF_FLOAT),
 
 		/** 2 components, 16 bit each, half floating point precision, input is BGRA */
-		BGRA_16_16F(GL_RG16F, GL_BGRA, GL_HALF_FLOAT),
+		BGRA_16_16F(GL_RG16F, GL_RGBA, GL_HALF_FLOAT),
 
 		/** 3 components, 16 bit each, half floating point precision, input is BGRA */
-		BGRA_16_16_16F(GL_RGB16F, GL_BGRA, GL_HALF_FLOAT),
+		BGRA_16_16_16F(GL_RGB16F, GL_RGBA, GL_HALF_FLOAT),
 
 		/** 4 components, 16 bit each, half floating point precision, input is BGRA */
-		BGRA_16_16_16_16F(GL_RGBA16F, GL_BGRA, GL_HALF_FLOAT),
+		BGRA_16_16_16_16F(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT),
 
 		/** 1 components, 32 bit, floating point precision, input is R (a single float) */
 		BGRA_32F(GL_R32F, GL_R, GL_FLOAT),
