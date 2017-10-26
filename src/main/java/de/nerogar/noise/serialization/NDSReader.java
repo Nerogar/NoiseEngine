@@ -8,7 +8,7 @@ import static de.nerogar.noise.serialization.NDSConstants.*;
 
 public class NDSReader {
 
-	private static void readFromStream(NDSFile ndsFile, InputStream in) throws IOException {
+	private static void readFromStream(NDSFile ndsFile, InputStream in, boolean readShallow) throws IOException {
 		NDSDataInputStream headerIn = getInputStream(in, NDSConstants.COMPRESSION_METHOD_NONE);
 
 		// NDS string
@@ -60,9 +60,11 @@ public class NDSReader {
 		}
 
 		// raw data
-		if ((ndsFile.getSectionFlags() & NDSConstants.HAS_RAW_DATA) != 0) {
-			NDSDataInputStream rawIn = getInputStream(in, ndsFile.getRawCompressionFlags());
-			ndsFile.getData().readRaw(rawIn);
+		if (!readShallow) {
+			if ((ndsFile.getSectionFlags() & NDSConstants.HAS_RAW_DATA) != 0) {
+				NDSDataInputStream rawIn = getInputStream(in, ndsFile.getRawCompressionFlags());
+				ndsFile.getData().readRaw(rawIn);
+			}
 		}
 	}
 
@@ -78,11 +80,11 @@ public class NDSReader {
 		}
 	}
 
-	public static NDSFile read(InputStream in) {
+	private static NDSFile readInternal(InputStream in, boolean readShallow) {
 
 		try {
 			NDSFile ndsFile = new NDSFile();
-			readFromStream(ndsFile, in);
+			readFromStream(ndsFile, in, readShallow);
 			return ndsFile;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -91,8 +93,16 @@ public class NDSReader {
 		return null;
 	}
 
+	public static NDSFile read(InputStream in) {
+		return readInternal(in, false);
+	}
+
 	public static NDSFile readFile(String filename) throws FileNotFoundException {
-		return read(new BufferedInputStream(new FileInputStream(new File(filename))));
+		return readInternal(new BufferedInputStream(new FileInputStream(new File(filename))), false);
+	}
+
+	public static NDSFile readFileShallow(String filename) throws FileNotFoundException {
+		return readInternal(new BufferedInputStream(new FileInputStream(new File(filename))), true);
 	}
 
 	public static NDSFile readJson(Reader reader) {
