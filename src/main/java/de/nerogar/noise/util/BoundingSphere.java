@@ -155,4 +155,9 @@ public class BoundingSphere implements Bounding {
 		return bounding.overlapsSphere(this);
 	}
 
+	@Override
+	public Bounding clone() {
+		return new BoundingSphere(center.clone(), radius);
+	}
+
 }

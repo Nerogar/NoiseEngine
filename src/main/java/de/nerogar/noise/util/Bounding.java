@@ -1,6 +1,6 @@
 package de.nerogar.noise.util;
 
-public interface Bounding {
+public interface Bounding extends Cloneable {
 
 	/**
 	 * returns a single point in this bounding, do not modify this point
@@ -150,5 +150,7 @@ public interface Bounding {
 		}
 		return false;
 	}
+
+	Bounding clone();
 
 }

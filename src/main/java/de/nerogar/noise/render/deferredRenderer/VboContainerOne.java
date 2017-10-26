@@ -11,14 +11,14 @@ import java.util.function.Consumer;
 
 class VboContainerOne implements VboContainer {
 
-	private DeferredRendererProfiler profiler;
-	private DeferredContainer container;
-	private DeferredRenderable renderable;
-	private boolean updatedRenderable;
+	private DeferredRendererProfiler     profiler;
+	private DeferredContainer            container;
+	private DeferredRenderable           renderable;
+	private boolean                      updatedRenderable;
 	private Consumer<DeferredRenderable> renderableListener;
 
 	private VertexBufferObjectIndexed vbo;
-	private Shader                      gBufferShader;
+	private Shader                    gBufferShader;
 
 	private Matrix4f modelMatrix;
 	private Matrix4f normalMatrix;
@@ -37,16 +37,32 @@ class VboContainerOne implements VboContainer {
 
 		point = new Vector3f();
 
+		int[] componentCounts = new int[5 + container.getMesh().getAdditionalAttributes().length];
+		float[][] attributes = new float[5 + container.getMesh().getAdditionalAttributes().length][];
+
+		componentCounts[0] = 3;
+		componentCounts[1] = 2;
+		componentCounts[2] = 3;
+		componentCounts[3] = 3;
+		componentCounts[4] = 3;
+
+		attributes[0] = container.getMesh().getPositionArray();
+		attributes[1] = container.getMesh().getUVArray();
+		attributes[2] = container.getMesh().getNormalArray();
+		attributes[3] = container.getMesh().getTangentArray();
+		attributes[4] = container.getMesh().getBitangentArray();
+
+		for (int i = 0; i < container.getMesh().getAdditionalAttributes().length; i++) {
+			componentCounts[5 + i] = container.getMesh().getAdditionalAttributeComponents()[i];
+			attributes[5 + i] = container.getMesh().getAdditionalAttributes()[i];
+		}
+
 		vbo = new VertexBufferObjectIndexed(
-				new int[] { 3, 2, 3, 3, 3 },
+				componentCounts,
 				container.getMesh().getIndexCount(),
 				container.getMesh().getVertexCount(),
 				container.getMesh().getIndexArray(),
-				container.getMesh().getPositionArray(),
-				container.getMesh().getUVArray(),
-				container.getMesh().getNormalArray(),
-				container.getMesh().getTangentArray(),
-				container.getMesh().getBitangentArray()
+				attributes
 		);
 	}
 

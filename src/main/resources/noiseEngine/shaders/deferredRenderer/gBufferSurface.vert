@@ -20,6 +20,7 @@ layout (location = 4) in vec3 bitangent_N;
 
 out DATA_N
 {
+	vec3 position;
 	vec3 normal;
 	vec3 tangent;
 	vec3 bitangent;
@@ -36,10 +37,9 @@ void main(){
 	vert_out_N.tangent = normalize(normalMatrix3x3_N * tangent_N);
 	vert_out_N.bitangent = normalize(normalMatrix3x3_N * bitangent_N);
 	vert_out_N.uv = uv_N;
-	vec3 pos = (modelMatrix_N * vec4(position_N, 1.0)).xyz;
+	vert_out_N.position = (modelMatrix_N * vec4(position_N, 1.0)).xyz;
 
-	mainSurface(vert_out_N.uv, pos, vert_out_N.normal);
+	mainSurface(vert_out_N.uv, vert_out_N.position, vert_out_N.normal);
 
-	gl_Position = projectionMatrix_N * viewMatrix_N * vec4(pos, 1.0);
-	gl_Position = projectionMatrix_N * viewMatrix_N * modelMatrix_N * vec4(pos, 1.0);
+	gl_Position = projectionMatrix_N * viewMatrix_N * vec4(vert_out_N.position, 1.0);
 }

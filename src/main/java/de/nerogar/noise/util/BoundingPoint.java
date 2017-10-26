@@ -91,4 +91,9 @@ public class BoundingPoint implements Bounding {
 		return bounding.hasPoint(position.getX(), position.getY(), position.getZ());
 	}
 
+	@Override
+	public Bounding clone() {
+		return new BoundingPoint(position.clone());
+	}
+
 }

@@ -245,7 +245,7 @@ public class DeferredContainer {
 	 * </li>
 	 * <p>
 	 * <li>For the fragment Shader:<br>
-	 * {@code void mainSurface(inout vec4 color, in vec2 uv, inout vec3 position, inout vec3 normal, inout float displace, inout vec4 light)}
+	 * {@code void mainSurface(inout vec4 color, in vec2 uv, in vec3 position, inout vec3 normal, inout float displace, inout vec4 light)}
 	 * </li>
 	 * </ul>
 	 * <p>

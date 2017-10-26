@@ -10,13 +10,14 @@ layout (location = 2) out vec4 light_out_N; //ambient, reflection
 
 in DATA_N
 {
+	vec3 position;
 	vec3 normal;
 	vec3 tangent;
 	vec3 bitangent;
 	vec2 uv;
 } frag_in_N;
 
-void mainSurface(inout vec4 color, in vec2 uv, inout vec3 position, inout vec3 normal, inout float displace, inout vec4 light);
+void mainSurface(inout vec4 color, in vec2 uv, in vec3 position, inout vec3 normal, inout float displace, inout vec4 light);
 
 #pinclude surfaceShaderFragment
 
@@ -30,7 +31,7 @@ void main(){
 
 	light_out_N = texture(textureLight_N, frag_in_N.uv);
 
-	mainSurface(color_out_N, frag_in_N.uv, position_out_N, normal_out_N.xyz, normal_out_N.w, light_out_N);
+	mainSurface(color_out_N, frag_in_N.uv, frag_in_N.position, normal_out_N.xyz, normal_out_N.w, light_out_N);
 
 	normal_out_N.xyz = (normal_out_N.xyz + 1.0) * 0.5;
 	//if(color_out_N.a == 0.0) discard;

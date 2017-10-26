@@ -70,14 +70,14 @@ public class BoundingHexahedron implements Bounding {
 	 * @param point8 a vertex of the bounding
 	 */
 	public BoundingHexahedron(Vector3f point1, Vector3f point2, Vector3f point3, Vector3f point4, Vector3f point5, Vector3f point6, Vector3f point7, Vector3f point8) {
-		this.point1 = new Vector3f();
-		this.point2 = new Vector3f();
-		this.point3 = new Vector3f();
-		this.point4 = new Vector3f();
-		this.point5 = new Vector3f();
-		this.point6 = new Vector3f();
-		this.point7 = new Vector3f();
-		this.point8 = new Vector3f();
+		this.point1 = point1;
+		this.point2 = point2;
+		this.point3 = point3;
+		this.point4 = point4;
+		this.point5 = point5;
+		this.point6 = point6;
+		this.point7 = point7;
+		this.point8 = point8;
 
 		setPoints(point1, point2, point3, point4, point5, point6, point7, point8);
 	}
@@ -386,6 +386,11 @@ public class BoundingHexahedron implements Bounding {
 				|| isInsideOfFace(normalF, distanceF, bounding.point6.getX(), bounding.point6.getY(), bounding.point6.getZ())
 				|| isInsideOfFace(normalF, distanceF, bounding.point7.getX(), bounding.point7.getY(), bounding.point7.getZ())
 				|| isInsideOfFace(normalF, distanceF, bounding.point8.getX(), bounding.point8.getY(), bounding.point8.getZ()));
+	}
+
+	@Override
+	public Bounding clone() {
+		return new BoundingHexahedron(point1, point2, point3, point4, point5, point6, point7, point8);
 	}
 
 }

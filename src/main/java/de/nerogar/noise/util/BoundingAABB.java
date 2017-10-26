@@ -35,10 +35,12 @@ public class BoundingAABB implements Bounding {
 	/**
 	 * setter for the small corner of the AABB
 	 *
-	 * @param position the small corner
+	 * @param x the new x component of the center of the sphere
+	 * @param y the new y component of the center of the sphere
+	 * @param z the new z component of the center of the sphere
 	 */
-	public void setPosition(Vector3f position) {
-		this.position.set(position);
+	public void setPosition(float x, float y, float z) {
+		this.position.set(x, y, z);
 	}
 
 	/**
@@ -127,6 +129,11 @@ public class BoundingAABB implements Bounding {
 	@Override
 	public boolean overlapsHexahedron(BoundingHexahedron bounding) {
 		return bounding.overlapsAABB(this);
+	}
+
+	@Override
+	public Bounding clone() {
+		return new BoundingAABB(position.clone(), size.clone());
 	}
 
 }

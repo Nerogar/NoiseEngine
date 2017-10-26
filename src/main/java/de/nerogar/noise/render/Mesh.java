@@ -11,13 +11,15 @@ public class Mesh {
 	private int vertexCount;
 	private int triangleCount;
 
-	private int[]   indexArray;
-	private float[] positionArray;
-	private float[] uvArray;
-	private float[] normalArray;
-	private float[] tangentArray;
-	private float[] bitangentArray;
-	private float   boundingRadius;
+	private int[]     indexArray;
+	private float[]   positionArray;
+	private float[]   uvArray;
+	private float[]   normalArray;
+	private float[]   tangentArray;
+	private float[]   bitangentArray;
+	private float[][] additionalAttributes;
+	private int[]     additionalAttributeComponents;
+	private float     boundingRadius;
 
 	public Mesh(int indexCount, int vertexCount, int[] indexArray, float[] positionArray, float[] uvArray, float[] normalArray, float[] tangentArray, float[] bitangentArray) {
 		this.indexCount = indexCount;
@@ -62,6 +64,14 @@ public class Mesh {
 		calcTriangleCount();
 	}
 
+	public void setAdditionalAttributes(float[]... additionalAttributes) {
+		this.additionalAttributes = additionalAttributes;
+	}
+
+	public void setAdditionalAttributeComponents(int[] additionalAttributeComponents) {
+		this.additionalAttributeComponents = additionalAttributeComponents;
+	}
+
 	public int getIndexCount() {
 		return indexCount;
 	}
@@ -92,6 +102,14 @@ public class Mesh {
 
 	public float[] getBitangentArray() {
 		return bitangentArray;
+	}
+
+	public float[][] getAdditionalAttributes() {
+		return additionalAttributes;
+	}
+
+	public int[] getAdditionalAttributeComponents() {
+		return additionalAttributeComponents;
 	}
 
 	public float getBoundingRadius() {
