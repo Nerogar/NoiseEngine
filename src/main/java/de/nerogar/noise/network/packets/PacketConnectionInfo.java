@@ -1,6 +1,7 @@
 package de.nerogar.noise.network.packets;
 
 import de.nerogar.noise.network.Packet;
+import de.nerogar.noise.network.PacketInfo;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -25,6 +26,11 @@ public class PacketConnectionInfo extends Packet {
 	@Override
 	public void toStream(DataOutputStream out) throws IOException {
 		out.writeInt(version);
+	}
+
+	@Override
+	public int getChannel() {
+		return PacketInfo.SYSTEM_PACKET_CHANNEL;
 	}
 
 }

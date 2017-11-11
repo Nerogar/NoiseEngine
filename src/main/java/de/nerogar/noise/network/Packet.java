@@ -7,6 +7,7 @@ import java.io.IOException;
 public abstract class Packet implements Streamable {
 
 	private byte[] buffer;
+	private int    channel;
 
 	synchronized final byte[] getBuffer() throws IOException {
 		if (buffer == null) {
@@ -19,5 +20,7 @@ public abstract class Packet implements Streamable {
 
 		return buffer;
 	}
+
+	public abstract int getChannel();
 
 }

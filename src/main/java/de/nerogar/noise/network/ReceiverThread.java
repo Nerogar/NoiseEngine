@@ -1,7 +1,8 @@
 package de.nerogar.noise.network;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.network.Packets.PacketContainer;
+import de.nerogar.noise.network.packets.PacketConnectionInfo;
+import de.nerogar.noise.network.packets.PacketPacketIdInfo;
 import de.nerogar.noise.util.Logger;
 
 import java.io.DataInputStream;
@@ -17,10 +18,15 @@ public class ReceiverThread extends Thread {
 	private final ArrayList<Packet> packets       = new ArrayList<>();
 	private       ArrayList<Packet> polledPackets = new ArrayList<>();
 
+	private PacketInfo packetInfo;
+
 	public ReceiverThread(Socket socket, SenderThread send) {
 		setName("Receiver Thread for " + socket.toString());
 		this.socket = socket;
 		this.send = send;
+
+		packetInfo = new PacketInfo();
+
 		this.setDaemon(true);
 		this.start();
 	}
@@ -35,7 +41,7 @@ public class ReceiverThread extends Thread {
 
 				packetId = stream.readInt();
 
-				PacketContainer packetContainer = Packets.byId(packetId);
+				PacketContainer packetContainer = packetInfo.byId(packetId);
 				if (packetContainer == null) {
 					Noise.getLogger().log(Logger.WARNING, "received invalid packet id: " + packetId + ", closing connection.");
 					socket.close();
@@ -50,10 +56,24 @@ public class ReceiverThread extends Thread {
 
 					Packet packet;
 					packet = packetContainer.load(buffer);
+
+					if (packet.getChannel() == PacketInfo.SYSTEM_PACKET_CHANNEL) {
+						if (packet instanceof PacketConnectionInfo) {
+							int version = ((PacketConnectionInfo) packet).version;
+							if (version != PacketInfo.NETWORKING_VERSION) {
+								throw new NetworkVersionException("wrong network version " + version + ", expected " + PacketInfo.NETWORKING_VERSION);
+							}
+						} else if (packet instanceof PacketPacketIdInfo) {
+							packetInfo.addPacket((PacketPacketIdInfo) packet);
+						}
+					}
 					addPacket(packet);
 				}
 
 			}
+		} catch (NetworkVersionException e) {
+			Noise.getLogger().log(Logger.ERROR, "Wrong Network version in ReceiverThread");
+			e.printStackTrace(Noise.getLogger().getErrorStream());
 		} catch (SocketException e) {
 			Noise.getLogger().log(Logger.ERROR, "SocketException in ReceiverThread");
 			e.printStackTrace(Noise.getLogger().getErrorStream());

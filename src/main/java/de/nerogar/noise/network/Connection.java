@@ -20,7 +20,7 @@ public class Connection {
 		this.socket = socket;
 		this.sender = new SenderThread(socket);
 		this.receiver = new ReceiverThread(socket, sender);
-		sender.send(new PacketConnectionInfo(Packets.NETWORKING_VERSION));
+		sender.send(new PacketConnectionInfo(PacketInfo.NETWORKING_VERSION));
 		flushPackets();
 	}
 
@@ -54,7 +54,7 @@ public class Connection {
 		synchronized (availablePackets) {
 			for (Iterator<Packet> iter = availablePackets.iterator(); iter.hasNext(); ) {
 				Packet p = iter.next();
-				if (Packets.byClass(p.getClass()).getChannel() == channelID) {
+				if (p.getChannel() == channelID) {
 					packets.add(p);
 					iter.remove();
 				}

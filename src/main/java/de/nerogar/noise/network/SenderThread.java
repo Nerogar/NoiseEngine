@@ -1,6 +1,7 @@
 package de.nerogar.noise.network;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.network.packets.PacketPacketIdInfo;
 import de.nerogar.noise.util.Logger;
 
 import java.io.BufferedOutputStream;
@@ -13,13 +14,18 @@ import java.util.List;
 public class SenderThread extends Thread {
 
 	private Socket socket;
-	private final ArrayList<Packet> packets = new ArrayList<>();
+	private final ArrayList<Packet> packetQueue = new ArrayList<>();
 
 	private boolean shouldFlush;
+
+	private PacketInfo packetInfo;
 
 	public SenderThread(Socket socket) {
 		setName("Sender Thread for " + socket.toString());
 		this.socket = socket;
+
+		packetInfo = new PacketInfo();
+
 		this.setDaemon(true);
 		this.start();
 	}
@@ -27,8 +33,8 @@ public class SenderThread extends Thread {
 	public void flush() {
 		shouldFlush = true;
 
-		synchronized (packets) {
-			packets.notify();
+		synchronized (packetQueue) {
+			packetQueue.notify();
 		}
 	}
 
@@ -40,25 +46,35 @@ public class SenderThread extends Thread {
 			while (!isInterrupted()) {
 
 				List<Packet> sendPackets = new ArrayList<>();
-				synchronized (packets) {
+				synchronized (packetQueue) {
 
-					if (packets.isEmpty()) {
+					if (packetQueue.isEmpty()) {
 						if (shouldFlush) {
 							stream.flush();
 							shouldFlush = false;
 						}
-						packets.wait();
+						packetQueue.wait();
 					}
 
-					for (Packet packet : packets) {
+					for (Packet packet : packetQueue) {
 						sendPackets.add(packet);
 					}
-					packets.clear();
+					packetQueue.clear();
 				}
 
 				for (Packet packet : sendPackets) {
 					try {
-						stream.writeInt(Packets.byClass(packet.getClass()).getID());
+						if (!packetInfo.contains(packet.getClass())) {
+							PacketContainer packetContainer = packetInfo.addPacket(packet.getChannel(), packet.getClass());
+
+							Packet packetPacketIdInfo = new PacketPacketIdInfo(packetContainer.packetClass.getName(), packetContainer.id);
+							stream.writeInt(packetInfo.byClass(packetPacketIdInfo.getClass()).getID());
+							byte[] data = packetPacketIdInfo.getBuffer();
+							stream.writeInt(data.length);
+							stream.write(data);
+						}
+
+						stream.writeInt(packetInfo.byClass(packet.getClass()).getID());
 
 						byte[] data = packet.getBuffer();
 
@@ -87,9 +103,9 @@ public class SenderThread extends Thread {
 	}
 
 	public void send(Packet packet) {
-		synchronized (packets) {
-			packets.add(packet);
-			packets.notify();
+		synchronized (packetQueue) {
+			packetQueue.add(packet);
+			packetQueue.notify();
 		}
 	}
 
