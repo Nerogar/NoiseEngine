@@ -34,12 +34,12 @@ vec3 fxaaBlur(vec3 color, vec3 cNW, vec3 cNE, vec3 cSW, vec3 cSE, sampler2D text
 	//dir = clamp(dir * blurMult, vec2(-5.0), vec2(5.0));
 	//dir *= blurMult;
 
-	if(dot(dir, dir) > 0.25){
+	if (dot(dir, dir) > 0.25) {
 		//return vec3(dir, 0.0);
 		
 		dir *= inverseResolution;
 		return 0.5 * color + texture2D(textureColor, frag_in.uv + dir).rgb * 0.5;
-	}else{
+	} else {
 		//return vec3(1.0);
 		return color;
 	}
@@ -55,4 +55,5 @@ void main(){
 	vec3 fxaaColorSample = fxaaBlur(colorSample.rgb, colorSampleNW.rgb, colorSampleNE.rgb, colorSampleSW.rgb, colorSampleSE.rgb, textureColor);
 
 	color.rgb = fxaaColorSample;
+	color.a = colorSample.a;
 }

@@ -11,7 +11,5 @@ in DATA
 } frag_in;
 
 void main(){
-	vec4 c = vec4(0.0, 1.0, 1.0, 1.0);
-
 	color  = fontColor * texture(fontSheet, frag_in.uv);
 }

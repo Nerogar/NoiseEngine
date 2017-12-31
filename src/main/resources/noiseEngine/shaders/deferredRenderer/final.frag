@@ -126,7 +126,7 @@ float getAO(vec2 uv, vec3 pos, vec3 normal, float z){
 
 void main(){
 	//samples
-	vec3 colorSample = texture(textureColor, frag_in.uv).rgb;
+	vec4 colorSample = texture(textureColor, frag_in.uv);
 	vec3 normalSample = getNormal(frag_in.uv);
 	vec4 lightSample = texture(textureLight, frag_in.uv);
 	vec3 lightsSample = texture(textureLights, frag_in.uv).xyz;
@@ -157,7 +157,7 @@ void main(){
 #endif
 
 	//final
-	color.rgb = (colorSample * (sunLight + lightsSample)) - vec3(ao) + specularIntensity * sunLightColor;
+	color.rgb = (colorSample.rgb * (sunLight + lightsSample)) - vec3(ao) + specularIntensity * sunLightColor;
 	color = mix(color, skyReflectColor, lightSample.g);
 
 	//effects
@@ -166,4 +166,5 @@ void main(){
 	// debug output for light only
 	//color.rgb = (sunLight + lightsSample) * ao * 0.5 + specularIntensity * sunLightColor;
 
+	color.a = colorSample.a;
 }

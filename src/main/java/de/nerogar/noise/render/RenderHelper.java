@@ -45,6 +45,15 @@ public class RenderHelper {
 		glDisable(GL_BLEND);
 	}
 
+	public static void overlayPremultipliedTexture(Texture2D texture) {
+		glEnable(GL_BLEND);
+		glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
+
+		blitTexture(texture);
+
+		glDisable(GL_BLEND);
+	}
+
 	private static VertexBufferObjectIndexed createFullscreenQuad() {
 		int[] componentCounts = { 2, 2 };
 

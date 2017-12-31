@@ -60,7 +60,7 @@ public class PacketInfo {
 			Packet newPacket = (Packet) Class.forName(packet.getPacketClassName()).newInstance();
 			addPacket(newPacket.getChannel(), newPacket.getClass());
 		} catch (InstantiationException e) {
-			Noise.getLogger().log(Logger.ERROR, "Could not instantiate packet for class: " + packet.getPacketClassName());
+			Noise.getLogger().log(Logger.ERROR, "Could not instantiate packet for class: " + packet.getPacketClassName() + ". Make sure every Packet has a default (empty) constructor!");
 			e.printStackTrace(Noise.getLogger().getErrorStream());
 		} catch (IllegalAccessException e) {
 			Noise.getLogger().log(Logger.ERROR, "Could not instantiate packet, make sure the class and constructor are public.");
