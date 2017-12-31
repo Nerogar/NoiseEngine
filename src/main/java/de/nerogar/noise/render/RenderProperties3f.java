@@ -304,4 +304,20 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "RenderProperties3f{" +
+				"x=" + x +
+				", y=" + y +
+				", z=" + z +
+				", yaw=" + yaw +
+				", pitch=" + pitch +
+				", roll=" + roll +
+				", scaleX=" + scaleX +
+				", scaleY=" + scaleY +
+				", scaleZ=" + scaleZ +
+				", visible=" + isVisible() +
+				'}';
+	}
+
 }

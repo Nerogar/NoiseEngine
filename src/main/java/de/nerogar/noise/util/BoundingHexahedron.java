@@ -389,6 +389,20 @@ public class BoundingHexahedron implements Bounding {
 	}
 
 	@Override
+	public String toString() {
+		return "hexahedron{" +
+				"point1=" + point1 +
+				", point2=" + point2 +
+				", point3=" + point3 +
+				", point4=" + point4 +
+				", point5=" + point5 +
+				", point6=" + point6 +
+				", point7=" + point7 +
+				", point8=" + point8 +
+				'}';
+	}
+
+	@Override
 	public Bounding clone() {
 		return new BoundingHexahedron(point1, point2, point3, point4, point5, point6, point7, point8);
 	}

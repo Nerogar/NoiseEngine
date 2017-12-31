@@ -156,6 +156,11 @@ public class BoundingSphere implements Bounding {
 	}
 
 	@Override
+	public String toString() {
+		return "sphere{center=" + center + ", radius=" + radius + "}";
+	}
+
+	@Override
 	public Bounding clone() {
 		return new BoundingSphere(center.clone(), radius);
 	}

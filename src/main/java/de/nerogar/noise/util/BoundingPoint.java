@@ -92,6 +92,11 @@ public class BoundingPoint implements Bounding {
 	}
 
 	@Override
+	public String toString() {
+		return "point{pos=" + position + "}";
+	}
+
+	@Override
 	public Bounding clone() {
 		return new BoundingPoint(position.clone());
 	}

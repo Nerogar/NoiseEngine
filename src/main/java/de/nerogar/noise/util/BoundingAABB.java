@@ -132,6 +132,11 @@ public class BoundingAABB implements Bounding {
 	}
 
 	@Override
+	public String toString() {
+		return "AABB{pos=" + position + ", size=" + size + "}";
+	}
+
+	@Override
 	public Bounding clone() {
 		return new BoundingAABB(position.clone(), size.clone());
 	}

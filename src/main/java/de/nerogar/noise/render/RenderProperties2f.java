@@ -160,4 +160,16 @@ public class RenderProperties2f extends RenderProperties<RenderProperties2f> {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "RenderProperties2f{" +
+				"x=" + x +
+				", y=" + y +
+				", roll=" + roll +
+				", scaleX=" + scaleX +
+				", scaleY=" + scaleY +
+				", visible=" + isVisible() +
+				'}';
+	}
+
 }
