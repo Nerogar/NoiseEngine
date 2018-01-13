@@ -1,9 +1,6 @@
 package de.nerogar.noise.event;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DefaultEventManager<E extends Event> {
 
@@ -22,9 +19,7 @@ public class DefaultEventManager<E extends Event> {
 			register(listener);
 		} else {
 			List<EventListenerConstraint> constraintsList = new ArrayList<>(constraints.length);
-			for (EventListenerConstraint constraint : constraints) {
-				constraintsList.add(constraint);
-			}
+			constraintsList.addAll(Arrays.asList(constraints));
 			listenerMap.put(listener, constraintsList);
 		}
 	}
@@ -73,19 +68,6 @@ public class DefaultEventManager<E extends Event> {
 		}
 
 		return true;
-	}
-
-	public void triggerAll(E event) {
-		entryLoop:
-		for (Map.Entry<EventListener<E>, List<EventListenerConstraint>> entry : listenerMap.entrySet()) {
-			if (entry.getValue() != null) {
-				for (EventListenerConstraint constraint : entry.getValue()) {
-					if (!constraint.isValid(event)) continue entryLoop;
-				}
-			}
-
-			entry.getKey().trigger(event);
-		}
 	}
 
 }
