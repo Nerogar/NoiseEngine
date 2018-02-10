@@ -3,9 +3,20 @@ package de.nerogar.noise.util;
 import java.util.Arrays;
 
 public class Color {
+
+	public static final Color TRANSPARENT = new Color(0.0f, 0.0f, 0.0f, 0.0f);
+	public static final Color WHITE       = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+	public static final Color RED         = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+	public static final Color GREEN       = new Color(0.0f, 1.0f, 0.0f, 1.0f);
+	public static final Color BLUE        = new Color(0.0f, 0.0f, 1.0f, 1.0f);
+	public static final Color YELLOW      = new Color(1.0f, 1.0f, 0.0f, 1.0f);
+	public static final Color CYAN        = new Color(0.0f, 1.0f, 1.0f, 1.0f);
+	public static final Color MAGENTA     = new Color(1.0f, 0.0f, 1.0f, 1.0f);
+	public static final Color BLACK       = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+
 	float[] colors;
 
-	/**Creates a new black color.*/
+	/** Creates a new black color. */
 	public Color() {
 		this(0.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -15,9 +26,9 @@ public class Color {
 	 * Each component should be i the range [0, 255],
 	 * where 0 is mapped to 0.0 and 255 is mapped to 1.0
 	 *
-	 * @param red red component
+	 * @param red   red component
 	 * @param green green component
-	 * @param blue blue component
+	 * @param blue  blue component
 	 * @param alpha alpha component
 	 */
 	public Color(int red, int green, int blue, int alpha) {
@@ -38,9 +49,9 @@ public class Color {
 	 * Creates a new color from float components.
 	 * Each component should be i the range [0.0, 1.0]
 	 *
-	 * @param red red component
+	 * @param red   red component
 	 * @param green green component
-	 * @param blue blue component
+	 * @param blue  blue component
 	 * @param alpha alpha component
 	 */
 	public Color(float red, float green, float blue, float alpha) {
