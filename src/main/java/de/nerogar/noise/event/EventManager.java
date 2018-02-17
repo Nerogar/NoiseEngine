@@ -10,6 +10,10 @@ public class EventManager {
 	counted events (max trigger count)
 	 */
 
+	private String name;
+
+	private List<EventManager> children;
+
 	private Map<Class<? extends Event>, DefaultEventManager<? extends Event>>                                       defaultListenerMap;
 	private Map<Class<? extends Event>, DefaultEventManager<? extends Event>>                                       defaultConstraintListenerMap;
 	private Map<Class<? extends Event>, ConstraintEventManager<? extends Event, ? extends EventListenerConstraint>> constraintListenerMap;
@@ -19,7 +23,11 @@ public class EventManager {
 	private Queue<Event> eventQueue;
 	boolean triggered;
 
-	public EventManager() {
+	public EventManager(String name) {
+		this.name = name;
+
+		children = new ArrayList<>();
+
 		defaultListenerMap = new HashMap<>();
 		defaultConstraintListenerMap = new HashMap<>();
 		constraintListenerMap = new HashMap<>();
@@ -50,7 +58,7 @@ public class EventManager {
 		register(eventClass, eventListener, true, eventListenerConstraints);
 	}
 
-	public <T extends Event> void register(Class<T> eventClass, EventListener<T> eventListener, boolean isImmediate) {
+	private <T extends Event> void register(Class<T> eventClass, EventListener<T> eventListener, boolean isImmediate) {
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 		defaultEventManager.register(eventListener);
 		isImmediateMap.put(eventListener, isImmediate);
@@ -131,8 +139,23 @@ public class EventManager {
 
 	}
 
+	/**
+	 * All events triggered in this EventManager will also be triggered in all children
+	 */
+	public void addTriggerChild(EventManager child){
+		children.add(child);
+	}
+
+	public void removeTriggerChild(EventManager child){
+		children.remove(child);
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T extends Event> void trigger(T event) {
+		for (int i = 0; i < children.size(); i++) {
+			children.get(i).trigger(event);
+		}
+
 		// trigger immediate
 		triggerSingle(event.getClass(), event, true);
 
