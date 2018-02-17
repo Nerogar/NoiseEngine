@@ -46,6 +46,8 @@ public class ReceiverThread extends Thread {
 					Noise.getLogger().log(Logger.WARNING, "received invalid packet id: " + packetId + ", closing connection.");
 					socket.close();
 				} else {
+					int adapterId = stream.readUnsignedByte();
+
 					int length = stream.readInt();
 					int read = 0;
 
@@ -56,6 +58,7 @@ public class ReceiverThread extends Thread {
 
 					Packet packet;
 					packet = packetContainer.load(buffer);
+					packet.setAdapterId(adapterId);
 
 					if (packet.getChannel() == PacketInfo.SYSTEM_PACKET_CHANNEL) {
 						if (packet instanceof PacketConnectionInfo) {

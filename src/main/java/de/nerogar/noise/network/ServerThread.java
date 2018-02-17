@@ -12,13 +12,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class ServerThread extends Thread {
+public class ServerThread extends Thread{
 
 	private ServerSocket socket;
 
 	private List<Connection> connections        = new ArrayList<>();
 	private List<Connection> newConnections     = new ArrayList<>();
 	private List<Connection> pendingConnections = new ArrayList<>();
+
+	private INetworkAdapter[] networkAdapters = new INetworkAdapter[256];
+	private INetworkAdapter wildcardNetworkAdapter;
 
 	public ServerThread(int port) throws BindException {
 		try {
@@ -29,8 +32,36 @@ public class ServerThread extends Thread {
 			Noise.getLogger().log(Logger.ERROR, "The server crashed brutally");
 			e.printStackTrace();
 		}
+		this.wildcardNetworkAdapter = new ServerWildcardNetworkAdapter(this);
+
 		this.setDaemon(true);
 		this.start();
+	}
+
+	/**
+	 * returns the {@link INetworkAdapter} with the specified id
+	 *
+	 * @param id the adapter id
+	 * @return the network adapter
+	 * @throws IllegalArgumentException when the id is over 64
+	 */
+	public INetworkAdapter getNetworkAdapter(int id) {
+		if (id > 255) throw new IllegalArgumentException("id has to fit in 8 bits (0 <= id <= 255)");
+
+		if (networkAdapters[id] == null) {
+			networkAdapters[id] = new ServerNetworkAdapter(this, id);
+		}
+
+		return networkAdapters[id];
+	}
+
+	/**
+	 * returns an {@link INetworkAdapter} that aggregates all network adapters
+	 *
+	 * @return the network adapter
+	 */
+	public INetworkAdapter getWildcardNetworkAdapter() {
+		return wildcardNetworkAdapter;
 	}
 
 	@Override
@@ -62,7 +93,7 @@ public class ServerThread extends Thread {
 			}
 
 			conn.pollPackets(true);
-			ArrayList<Packet> connectionPackets = conn.getPackets(PacketInfo.SYSTEM_PACKET_CHANNEL);
+			ArrayList<Packet> connectionPackets = conn.getNetworkAdapter(0).getPackets(PacketInfo.SYSTEM_PACKET_CHANNEL);
 
 			// The only CONNECTION_INFO packet can be ConnectionInfo. If that's not the case, deal with the ClassCastException and fix it.
 			// Also ignore any additional packets. Just the first ConnectionInfo packet gets processed
@@ -95,17 +126,17 @@ public class ServerThread extends Thread {
 		pendingConnections.add(conn);
 	}
 
-	public synchronized void broadcast(Packet packet) {
+	synchronized void broadcast(int adapterId, Packet packet) {
 		for (Connection connection : connections) {
-			connection.send(packet);
+			connection.send(adapterId, packet);
 		}
 	}
 
-	public List<Packet> getPackets(int channelID) {
-		List<Packet> packets = new ArrayList<>();
+	ArrayList<Packet> getPackets(int adapterId, int channelID) {
+		ArrayList<Packet> packets = new ArrayList<>();
 
 		for (Connection connection : connections) {
-			packets.addAll(connection.getPackets(channelID));
+			packets.addAll(connection.getPackets(adapterId, channelID));
 		}
 
 		return packets;

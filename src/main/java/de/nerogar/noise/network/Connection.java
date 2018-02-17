@@ -9,23 +9,53 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Connection {
+public class Connection{
 
 	private Socket         socket;
 	private ReceiverThread receiver;
 	private SenderThread   sender;
+
+	private INetworkAdapter[] networkAdapters = new INetworkAdapter[256];
+	private INetworkAdapter wildcardNetworkAdapter;
 
 	public Connection(Socket socket) {
 		if (socket == null) { return; }
 		this.socket = socket;
 		this.sender = new SenderThread(socket);
 		this.receiver = new ReceiverThread(socket, sender);
-		sender.send(new PacketConnectionInfo(PacketInfo.NETWORKING_VERSION));
+		wildcardNetworkAdapter = new WildcardNetworkAdapter(this);
+		getNetworkAdapter(0).send(new PacketConnectionInfo(PacketInfo.NETWORKING_VERSION));
 		flushPackets();
 	}
 
-	public void send(Packet packet) {
-		sender.send(packet);
+	/**
+	 * returns the {@link INetworkAdapter} with the specified id
+	 *
+	 * @param id the adapter id
+	 * @return the network adapter
+	 * @throws IllegalArgumentException when the id is over 64
+	 */
+	public INetworkAdapter getNetworkAdapter(int id) {
+		if (id > 255) throw new IllegalArgumentException("id has to fit in 8 bits (0 <= id <= 255)");
+
+		if (networkAdapters[id] == null) {
+			networkAdapters[id] = new SimpleNetworkAdapter(this, id);
+		}
+
+		return networkAdapters[id];
+	}
+
+	/**
+	 * returns an {@link INetworkAdapter} that aggregates all network adapters
+	 *
+	 * @return the network adapter
+	 */
+	public INetworkAdapter getWildcardNetworkAdapter() {
+		return wildcardNetworkAdapter;
+	}
+
+	void send(int adapterId, Packet packet) {
+		sender.send(adapterId, packet);
 	}
 
 	/**
@@ -48,13 +78,13 @@ public class Connection {
 		receiver.discardPackets();
 	}
 
-	public ArrayList<Packet> getPackets(int channelID) {
+	ArrayList<Packet> getPackets(int adapterId, int channelID) {
 		ArrayList<Packet> packets = new ArrayList<>();
 		ArrayList<Packet> availablePackets = receiver.getPackets();
 		synchronized (availablePackets) {
 			for (Iterator<Packet> iter = availablePackets.iterator(); iter.hasNext(); ) {
 				Packet p = iter.next();
-				if (p.getChannel() == channelID) {
+				if (p.getChannel() == channelID && (adapterId < 0 || p.getAdapterId() == adapterId)) {
 					packets.add(p);
 					iter.remove();
 				}

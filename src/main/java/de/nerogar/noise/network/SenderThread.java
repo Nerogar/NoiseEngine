@@ -14,7 +14,7 @@ import java.util.List;
 public class SenderThread extends Thread {
 
 	private Socket socket;
-	private final ArrayList<Packet> packetQueue = new ArrayList<>();
+	private final ArrayList<PacketTuple> packetQueue = new ArrayList<>();
 
 	private boolean shouldFlush;
 
@@ -38,6 +38,17 @@ public class SenderThread extends Thread {
 		}
 	}
 
+	private void writeSingle(DataOutputStream stream, int adapterId, Packet packet) throws IOException {
+		stream.writeInt(packetInfo.byClass(packet.getClass()).getID());
+
+		stream.writeByte(adapterId);
+
+		byte[] data = packet.getBuffer();
+		stream.writeInt(data.length);
+
+		stream.write(data);
+	}
+
 	@Override
 	public void run() {
 		try {
@@ -45,7 +56,7 @@ public class SenderThread extends Thread {
 
 			while (!isInterrupted()) {
 
-				List<Packet> sendPackets = new ArrayList<>();
+				List<PacketTuple> sendPackets;
 				synchronized (packetQueue) {
 
 					if (packetQueue.isEmpty()) {
@@ -56,32 +67,21 @@ public class SenderThread extends Thread {
 						packetQueue.wait();
 					}
 
-					for (Packet packet : packetQueue) {
-						sendPackets.add(packet);
-					}
+					sendPackets = new ArrayList<>(packetQueue);
 					packetQueue.clear();
 				}
 
-				for (Packet packet : sendPackets) {
+				for (PacketTuple packetTuple : sendPackets) {
 					try {
-						if (!packetInfo.contains(packet.getClass())) {
-							PacketContainer packetContainer = packetInfo.addPacket(packet.getChannel(), packet.getClass());
+						if (!packetInfo.contains(packetTuple.packet.getClass())) {
+							PacketContainer packetContainer = packetInfo.addPacket(packetTuple.packet.getChannel(), packetTuple.packet.getClass());
 
 							Packet packetPacketIdInfo = new PacketPacketIdInfo(packetContainer.packetClass.getName(), packetContainer.id);
-							stream.writeInt(packetInfo.byClass(packetPacketIdInfo.getClass()).getID());
-							byte[] data = packetPacketIdInfo.getBuffer();
-							stream.writeInt(data.length);
-							stream.write(data);
+							writeSingle(stream, 0, packetPacketIdInfo);
 						}
-
-						stream.writeInt(packetInfo.byClass(packet.getClass()).getID());
-
-						byte[] data = packet.getBuffer();
-
-						stream.writeInt(data.length);
-						stream.write(data);
+						writeSingle(stream, packetTuple.adapterId, packetTuple.packet);
 					} catch (IOException e) {
-						Noise.getLogger().log(Logger.ERROR, "Could not send packet " + packet);
+						Noise.getLogger().log(Logger.ERROR, "Could not send packet " + packetTuple.packet + " over adapter " + packetTuple.adapterId);
 						e.printStackTrace(Noise.getLogger().getErrorStream());
 					}
 
@@ -102,10 +102,21 @@ public class SenderThread extends Thread {
 
 	}
 
-	public void send(Packet packet) {
+	public void send(int adapterId, Packet packet) {
 		synchronized (packetQueue) {
-			packetQueue.add(packet);
+			packetQueue.add(new PacketTuple(adapterId, packet));
 			packetQueue.notify();
+		}
+	}
+
+	private class PacketTuple {
+
+		private final int    adapterId;
+		private final Packet packet;
+
+		public PacketTuple(int adapterId, Packet packet) {
+			this.adapterId = adapterId;
+			this.packet = packet;
 		}
 	}
 
