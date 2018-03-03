@@ -27,9 +27,9 @@ public abstract class Camera {
 	protected Vector3f directionUp;
 	protected Vector3f directionAt;
 
-	protected Ray unitRayRight;
-	protected Ray unitRayTop;
-	protected Ray unitRayCenter;
+	protected Ray   unitRayRight;
+	protected Ray   unitRayTop;
+	protected Ray   unitRayCenter;
 	protected float unitSize;
 
 	protected IViewRegion viewRegion;
@@ -58,6 +58,10 @@ public abstract class Camera {
 		setPitchMatrix();
 		setRollMatrix();
 	}
+
+	public abstract void setAspect(float aspect);
+
+	public abstract float getAspect();
 
 	private void setPositionMatrix() {
 		Matrix4fUtils.setPositionMatrix(positionMatrix, -x, -y, -z);

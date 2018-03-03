@@ -80,12 +80,14 @@ public class PerspectiveCamera extends Camera {
 		return fov;
 	}
 
+	@Override
 	public void setAspect(float aspect) {
 		if (this.aspect == aspect) return;
 		this.aspect = aspect;
 		projectionMatrixDirty = true;
 	}
 
+	@Override
 	public float getAspect() {
 		return aspect;
 	}
