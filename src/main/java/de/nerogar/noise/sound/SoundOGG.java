@@ -25,6 +25,7 @@ public class SoundOGG extends Sound {
 	private IntBuffer processedBuffer;
 
 	private boolean decodingStopped;
+	private boolean playbackStopped;
 
 	public SoundOGG(ByteBuffer vorbisData) {
 		IntBuffer error = BufferUtils.createIntBuffer(1);
@@ -61,6 +62,9 @@ public class SoundOGG extends Sound {
 	}
 
 	private boolean stream(int alBuffer) {
+		// make the whole buffer writable
+		sampleBuffer.limit(sampleBuffer.capacity());
+
 		int decoded = stb_vorbis_get_samples_short_interleaved(decoderPointer, channels, sampleBuffer);
 
 		//System.out.println(alBuffer + " -> " + decoded + " (samples)");
@@ -69,11 +73,15 @@ public class SoundOGG extends Sound {
 
 			if (loop) {
 				stb_vorbis_seek_start(decoderPointer);
+				stream(alBuffer);
 			} else {
 				decodingStopped = true;
 			}
 			return false;
 		}
+
+		// limit the buffer to the actual content
+		sampleBuffer.limit(decoded);
 
 		alBufferData(alBuffer, format, sampleBuffer, sampleRate);
 		checkError();
@@ -94,6 +102,11 @@ public class SoundOGG extends Sound {
 
 		int processed = alGetSourcei(alSourceHandle, AL_BUFFERS_PROCESSED);
 
+		if (processed > 0) {
+			System.out.println("processed: " + processed);
+		}
+
+		processedBuffer.position(0);
 		processedBuffer.limit(processed);
 		alSourceUnqueueBuffers(alSourceHandle, processedBuffer);
 
@@ -102,15 +115,24 @@ public class SoundOGG extends Sound {
 
 				int alBuffer = processedBuffer.get(i);
 
-				//System.out.println(alBuffer + " (unque)");
+				System.out.println(alBuffer + " (unque)");
 
 				checkError();
 
 				stream(alBuffer);
 			}
 		} else {
-			if (alGetSourcei(alSourceHandle, AL_SOURCE_STATE) == AL_STOPPED) cleanup();
+			if (alGetSourcei(alSourceHandle, AL_SOURCE_STATE) == AL_STOPPED) {
+				playbackStopped = true;
+				cleanup();
+				System.out.println("cleanup");
+			}
 		}
+	}
+
+	@Override
+	public boolean isDone() {
+		return playbackStopped;
 	}
 
 	@Override

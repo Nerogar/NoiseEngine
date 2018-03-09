@@ -27,6 +27,10 @@ public abstract class Sound extends NoiseResource {
 		alSourceHandle = alGenSources();
 	}
 
+	public int getAlSourceHandle() {
+		return alSourceHandle;
+	}
+
 	public int getChannels() {
 		return channels;
 	}
@@ -95,6 +99,8 @@ public abstract class Sound extends NoiseResource {
 	}
 
 	public abstract void update();
+
+	public abstract boolean isDone();
 
 	@Deprecated
 	public static void checkError() {

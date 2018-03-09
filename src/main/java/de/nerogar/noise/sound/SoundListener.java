@@ -1,13 +1,12 @@
 package de.nerogar.noise.sound;
 
-import static org.lwjgl.openal.AL10.*;
-
-import java.nio.FloatBuffer;
-
+import de.nerogar.noise.util.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL11;
 
-import de.nerogar.noise.util.Vector3f;
+import java.nio.FloatBuffer;
+
+import static org.lwjgl.openal.AL10.*;
 
 public class SoundListener {
 
@@ -66,5 +65,5 @@ public class SoundListener {
 		directionBuffer.flip();
 
 		alListenerfv(AL_ORIENTATION, directionBuffer);
-	};
+	}
 }
