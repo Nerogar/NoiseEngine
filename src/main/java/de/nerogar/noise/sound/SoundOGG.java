@@ -102,10 +102,6 @@ public class SoundOGG extends Sound {
 
 		int processed = alGetSourcei(alSourceHandle, AL_BUFFERS_PROCESSED);
 
-		if (processed > 0) {
-			System.out.println("processed: " + processed);
-		}
-
 		processedBuffer.position(0);
 		processedBuffer.limit(processed);
 		alSourceUnqueueBuffers(alSourceHandle, processedBuffer);
@@ -115,7 +111,7 @@ public class SoundOGG extends Sound {
 
 				int alBuffer = processedBuffer.get(i);
 
-				System.out.println(alBuffer + " (unque)");
+				//System.out.println(alBuffer + " (unque)");
 
 				checkError();
 
@@ -125,7 +121,6 @@ public class SoundOGG extends Sound {
 			if (alGetSourcei(alSourceHandle, AL_SOURCE_STATE) == AL_STOPPED) {
 				playbackStopped = true;
 				cleanup();
-				System.out.println("cleanup");
 			}
 		}
 	}
