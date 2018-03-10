@@ -20,6 +20,8 @@ public abstract class Sound extends NoiseResource {
 	protected int samples;
 	protected int format;
 
+	protected boolean playbackStopped;
+
 	public Sound() {
 		volume = 1.0f;
 		pitch = 1.0f;
@@ -96,6 +98,12 @@ public abstract class Sound extends NoiseResource {
 
 		alSourcePause(alSourceHandle);
 		playing = false;
+	}
+
+	public void stop() {
+		alSourceStop(alSourceHandle);
+		playing = false;
+		playbackStopped = true;
 	}
 
 	public abstract void update();

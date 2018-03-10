@@ -25,7 +25,6 @@ public class SoundOGG extends Sound {
 	private IntBuffer processedBuffer;
 
 	private boolean decodingStopped;
-	private boolean playbackStopped;
 
 	public SoundOGG(ByteBuffer vorbisData) {
 		IntBuffer error = BufferUtils.createIntBuffer(1);

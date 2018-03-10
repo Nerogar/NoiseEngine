@@ -8,8 +8,6 @@ public class SoundPCM extends Sound {
 
 	private int alBufferHandle;
 
-	private boolean playbackStopped;
-
 	public SoundPCM(ShortBuffer pcmData, int channels, int sampleRate, int samples) {
 		setInfo(
 				channels,
