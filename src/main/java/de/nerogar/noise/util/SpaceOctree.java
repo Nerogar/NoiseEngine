@@ -194,12 +194,12 @@ public class SpaceOctree<T> implements Set<T> {
 					//else /*if (allowOverlapXP && allowOverlapYP && allowOverlapZP)*/ child = childPPP;
 
 					if (bounding.isInside(
-							allowOverlapXN ? Float.NEGATIVE_INFINITY : child.minX,
-							allowOverlapYN ? Float.NEGATIVE_INFINITY : child.minY,
-							allowOverlapZN ? Float.NEGATIVE_INFINITY : child.minZ,
-							allowOverlapXP ? Float.POSITIVE_INFINITY : child.minX + halfSize,
-							allowOverlapYP ? Float.POSITIVE_INFINITY : child.minY + halfSize,
-							allowOverlapZP ? Float.POSITIVE_INFINITY : child.minZ + halfSize
+							(allowOverlapXN && child.minX + child.halfSize < minX + halfSize) ? Float.NEGATIVE_INFINITY : child.minX,
+							(allowOverlapYN && child.minY + child.halfSize < minY + halfSize) ? Float.NEGATIVE_INFINITY : child.minY,
+							(allowOverlapZN && child.minZ + child.halfSize < minZ + halfSize) ? Float.NEGATIVE_INFINITY : child.minZ,
+							(allowOverlapXP && child.minX + child.halfSize > minX + halfSize) ? Float.POSITIVE_INFINITY : child.minX + halfSize,
+							(allowOverlapYP && child.minY + child.halfSize > minY + halfSize) ? Float.POSITIVE_INFINITY : child.minY + halfSize,
+							(allowOverlapZP && child.minZ + child.halfSize > minZ + halfSize) ? Float.POSITIVE_INFINITY : child.minZ + halfSize
 					                     )) {
 
 						child.add(element, bounding, containingNodes, allowSplitX, allowSplitY, allowSplitZ,
