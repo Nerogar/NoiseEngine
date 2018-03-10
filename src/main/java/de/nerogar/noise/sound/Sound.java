@@ -103,7 +103,6 @@ public abstract class Sound extends NoiseResource {
 	public void stop() {
 		alSourceStop(alSourceHandle);
 		playing = false;
-		playbackStopped = true;
 	}
 
 	public abstract void update();
