@@ -32,7 +32,7 @@ public class Color {
 	 * @param alpha alpha component
 	 */
 	public Color(int red, int green, int blue, int alpha) {
-		this(red / 255f, blue / 255f, green / 255f, alpha / 255f);
+		this(red / 255f, green / 255f, blue / 255f, alpha / 255f);
 	}
 
 	/**
