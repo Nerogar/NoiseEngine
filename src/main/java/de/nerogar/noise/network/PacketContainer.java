@@ -6,6 +6,7 @@ import de.nerogar.noise.util.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class PacketContainer {
 
@@ -22,9 +23,9 @@ public class PacketContainer {
 	public Packet load(byte[] data) {
 		Packet p = null;
 		try {
-			p = packetClass.newInstance();
+			p = packetClass.getConstructor().newInstance();
 			p.fromStream(new DataInputStream(new ByteArrayInputStream(data)));
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 			Noise.getLogger().log(Logger.ERROR, "Error calling constructor of packet class. Make sure every Packet has a default (empty) constructor!");
 			e.printStackTrace(Noise.getLogger().getErrorStream());
 		} catch (IOException e) {

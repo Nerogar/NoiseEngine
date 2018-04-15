@@ -5,6 +5,7 @@ import de.nerogar.noise.network.packets.PacketConnectionInfo;
 import de.nerogar.noise.network.packets.PacketPacketIdInfo;
 import de.nerogar.noise.util.Logger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,9 +58,9 @@ public class PacketInfo {
 
 	public void addPacket(PacketPacketIdInfo packet) {
 		try {
-			Packet newPacket = (Packet) Class.forName(packet.getPacketClassName()).newInstance();
+			Packet newPacket = (Packet) Class.forName(packet.getPacketClassName()).getConstructor().newInstance();
 			addPacket(newPacket.getChannel(), newPacket.getClass());
-		} catch (InstantiationException e) {
+		} catch (InstantiationException | NoSuchMethodException | InvocationTargetException e) {
 			Noise.getLogger().log(Logger.ERROR, "Could not instantiate packet for class: " + packet.getPacketClassName() + ". Make sure every Packet has a default (empty) constructor!");
 			e.printStackTrace(Noise.getLogger().getErrorStream());
 		} catch (IllegalAccessException e) {
