@@ -7,6 +7,7 @@ public class FileUtil {
 	public static final String SHADER_SUBFOLDER  = "shaders/";
 	public static final String TEXTURE_SUBFOLDER = "textures/";
 	public static final String MESH_SUBFOLDER    = "meshes/";
+	public static final String DATA_SUBFOLDER    = "data/";
 
 	public static String getCanonicalPath(String filename) {
 		filename = filename.replaceAll("\\\\", "/"); //replace \ with /

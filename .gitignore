@@ -8,6 +8,10 @@ out/
 .project
 bin/
 
+# Generated
+src-gen/
+
 # gradle
 .gradle/
 build/
+
