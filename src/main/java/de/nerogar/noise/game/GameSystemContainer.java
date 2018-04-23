@@ -4,17 +4,11 @@ import de.nerogar.noise.event.EventManager;
 import de.nerogar.noise.game.core.systems.GameObjectsSystem;
 import de.nerogar.noise.network.INetworkAdapter;
 
-public abstract class GameSystemContainer<T extends MapSystemContainer<?>> extends SystemContainer {
+public abstract class GameSystemContainer extends SystemContainer {
 
-	private final T[] mapSystemContainers;
-
-	public GameSystemContainer(EventManager eventManager, INetworkAdapter networkAdapter, T[] mapSystemContainers) {
+	public GameSystemContainer(EventManager eventManager, INetworkAdapter networkAdapter) {
 		super(eventManager, networkAdapter);
-
-		this.mapSystemContainers = mapSystemContainers;
 	}
-
-	public T[] getMapSystemContainers() { return mapSystemContainers; }
 
 	@Override
 	protected void addSystems() {

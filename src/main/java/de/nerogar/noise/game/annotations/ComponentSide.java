@@ -1,4 +1,4 @@
-package noise.annotations;
+package de.nerogar.noise.game.annotations;
 
 public enum ComponentSide {
 	CORE,

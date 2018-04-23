@@ -1,6 +1,8 @@
 package de.nerogar.noise.game.core.components;
 
 import de.nerogar.noise.game.Component;
+import de.nerogar.noise.game.annotations.ComponentInfo;
+import de.nerogar.noise.game.annotations.ComponentSide;
 import de.nerogar.noise.game.core.events.BoundingChangeEvent;
 import de.nerogar.noise.game.core.systems.GameObjectsSystem;
 import de.nerogar.noise.game.core.systems.PositionLookupSystem;
@@ -9,8 +11,6 @@ import de.nerogar.noise.util.Bounding;
 import de.nerogar.noise.util.BoundingAABB;
 import de.nerogar.noise.util.BoundingSphere;
 import de.nerogar.noise.util.Vector3f;
-import noise.annotations.ComponentInfo;
-import noise.annotations.ComponentSide;
 
 @ComponentInfo(name = "bounding", side = ComponentSide.CORE)
 public class BoundingComponent extends Component {

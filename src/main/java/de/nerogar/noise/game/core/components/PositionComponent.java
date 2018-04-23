@@ -1,10 +1,10 @@
 package de.nerogar.noise.game.core.components;
 
 import de.nerogar.noise.game.Component;
+import de.nerogar.noise.game.annotations.ComponentInfo;
+import de.nerogar.noise.game.annotations.ComponentSide;
 import de.nerogar.noise.game.core.events.EntityMoveEvent;
 import de.nerogar.noise.game.core.systems.PositionLookupSystem;
-import noise.annotations.ComponentInfo;
-import noise.annotations.ComponentSide;
 
 @ComponentInfo(name = "position", side = ComponentSide.CORE)
 public class PositionComponent extends Component {

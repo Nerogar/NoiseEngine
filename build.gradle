@@ -48,12 +48,16 @@ dependencies {
     compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
     runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
 
-    compile project(':annotation')
+    if (findProject(':annotation')) {
+        compile project(':annotation')
+    }
 
     // TODO this should only be included as an annotationProcessor
     // it looks like IntelliJ does not support this yet and will randomly not find the processor
     // see https://youtrack.jetbrains.com/issue/IDEA-187868
-    compile project(':annotationProcessor')
+    if (findProject(':annotationProcessor')) {
+        compile project(':annotationProcessor')
+    }
 
     testImplementation 'junit:junit:4.12'
 }
@@ -66,11 +70,10 @@ compileJava {
 }
 
 processResources {
-    from (generatedDistDir) {
+    from(generatedDistDir) {
         into 'noiseEngine/'
     }
 }
-
 
 /*
 task copyResGen(type: Copy) {

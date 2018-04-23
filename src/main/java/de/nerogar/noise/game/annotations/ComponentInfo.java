@@ -1,4 +1,4 @@
-package noise.annotations;
+package de.nerogar.noise.game.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

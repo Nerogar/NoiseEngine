@@ -22,17 +22,15 @@ public abstract class CoreMap implements Sided {
 	public static final byte CORNER_SE       = (byte) 0b0000_1000;
 	public static final byte CORNER_ALL      = (byte) 0b0000_1111;
 
-	private boolean initialized = false;
-
 	private final int id;
 
 	protected INetworkAdapter networkAdapter;
 	private   EventManager    eventManager;
 
-	private MapSystemContainer<?>  systemContainer;
-	private GameSystemContainer<?> gameSystemContainer;
+	private MapSystemContainer<?> systemContainer;
+	private GameSystemContainer   gameSystemContainer;
 
-	private EntityList          entityList;
+	private EntityList entityList;
 
 	/*
 	 * 3d indices are calculated as:
@@ -49,19 +47,13 @@ public abstract class CoreMap implements Sided {
 		this.eventManager = eventManager;
 	}
 
-	public void setSystemContainer(MapSystemContainer<?> systemContainer, GameSystemContainer<?> gameSystemContainer) {
+	public void setSystemContainer(MapSystemContainer<?> systemContainer, GameSystemContainer gameSystemContainer) {
 		this.systemContainer = systemContainer;
 		this.gameSystemContainer = gameSystemContainer;
 	}
 
 	public void initMeta() {
 		this.entityList = new EntityList(this);
-	}
-
-	public void init(short[] blocks, byte[] blockShape) {
-		if (initialized) return;
-
-		initialized = true;
 	}
 
 	public int getId()                                { return id; }
@@ -82,7 +74,7 @@ public abstract class CoreMap implements Sided {
 		return gameSystemContainer.getSystem(systemClass);
 	}
 
-	public EntityList getEntityList()             { return entityList; }
+	public EntityList getEntityList() { return entityList; }
 
 	public Entity getEntity(int id) {
 		return entityList.get(id);
@@ -92,7 +84,7 @@ public abstract class CoreMap implements Sided {
 		entityList.remove(id);
 	}
 
-	public void cleanup(){
+	public void cleanup() {
 
 	}
 
