@@ -12,11 +12,16 @@ repositories {
 
 //group = 'de.nerogar'
 version = '0.1.0'
+sourceCompatibility = 1.8
 
 // lwjgl
 
 project.ext.lwjglVersion = "3.1.2"
-switch (OperatingSystem.current()) {
+
+def osProp = System.getProperty("os")
+def os = osProp == null ? OperatingSystem.current() : OperatingSystem.forName(osProp)
+
+switch (os) {
     case OperatingSystem.WINDOWS:
         project.ext.lwjglNatives = "natives-windows"
         break
@@ -26,6 +31,8 @@ switch (OperatingSystem.current()) {
     case OperatingSystem.MAC_OS:
         project.ext.lwjglNatives = "natives-macos"
         break
+    default:
+        throw new UnsupportedOperationException("Unsupported OS: " + os.familyName + "(" + osProp + ")")
 }
 
 dependencies {
