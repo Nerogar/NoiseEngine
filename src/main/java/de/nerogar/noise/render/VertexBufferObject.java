@@ -19,7 +19,7 @@ public abstract class VertexBufferObject extends NoiseResource {
 	protected HashMap<Long, Integer> glContextVaoHandles;
 
 	public abstract int getBufferName();
-	
+
 	public abstract void render();
 
 }

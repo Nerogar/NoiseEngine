@@ -2,7 +2,6 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.system.jemalloc.JEmalloc;
 
 import java.nio.FloatBuffer;
@@ -20,6 +19,7 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 	private int vboHandle;
 
 	private int   vertexCount;
+	private int   vertexCountCap = -1;
 	private int   totalComponents;
 	private int[] componentCounts;
 	private int[] incrementalComponentCounts;
@@ -124,13 +124,23 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 		return vboHandle;
 	}
 
+	public void setVertexCountCap(int vertexCountCap) {
+		if (vertexCountCap <= vertexCount) {
+			this.vertexCountCap = vertexCountCap;
+		}
+	}
+
 	@Override
 	public void render() {
 		Integer vaoHandle = glContextVaoHandles.get(GLWindow.getCurrentContext());
 		if (vaoHandle == null) vaoHandle = initVAO(null);
 
 		glBindVertexArray(vaoHandle);
-		glDrawArrays(renderType, 0, vertexCount);
+		if (vertexCountCap < 0) {
+			glDrawArrays(renderType, 0, vertexCount);
+		} else {
+			glDrawArrays(renderType, 0, vertexCountCap);
+		}
 		glBindVertexArray(0);
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.VBO_CALLS);

@@ -16,7 +16,7 @@ sourceCompatibility = 1.8
 
 // lwjgl
 
-project.ext.lwjglVersion = "3.1.2"
+project.ext.lwjglVersion = "3.1.6"
 
 def osProp = System.getProperty("os")
 def os = osProp == null ? OperatingSystem.current() : OperatingSystem.forName(osProp)
@@ -55,15 +55,15 @@ dependencies {
     compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
     runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
 
-    if (findProject(':annotation')) {
-        compile project(':annotation')
-    }
-
     // TODO this should only be included as an annotationProcessor
     // it looks like IntelliJ does not support this yet and will randomly not find the processor
     // see https://youtrack.jetbrains.com/issue/IDEA-187868
     if (findProject(':annotationProcessor')) {
-        compile project(':annotationProcessor')
+        //compile project(':annotationProcessor')
+        annotationProcessor project(':annotationProcessor')
+    }
+    if (findProject(':annotations')) {
+        compile project(':annotations')
     }
 
     testImplementation 'junit:junit:4.12'

@@ -1,7 +1,7 @@
-package noise.annotations.componentParameter;
+package de.nerogar.noise.game.annotations.componentParameter;
 
-import noise.annotations.ClassWriter;
-import noise.annotations.ComponentParameter;
+import de.nerogar.noise.game.annotations.ComponentParameter;
+import de.nerogar.noise.game.annotations.ClassWriter;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;

@@ -14,27 +14,27 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MapLoader extends Thread {
+public abstract class MapLoader<MAP_T extends CoreMap> extends Thread {
 
 	private boolean done;
 
-	private List<CoreMap> maps;
-	private String        mapID;
-	private Faction[]     factions;
+	private List<MAP_T> maps;
+	private String      mapID;
+	private Faction[]   factions;
 
 	private NDSFile             mapFile;
 	private List<NDSNodeObject> ndsDatas;
 
-	public MapLoader(List<CoreMap> maps, String mapID, Faction[] factions) {
+	public MapLoader(List<MAP_T> maps, String mapID, Faction[] factions) {
 		super("map loader: " + mapID);
 		this.maps = maps;
 		this.mapID = mapID;
 		this.factions = factions;
 	}
 
-	protected abstract CoreMap newMap(int id, Faction[] factions);
+	protected abstract MAP_T newMap(int id, Faction[] factions);
 
-	public void loadSaveMeta() {
+	public void loadMeta() {
 		try {
 			mapFile = NDSReader.readJsonFile("maps/" + mapID + "/map.json");
 			NDSNodeRoot mapData = mapFile.getData();
@@ -44,10 +44,12 @@ public abstract class MapLoader extends Thread {
 				NDSNodeObject mapsObject = mapsObjects[i];
 				String filename = mapsObject.getStringUTF8("file");
 
-				CoreMap map = newMap(i, factions);
+				MAP_T map = newMap(i, factions);
 				maps.add(map);
 
-				loadMapMeta(map);
+				NDSFile metaFile = NDSReader.readFileShallow("maps/" + mapID + "/" + filename + ".map");
+
+				loadMapMeta(map, metaFile);
 
 			}
 
@@ -57,7 +59,7 @@ public abstract class MapLoader extends Thread {
 		}
 	}
 
-	protected abstract void loadMapMeta(CoreMap map);
+	protected abstract void loadMapMeta(MAP_T map, NDSFile metaFile);
 
 	public void startLoading() {
 		start();

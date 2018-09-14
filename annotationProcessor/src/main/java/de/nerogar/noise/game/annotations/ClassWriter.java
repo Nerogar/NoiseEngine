@@ -1,4 +1,4 @@
-package noise.annotations;
+package de.nerogar.noise.game.annotations;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;

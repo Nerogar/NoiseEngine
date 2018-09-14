@@ -1,6 +1,6 @@
-package noise.annotations.componentParameter;
+package de.nerogar.noise.game.annotations.componentParameter;
 
-import noise.annotations.ClassTemplate;
+import de.nerogar.noise.game.annotations.ClassTemplate;
 
 public class ComponentSerializeTemplate extends ClassTemplate {
 

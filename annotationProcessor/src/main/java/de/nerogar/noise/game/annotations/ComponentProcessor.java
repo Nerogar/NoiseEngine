@@ -1,7 +1,7 @@
-package noise.annotations;
+package de.nerogar.noise.game.annotations;
 
-import noise.annotations.componentInfo.ComponentInfoProcessor;
-import noise.annotations.componentParameter.ComponentParameterProcessor;
+import de.nerogar.noise.game.annotations.componentInfo.ComponentInfoProcessor;
+import de.nerogar.noise.game.annotations.componentParameter.ComponentParameterProcessor;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -14,8 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
-@SupportedAnnotationTypes({ "noise.annotations.ComponentInfo", "noise.annotations.ComponentParameter" })
-@SupportedSourceVersion(SourceVersion.RELEASE_10)
+@SupportedAnnotationTypes({ "de.nerogar.noise.game.annotations.ComponentInfo", "de.nerogar.noise.game.annotations.ComponentParameter" })
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ComponentProcessor extends AbstractProcessor {
 
 	private Messager messager;

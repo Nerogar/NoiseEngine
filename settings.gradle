@@ -1,4 +1,4 @@
 rootProject.name = 'noise-engine'
 
-//include ':annotation'
-//include ':annotationProcessor'
+include ':annotations'
+include ':annotationProcessor'

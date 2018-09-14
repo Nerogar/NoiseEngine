@@ -1,9 +1,9 @@
-package noise.annotations.componentInfo;
+package de.nerogar.noise.game.annotations.componentInfo;
 
-import noise.annotations.ComponentInfo;
-import noise.annotations.ComponentSide;
-import noise.annotations.componentParameter.ComponentParameterProcessor;
-import noise.annotations.componentParameter.ComponentSerializeTemplate;
+import de.nerogar.noise.game.annotations.ComponentInfo;
+import de.nerogar.noise.game.annotations.ComponentSide;
+import de.nerogar.noise.game.annotations.componentParameter.ComponentParameterProcessor;
+import de.nerogar.noise.game.annotations.componentParameter.ComponentSerializeTemplate;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;

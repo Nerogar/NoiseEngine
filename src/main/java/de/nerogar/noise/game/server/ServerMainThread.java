@@ -21,10 +21,11 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class ServerMainThread<
-		GAME_SYSTEM_CONTAINER extends GameSystemContainer,
-		MAP_SYSTEM_CONTAINER extends MapSystemContainer,
-		FACTION_SYSTEM_CONTAINER extends FactionSystemContainer,
-		FACTION_MAP_SYSTEM_CONTAINER extends FactionMapSystemContainer
+		MAP_T extends CoreMap,
+		GAME_SYSTEM_CONTAINER_T extends GameSystemContainer,
+		MAP_SYSTEM_CONTAINER_T extends MapSystemContainer<MAP_T>,
+		FACTION_SYSTEM_CONTAINER_T extends FactionSystemContainer,
+		FACTION_MAP_SYSTEM_CONTAINER_T extends FactionMapSystemContainer
 		> extends Thread {
 
 	private final int   TICK_RATE;
@@ -42,12 +43,12 @@ public abstract class ServerMainThread<
 	private   List<Connection> connections;
 
 	// current active game session
-	private GAME_SYSTEM_CONTAINER                    gameSystemContainer;
-	private List<MAP_SYSTEM_CONTAINER>               mapSystemContainers;
-	private List<FACTION_SYSTEM_CONTAINER>           factionSystemContainers;
-	private List<List<FACTION_MAP_SYSTEM_CONTAINER>> factionMapSystemContainers;
-	private List<CoreMap>                            currentMaps;
-	private List<Faction>                            factions;
+	private GAME_SYSTEM_CONTAINER_T                    gameSystemContainer;
+	private List<MAP_SYSTEM_CONTAINER_T>               mapSystemContainers;
+	private List<FACTION_SYSTEM_CONTAINER_T>           factionSystemContainers;
+	private List<List<FACTION_MAP_SYSTEM_CONTAINER_T>> factionMapSystemContainers;
+	private List<MAP_T>                                currentMaps;
+	private List<Faction>                              factions;
 
 	// loading
 	private Map<Connection, ClientMapLoadProgress> clientMapLoadProgressMap;
@@ -83,15 +84,15 @@ public abstract class ServerMainThread<
 		this.speedFactor = speedFactor;
 	}
 
-	protected abstract MapLoader createMapLoader(String mapID);
+	protected abstract MapLoader createMapLoader(List<MAP_T> currentMaps, String mapID, ServerThread serverThread, Faction[] factions);
 
-	protected abstract GAME_SYSTEM_CONTAINER createGameSystemContainer();
+	protected abstract GAME_SYSTEM_CONTAINER_T createGameSystemContainer();
 
-	protected abstract MAP_SYSTEM_CONTAINER createMapSystemContainer();
+	protected abstract MAP_SYSTEM_CONTAINER_T createMapSystemContainer(CoreMap map);
 
-	protected abstract FACTION_SYSTEM_CONTAINER createFactionSystemContainer();
+	protected abstract FACTION_SYSTEM_CONTAINER_T createFactionSystemContainer(Faction faction);
 
-	protected abstract FACTION_MAP_SYSTEM_CONTAINER createFactionMapSystemContainer();
+	protected abstract FACTION_MAP_SYSTEM_CONTAINER_T createFactionMapSystemContainer(CoreMap map, Faction faction);
 
 	private void loop(float timeDelta) {
 		processMapLoader();
@@ -205,8 +206,8 @@ public abstract class ServerMainThread<
 		currentMaps = new ArrayList<>();
 
 		// load map meta
-		serverMapLoader = createMapLoader(mapID);
-		serverMapLoader.loadSaveMeta();
+		serverMapLoader = createMapLoader(currentMaps, mapID, serverThread, factions.toArray(new Faction[0]));
+		serverMapLoader.loadMeta();
 		for (CoreMap currentMap : currentMaps) {
 			eventManager.addTriggerChild(currentMap.getEventManager());
 		}
@@ -249,14 +250,14 @@ public abstract class ServerMainThread<
 		// map systems
 		mapSystemContainers = new ArrayList<>(currentMaps.size());
 		for (int i = 0; i < currentMaps.size(); i++) {
-			mapSystemContainers.add(createMapSystemContainer());
+			mapSystemContainers.add(createMapSystemContainer(currentMaps.get(i)));
 			currentMaps.get(i).setSystemContainer(mapSystemContainers.get(i), gameSystemContainer);
 		}
 
 		// faction systems
 		factionSystemContainers = new ArrayList<>(factions.size());
 		for (int i = 0; i < factions.size(); i++) {
-			FACTION_SYSTEM_CONTAINER factionSystemContainer = createFactionSystemContainer();
+			FACTION_SYSTEM_CONTAINER_T factionSystemContainer = createFactionSystemContainer(factions.get(i));
 			factions.get(i).setSystemContainer(factionSystemContainer, gameSystemContainer);
 
 			factionSystemContainers.add(factionSystemContainer);
@@ -267,7 +268,7 @@ public abstract class ServerMainThread<
 		for (int i = 0; i < factions.size(); i++) {
 			factionMapSystemContainers.add(new ArrayList<>(currentMaps.size()));
 			for (int j = 0; j < currentMaps.size(); j++) {
-				factionMapSystemContainers.get(i).add(createFactionMapSystemContainer());
+				factionMapSystemContainers.get(i).add(createFactionMapSystemContainer(currentMaps.get(j), factions.get(i)));
 			}
 		}
 
