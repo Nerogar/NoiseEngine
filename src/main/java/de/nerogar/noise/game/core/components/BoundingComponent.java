@@ -13,7 +13,7 @@ import de.nerogar.noise.util.BoundingSphere;
 import de.nerogar.noise.util.Vector3f;
 
 @ComponentInfo(name = "bounding", side = ComponentSide.CORE)
-public class BoundingComponent extends Component {
+public class BoundingComponent extends Component<BoundingComponent> {
 
 	private Bounding bounding;
 
@@ -63,8 +63,13 @@ public class BoundingComponent extends Component {
 	}
 
 	@Override
-	public Component clone() {
-		return new BoundingComponent(bounding.clone());
+	public BoundingComponent newInstance() {
+		return new BoundingComponent();
+	}
+
+	@Override
+	public void copyFrom(BoundingComponent other) {
+		bounding = other.bounding.clone();
 	}
 
 }

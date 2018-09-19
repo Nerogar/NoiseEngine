@@ -37,7 +37,7 @@ public class Xbox360Controller extends Joystick {
 	}
 
 	public static boolean accept(String name) {
-		return name.toLowerCase().contains("xbox") && name.contains("360");
+		return name.toLowerCase().contains("xbox");
 	}
 
 	@Override
@@ -91,6 +91,9 @@ public class Xbox360Controller extends Joystick {
 		if (axis == AXIS_LT || axis == AXIS_RT) {
 			value = (value + 1f) * 0.5f;
 		}
+
+		// todo add dead zones to joystick class
+		if (Math.abs(value) < 0.1f) return 0;
 
 		return value;
 	}

@@ -5,25 +5,20 @@ import de.nerogar.noise.game.core.components.PositionComponent;
 import de.nerogar.noise.util.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class EntityFactorySystem extends LogicSystem {
 
 	private final boolean useNegativeIDs;
-	private int currentMaxID = 1;
+	private       int     currentMaxID = 1;
 
 	private GameObjectsSystem gameObjectsSystem;
 
-	protected CoreMap                     map;
-	protected Map<Short, List<Component>> entityBlueprints;
+	protected CoreMap map;
 
 	public EntityFactorySystem(CoreMap map, boolean useNegativeIDs) {
 		this.map = map;
 		this.useNegativeIDs = useNegativeIDs;
-
-		entityBlueprints = new HashMap<>();
 	}
 
 	@Override
@@ -51,7 +46,7 @@ public class EntityFactorySystem extends LogicSystem {
 		List<Component> blueprint = gameObjectsSystem.getBlueprint(entityID);
 
 		for (Component blueprintComponent : blueprint) {
-			components.add(blueprintComponent.clone());
+			components.add(blueprintComponent.copy());
 		}
 
 	}

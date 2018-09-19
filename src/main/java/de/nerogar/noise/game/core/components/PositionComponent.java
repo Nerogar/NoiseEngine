@@ -7,7 +7,7 @@ import de.nerogar.noise.game.core.events.EntityMoveEvent;
 import de.nerogar.noise.game.core.systems.PositionLookupSystem;
 
 @ComponentInfo(name = "position", side = ComponentSide.CORE)
-public class PositionComponent extends Component {
+public class PositionComponent extends Component<PositionComponent> {
 
 	private float x;
 	private float y;
@@ -65,8 +65,17 @@ public class PositionComponent extends Component {
 	}
 
 	@Override
-	public Component clone() {
-		return new PositionComponent(x, y, z, rotation, scale);
+	public PositionComponent newInstance() {
+		return new PositionComponent();
+	}
+
+	@Override
+	public void copyFrom(PositionComponent other) {
+		x = other.x;
+		y = other.y;
+		z = other.z;
+		rotation = other.rotation;
+		scale = other.scale;
 	}
 
 }

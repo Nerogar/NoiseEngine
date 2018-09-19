@@ -5,7 +5,7 @@ import de.nerogar.noise.game.Side;
 import de.nerogar.noise.game.core.events.ComponentUpdateEvent;
 import de.nerogar.noise.network.Streamable;
 
-public abstract class SynchronizedComponent extends Component implements Streamable {
+public abstract class SynchronizedComponent<T extends SynchronizedComponent<T>> extends Component<T> implements Streamable {
 
 	protected void synchronize() {
 		if (getEntity().getMap().getSide() == Side.SERVER) {

@@ -4,7 +4,7 @@ import de.nerogar.noise.game.core.systems.GameObjectsSystem;
 import de.nerogar.noise.serialization.NDSException;
 import de.nerogar.noise.serialization.NDSNodeObject;
 
-public abstract class Component implements Cloneable {
+public abstract class Component<T extends Component<T>> {
 
 	private Entity entity;
 
@@ -29,7 +29,15 @@ public abstract class Component implements Cloneable {
 	protected void cleanup() {
 	}
 
-	@Override
-	public abstract Component clone();
+	public abstract T newInstance();
+
+	public abstract void copyFrom(T other);
+
+	public final Component copy() {
+		T t = (T) this;
+		T newInstance = newInstance();
+		newInstance.copyFrom(t);
+		return newInstance;
+	}
 
 }

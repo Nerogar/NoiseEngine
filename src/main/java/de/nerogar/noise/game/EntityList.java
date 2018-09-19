@@ -3,6 +3,7 @@ package de.nerogar.noise.game;
 import de.nerogar.noise.game.core.events.EntityDespawnEvent;
 import de.nerogar.noise.game.core.events.EntitySpawnEvent;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class EntityList {
@@ -70,8 +71,15 @@ public class EntityList {
 	}
 
 	public void addComponent(Entity entity, Component component) {
-		entityComponentMap.get(entity).put(component.getClass(), component);
-		allComponentsMap.computeIfAbsent(component.getClass(), c -> new HashSet<>()).add(component);
+
+		Class<? extends Component> componentClass = component.getClass();
+		while (!Modifier.isAbstract(componentClass.getModifiers())) {
+			entityComponentMap.get(entity).put(componentClass, component);
+			allComponentsMap.computeIfAbsent(componentClass, c -> new HashSet<>()).add(component);
+
+			// cast is safe because Component is abstract
+			componentClass = (Class<? extends Component>) componentClass.getSuperclass();
+		}
 
 		component.setEntity(entity);
 	}

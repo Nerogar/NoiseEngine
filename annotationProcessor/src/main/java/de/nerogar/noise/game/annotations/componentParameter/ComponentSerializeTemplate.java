@@ -6,8 +6,8 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 
 	private final String dataparameterName = "data";
 
-	private String        superClassName;
-	private String        className;
+	private String superClassName;
+	private String className;
 
 	private StringBuilder setDataSB;
 	private StringBuilder saveSB;
@@ -27,7 +27,8 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 	public String[] getImports() {
 		return new String[] {
 				"de.nerogar.noise.serialization.NDSNodeObject",
-				"de.nerogar.noise.game.core.systems.GameObjectsSystem"
+				"de.nerogar.noise.game.core.systems.GameObjectsSystem",
+				"de.nerogar.noise.game.Component"
 		};
 	}
 
@@ -82,11 +83,35 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 		return sb;
 	}
 
+	private StringBuilder createNewInstance() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("\t@Override\n");
+		sb.append("\tpublic ").append(getSuperClassname()).append(" newInstance() {\n");
+		sb.append("\t\treturn new ").append(getClassname()).append("();\n");
+		sb.append("\t}\n");
+
+		return sb;
+	}
+
+	private StringBuilder createCopyFrom() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("\t@Override\n");
+		sb.append("\tpublic void copyFrom(").append(getSuperClassname()).append(" other) {\n");
+		sb.append("\t\tsuper.copyFrom(other);\n");
+		sb.append("\t}\n");
+
+		return sb;
+	}
+
 	@Override
 	protected String createClass() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(createSetData()).append("\n");
 		sb.append(createSave()).append("\n");
+		sb.append(createNewInstance()).append("\n");
+		sb.append(createCopyFrom()).append("\n");
 		return createClass(sb);
 	}
 }

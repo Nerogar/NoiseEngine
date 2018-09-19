@@ -12,4 +12,7 @@ public @interface ComponentInfo {
 	String name();
 
 	ComponentSide side();
+
+	// todo add "requires" parameter
+	// maybe even test requirements during compile time by reading entity definitions?
 }
