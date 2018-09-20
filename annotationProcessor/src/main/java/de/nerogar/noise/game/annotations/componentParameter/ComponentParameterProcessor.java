@@ -1,7 +1,7 @@
 package de.nerogar.noise.game.annotations.componentParameter;
 
-import de.nerogar.noise.game.annotations.ComponentParameter;
 import de.nerogar.noise.game.annotations.ClassWriter;
+import de.nerogar.noise.game.annotations.ComponentParameter;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -62,6 +62,12 @@ public class ComponentParameterProcessor {
 					componentSerializeTemplate.addFloat(fieldName);
 				} else if (kind == TypeKind.BOOLEAN) {
 					componentSerializeTemplate.addBoolean(fieldName);
+				}
+			} else {
+				if (kind == TypeKind.DECLARED) {
+					if (typeMirror.toString().equals("java.lang.String")) {
+						componentSerializeTemplate.addString(fieldName);
+					}
 				}
 			}
 

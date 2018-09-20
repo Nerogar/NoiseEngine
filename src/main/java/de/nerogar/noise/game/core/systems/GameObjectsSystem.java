@@ -26,6 +26,7 @@ public class GameObjectsSystem extends SynchronizedSystem {
 	public short[] objectIDs;
 
 	public GameObjectsSystem() {
+		super("gameObjects");
 	}
 
 	@Override

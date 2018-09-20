@@ -11,6 +11,7 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 
 	private StringBuilder setDataSB;
 	private StringBuilder saveSB;
+	private StringBuilder copySB;
 
 	public ComponentSerializeTemplate(String superClassName) {
 		this.superClassName = superClassName;
@@ -18,6 +19,7 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 
 		setDataSB = new StringBuilder();
 		saveSB = new StringBuilder();
+		copySB = new StringBuilder();
 	}
 
 	@Override
@@ -43,16 +45,25 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 	public void addInt(String name) {
 		setDataSB.append("\t\t").append(name).append(" = data.getInt(\"").append(name).append("\");\n");
 		saveSB.append("\t\t").append("data.addInt(\"").append(name).append("\", ").append(name).append(");\n");
+		copySB.append("\t\t").append(name).append(" = other.").append(name).append(";\n");
 	}
 
 	public void addFloat(String name) {
 		setDataSB.append("\t\t").append(name).append(" = data.getFloat(\"").append(name).append("\");\n");
 		saveSB.append("\t\t").append("data.addFloat(\"").append(name).append("\", ").append(name).append(");\n");
+		copySB.append("\t\t").append(name).append(" = other.").append(name).append(";\n");
 	}
 
 	public void addBoolean(String name) {
 		setDataSB.append("\t\t").append(name).append(" = data.getBoolean(\"").append(name).append("\");\n");
 		saveSB.append("\t\t").append("data.addBoolean(\"").append(name).append("\", ").append(name).append(");\n");
+		copySB.append("\t\t").append(name).append(" = other.").append(name).append(";\n");
+	}
+
+	public void addString(String name) {
+		setDataSB.append("\t\t").append(name).append(" = data.getStringUTF8(\"").append(name).append("\");\n");
+		saveSB.append("\t\t").append("data.addStringUTF8(\"").append(name).append("\", ").append(name).append(");\n");
+		copySB.append("\t\t").append(name).append(" = other.").append(name).append(";\n");
 	}
 
 	private StringBuilder createSetData() {
@@ -100,6 +111,9 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 		sb.append("\t@Override\n");
 		sb.append("\tpublic void copyFrom(").append(getSuperClassname()).append(" other) {\n");
 		sb.append("\t\tsuper.copyFrom(other);\n");
+
+		sb.append(copySB);
+
 		sb.append("\t}\n");
 
 		return sb;

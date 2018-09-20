@@ -10,10 +10,7 @@ import de.nerogar.noise.serialization.NDSNodeObject;
 import de.nerogar.noise.util.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public abstract class SystemContainer implements Sided {
@@ -21,10 +18,12 @@ public abstract class SystemContainer implements Sided {
 	private boolean initialized;
 
 	private Map<Class<? extends LogicSystem>, LogicSystem> systemClassMap;
+	private Map<String, SynchronizedSystem>                systemNameMap;
 	private Map<Short, SynchronizedSystem>                 systemIdMap;
-	private Map<Short, InitSystemPacket>                   systemInitPackets;
+	private Set<LogicSystem>                               systemSet;
 
-	private List<LogicSystem> systemInitList;
+	private Map<Short, InitSystemPacket> systemInitPackets;
+	private List<LogicSystem>            systemInitList;
 
 	private INetworkAdapter networkAdapter;
 
@@ -36,7 +35,10 @@ public abstract class SystemContainer implements Sided {
 		this.eventManager = eventManager;
 
 		systemClassMap = new HashMap<>();
+		systemNameMap = new HashMap<>();
 		systemInitPackets = new HashMap<>();
+		systemSet = new HashSet<>();
+
 		systemInitList = new ArrayList<>();
 
 		systemSyncListener = this::systemSyncListenerFunction;
@@ -54,7 +56,18 @@ public abstract class SystemContainer implements Sided {
 	protected void addSystem(LogicSystem system) {
 		system.setObjects(this, networkAdapter, eventManager);
 
-		systemClassMap.put(system.getClass(), system);
+		Class<?> systemClass = system.getClass();
+		while (systemClass != null) {
+			systemClassMap.put((Class<? extends LogicSystem>) systemClass, system);
+			systemClass = systemClass.getSuperclass();
+		}
+
+		if (system instanceof SynchronizedSystem) {
+			SynchronizedSystem synchronizedSystem = (SynchronizedSystem) system;
+			systemNameMap.put(synchronizedSystem.getName(), synchronizedSystem);
+		}
+		systemSet.add(system);
+
 		systemInitList.add(system);
 	}
 
@@ -76,25 +89,25 @@ public abstract class SystemContainer implements Sided {
 
 		addSystems();
 		this.systemIdMap = new HashMap<>();
-		for (Map.Entry<Class<? extends LogicSystem>, LogicSystem> systemEntry : systemClassMap.entrySet()) {
-			Short id = systemIdMap.get(systemEntry.getKey().getName());
-			LogicSystem system = systemEntry.getValue();
-			if (system instanceof SynchronizedSystem) {
-				SynchronizedSystem synchronizedSystem = (SynchronizedSystem) system;
-				this.systemIdMap.put(id, synchronizedSystem);
-			}
+		for (Map.Entry<String, SynchronizedSystem> systemEntry : systemNameMap.entrySet()) {
+			SynchronizedSystem synchronizedSystem = systemEntry.getValue();
+			Short id = systemIdMap.get(systemEntry.getKey());
+			this.systemIdMap.put(id, synchronizedSystem);
 		}
 
 		// init all systems (init + networkInit)
 		for (LogicSystem system : systemInitList) {
 			system.init();
-			if (system instanceof SynchronizedSystem && systemInitPackets.containsKey(systemIdMap.get(system.getClass().getName()))) {
-				InitSystemPacket initSystemPacket = systemInitPackets.get(systemIdMap.get(system.getClass().getName()));
-				try {
-					((SynchronizedSystem) system).networkInit(initSystemPacket.getInput());
-				} catch (IOException e) {
-					NoiseGame.logger.log(Logger.ERROR, "Could not initialize System: " + system);
-					e.printStackTrace(NoiseGame.logger.getErrorStream());
+			if (system instanceof SynchronizedSystem) {
+				SynchronizedSystem synchronizedSystem = (SynchronizedSystem) system;
+				if (systemInitPackets.containsKey(systemIdMap.get(synchronizedSystem.getName()))) {
+					InitSystemPacket initSystemPacket = systemInitPackets.get(systemIdMap.get(synchronizedSystem.getName()));
+					try {
+						synchronizedSystem.networkInit(initSystemPacket.getInput());
+					} catch (IOException e) {
+						NoiseGame.logger.log(Logger.ERROR, "Could not initialize System: " + system);
+						e.printStackTrace(NoiseGame.logger.getErrorStream());
+					}
 				}
 			}
 		}
@@ -115,7 +128,7 @@ public abstract class SystemContainer implements Sided {
 	public void initSystems() {
 		initialized = true;
 		addSystems();
-		for (LogicSystem logicSystem : systemClassMap.values()) {
+		for (LogicSystem logicSystem : systemSet) {
 			logicSystem.init();
 		}
 
@@ -123,8 +136,7 @@ public abstract class SystemContainer implements Sided {
 
 		systemIdMap = new HashMap<>();
 
-		for (Map.Entry<Class<? extends LogicSystem>, LogicSystem> systemEntry : systemClassMap.entrySet()) {
-			LogicSystem system = systemEntry.getValue();
+		for (LogicSystem system : systemSet) {
 			if (system instanceof SynchronizedSystem) {
 				short id = generateID();
 				SynchronizedSystem synchronizedSystem = (SynchronizedSystem) system;
@@ -142,13 +154,13 @@ public abstract class SystemContainer implements Sided {
 	}
 
 	public void setSystemData(NDSNodeObject systemData) {
-		for (LogicSystem logicSystem : systemClassMap.values()) {
+		for (LogicSystem logicSystem : systemSet) {
 			logicSystem.setSystemData(systemData);
 		}
 	}
 
 	public void initSystemsWithData() {
-		for (LogicSystem logicSystem : systemClassMap.values()) {
+		for (LogicSystem logicSystem : systemSet) {
 			logicSystem.initWithData();
 		}
 	}
@@ -156,7 +168,7 @@ public abstract class SystemContainer implements Sided {
 	public void cleanup() {
 		eventManager.unregister(SystemSyncEvent.class, systemSyncListener);
 
-		for (LogicSystem system : systemClassMap.values()) {
+		for (LogicSystem system : systemSet) {
 			system.cleanup();
 		}
 	}

@@ -25,7 +25,7 @@ public class InitSystemContainerPacket extends Packet {
 
 		this.systemIdMap = new HashMap<>();
 		for (Map.Entry<Short, SynchronizedSystem> systemEntry : systemIdMap.entrySet()) {
-			this.systemIdMap.put(systemEntry.getValue().getClass().getName(), systemEntry.getKey());
+			this.systemIdMap.put(systemEntry.getValue().getName(), systemEntry.getKey());
 		}
 	}
 

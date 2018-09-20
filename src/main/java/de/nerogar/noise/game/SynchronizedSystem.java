@@ -9,11 +9,14 @@ import java.util.function.Consumer;
 
 public abstract class SynchronizedSystem extends LogicSystem {
 
+	private String name;
 	private short id = -1;
 
 	private Map<Class<? extends SystemSyncParameter>, Consumer<? extends SystemSyncParameter>> syncFunctions;
 
-	public SynchronizedSystem() {
+	public SynchronizedSystem(String name) {
+		this.name = name;
+
 		syncFunctions = new HashMap<>();
 	}
 
@@ -23,6 +26,10 @@ public abstract class SynchronizedSystem extends LogicSystem {
 
 	public short getId() {
 		return id;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	@SuppressWarnings("unchecked")
