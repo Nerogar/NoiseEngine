@@ -296,39 +296,52 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	@Override
 	public Matrix4f invert() {
 
+		// taken from stackoverflow.com/a/7596981
+
 		// explicitly write elements in registers
 		float c11 = get(0, 0), c12 = get(0, 1), c13 = get(0, 2), c14 = get(0, 3);
 		float c21 = get(1, 0), c22 = get(1, 1), c23 = get(1, 2), c24 = get(1, 3);
 		float c31 = get(2, 0), c32 = get(2, 1), c33 = get(2, 2), c34 = get(2, 3);
 		float c41 = get(3, 0), c42 = get(3, 1), c43 = get(3, 2), c44 = get(3, 3);
 
-		float m11 = (c22 * c33 * c44) + (c23 * c34 * c42) * (c24 * c32 * c43) - (c22 * c34 * c43) - (c23 * c32 * c44) - (c24 * c33 * c42);
-		float m12 = (c12 * c34 * c43) + (c13 * c32 * c44) * (c14 * c33 * c42) - (c12 * c33 * c44) - (c13 * c34 * c42) - (c14 * c32 * c43);
-		float m13 = (c12 * c23 * c44) + (c13 * c24 * c42) * (c14 * c22 * c43) - (c12 * c24 * c43) - (c13 * c22 * c44) - (c14 * c23 * c42);
-		float m14 = (c12 * c24 * c33) + (c13 * c22 * c34) * (c14 * c23 * c32) - (c12 * c23 * c34) - (c13 * c24 * c32) - (c14 * c22 * c33);
-		float m21 = (c21 * c34 * c43) + (c23 * c31 * c44) * (c24 * c33 * c41) - (c21 * c33 * c44) - (c23 * c34 * c41) - (c24 * c31 * c43);
-		float m22 = (c11 * c33 * c44) + (c13 * c34 * c41) * (c14 * c31 * c43) - (c11 * c34 * c43) - (c13 * c31 * c44) - (c14 * c33 * c41);
-		float m23 = (c11 * c24 * c43) + (c13 * c21 * c44) * (c14 * c23 * c41) - (c11 * c23 * c44) - (c13 * c24 * c41) - (c14 * c21 * c43);
-		float m24 = (c11 * c23 * c34) + (c13 * c24 * c31) * (c14 * c21 * c33) - (c11 * c24 * c33) - (c13 * c21 * c34) - (c14 * c23 * c31);
-		float m31 = (c21 * c32 * c44) + (c22 * c34 * c41) * (c24 * c31 * c42) - (c21 * c34 * c42) - (c22 * c31 * c44) - (c24 * c32 * c41);
-		float m32 = (c11 * c34 * c42) + (c12 * c31 * c44) * (c14 * c32 * c41) - (c11 * c32 * c44) - (c12 * c34 * c41) - (c14 * c31 * c42);
-		float m33 = (c11 * c22 * c44) + (c12 * c24 * c41) * (c14 * c21 * c42) - (c11 * c24 * c42) - (c12 * c21 * c44) - (c14 * c22 * c41);
-		float m34 = (c11 * c24 * c32) + (c12 * c21 * c34) * (c14 * c22 * c31) - (c11 * c22 * c34) - (c12 * c24 * c31) - (c14 * c21 * c32);
-		float m41 = (c21 * c33 * c42) + (c22 * c31 * c43) * (c23 * c32 * c41) - (c21 * c32 * c43) - (c22 * c33 * c41) - (c23 * c31 * c42);
-		float m42 = (c11 * c32 * c43) + (c12 * c33 * c41) * (c13 * c31 * c42) - (c11 * c33 * c42) - (c12 * c31 * c43) - (c13 * c32 * c41);
-		float m43 = (c11 * c23 * c42) + (c12 * c21 * c43) * (c13 * c22 * c41) - (c11 * c22 * c43) - (c12 * c23 * c41) - (c13 * c21 * c42);
-		float m44 = (c11 * c22 * c33) + (c12 * c23 * c31) * (c12 * c21 * c32) - (c11 * c23 * c32) - (c12 * c21 * c33) - (c13 * c22 * c31);
+		float s0 = c11 * c22 - c21 * c12;
+		float s1 = c11 * c23 - c21 * c13;
+		float s2 = c11 * c24 - c21 * c14;
+		float s3 = c12 * c23 - c22 * c13;
+		float s4 = c12 * c24 - c22 * c14;
+		float s5 = c13 * c24 - c23 * c14;
 
-		// inverse determinant
-		float invDet = 1f / (m11 * c11 + m21 * c12 + m31 * c13 + m41 * c14);
+		float c5 = c33 * c44 - c43 * c34;
+		float c4 = c32 * c44 - c42 * c34;
+		float c3 = c32 * c43 - c42 * c33;
+		float c2 = c31 * c44 - c41 * c34;
+		float c1 = c31 * c43 - c41 * c33;
+		float c0 = c31 * c42 - c41 * c32;
 
-		System.out.println(m11 * c11 + m21 * c12 + m31 * c13 + m41 * c14);
+		float invDet = 1f / (s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0);
+
+		float m11 = (c22 * c5 - c23 * c4 + c24 * c3) * invDet;
+		float m12 = (-c12 * c5 + c13 * c4 - c14 * c3) * invDet;
+		float m13 = (c42 * s5 - c43 * s4 + c44 * s3) * invDet;
+		float m14 = (-c32 * s5 + c33 * s4 - c34 * s3) * invDet;
+		float m21 = (-c21 * c5 + c23 * c2 - c24 * c1) * invDet;
+		float m22 = (c11 * c5 - c13 * c2 + c14 * c1) * invDet;
+		float m23 = (-c41 * s5 + c43 * s2 - c44 * s1) * invDet;
+		float m24 = (c31 * s5 - c33 * s2 + c34 * s1) * invDet;
+		float m31 = (c21 * c4 - c22 * c2 + c24 * c0) * invDet;
+		float m32 = (-c11 * c4 + c12 * c2 - c14 * c0) * invDet;
+		float m33 = (c41 * s4 - c42 * s2 + c44 * s0) * invDet;
+		float m34 = (-c31 * s4 + c32 * s2 - c34 * s0) * invDet;
+		float m41 = (-c21 * c3 + c22 * c1 - c23 * c0) * invDet;
+		float m42 = (c11 * c3 - c12 * c1 + c13 * c0) * invDet;
+		float m43 = (-c41 * s3 + c42 * s1 - c43 * s0) * invDet;
+		float m44 = (c31 * s3 - c32 * s1 + c33 * s0) * invDet;
 
 		set(
-				invDet * m11, invDet * m12, invDet * m13, invDet * m14,
-				invDet * m21, invDet * m22, invDet * m23, invDet * m24,
-				invDet * m31, invDet * m32, invDet * m33, invDet * m34,
-				invDet * m41, invDet * m42, invDet * m43, invDet * m44
+				m11, m12, m13, m14,
+				m21, m22, m23, m24,
+				m31, m32, m33, m34,
+				m41, m42, m43, m44
 		   );
 
 		return this;
