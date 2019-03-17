@@ -3,6 +3,7 @@ package de.nerogar.noise.opencl;
 import de.nerogar.noise.render.Texture2D;
 import de.nerogar.noise.render.VertexBufferObject;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opencl.CL10;
 import org.lwjgl.opencl.CL10GL;
 
 import java.nio.*;
@@ -12,8 +13,8 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public class CLBuffer {
 
-	private static final String ERROR_LOCATION = "CLBuffer";
-	private IntBuffer errorCode;
+	private static final String    ERROR_LOCATION = "CLBuffer";
+	private              IntBuffer errorCode;
 
 	private CLContext clContext;
 
@@ -212,6 +213,12 @@ public class CLBuffer {
 
 	public long getBufferPointer() {
 		return bufferPointer;
+	}
+
+	// todo: use NoiseResource mechanic for ClBuffer
+	public void cleanup() {
+		int errorCode = CL10.clReleaseMemObject(bufferPointer);
+		CLContext.checkCLError(errorCode, ERROR_LOCATION);
 	}
 
 }

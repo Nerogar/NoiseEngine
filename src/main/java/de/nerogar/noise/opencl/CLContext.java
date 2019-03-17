@@ -2,6 +2,7 @@ package de.nerogar.noise.opencl;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLContext;
+import de.nerogar.noise.serialization.NDSNodeObject;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
@@ -22,8 +23,11 @@ import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 public class CLContext {
 
-	private static final String ERROR_LOCATION = "CLContext";
-	private IntBuffer errorCode;
+	public static final  boolean IS_PROFILING_ENABLED;
+	private static final long    CONTEXT_PROPERTIES;
+
+	private static final String    ERROR_LOCATION = "CLContext";
+	private              IntBuffer errorCode;
 
 	private boolean   shareGL;
 	private GLContext glContext;
@@ -92,7 +96,7 @@ public class CLContext {
 
 		checkCLError(errorCode, ERROR_LOCATION);
 
-		clCommandQueue = clCreateCommandQueue(clContextPointer, clDevice.getClDevicePointer(), 0L, errorCode);
+		clCommandQueue = clCreateCommandQueue(clContextPointer, clDevice.getClDevicePointer(), CONTEXT_PROPERTIES, errorCode);
 		checkCLError(errorCode, ERROR_LOCATION);
 	}
 
@@ -122,7 +126,7 @@ public class CLContext {
 
 		checkCLError(errorCode, ERROR_LOCATION);
 
-		clCommandQueue = clCreateCommandQueue(clContextPointer, clDevice.getClDevicePointer(), 0L, errorCode);
+		clCommandQueue = clCreateCommandQueue(clContextPointer, clDevice.getClDevicePointer(), CONTEXT_PROPERTIES, errorCode);
 		checkCLError(errorCode, ERROR_LOCATION);
 	}
 
@@ -155,6 +159,24 @@ public class CLContext {
 			Noise.getLogger().log(Logger.ERROR, "OpenCL error: " + errorCode + " in " + errorLocation);
 			throw new CLException("openCL error code " + errorCode);
 		}
+	}
+
+	static {
+		long properties = 0;
+
+		boolean profilingEnabled = false;
+
+		if (Noise.getSettings().contains("openCL")) {
+			NDSNodeObject openClProperties = Noise.getSettings().getObject("openCL");
+			if (openClProperties.getBoolean("enableProfiling")) {
+				properties |= CL_QUEUE_PROFILING_ENABLE;
+				profilingEnabled = true;
+			}
+		}
+
+		IS_PROFILING_ENABLED = profilingEnabled;
+
+		CONTEXT_PROPERTIES = properties;
 	}
 
 }

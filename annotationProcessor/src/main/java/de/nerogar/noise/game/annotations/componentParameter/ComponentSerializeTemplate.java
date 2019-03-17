@@ -8,14 +8,16 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 
 	private String superClassName;
 	private String className;
+	private String packageName;
 
 	private StringBuilder setDataSB;
 	private StringBuilder saveSB;
 	private StringBuilder copySB;
 
-	public ComponentSerializeTemplate(String superClassName) {
+	public ComponentSerializeTemplate(String superClassName, String packageName) {
 		this.superClassName = superClassName;
 		this.className = superClassName + "Generated";
+		this.packageName = packageName;
 
 		setDataSB = new StringBuilder();
 		saveSB = new StringBuilder();
@@ -23,7 +25,7 @@ public class ComponentSerializeTemplate extends ClassTemplate {
 	}
 
 	@Override
-	public String getPackage() { return "strategy.core.components"; }
+	public String getPackage() { return packageName; }
 
 	@Override
 	public String[] getImports() {

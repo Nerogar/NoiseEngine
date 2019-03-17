@@ -12,6 +12,12 @@
 		"resourceDir": null
 	},
 
+	// OpenCL settings
+	"openCL": {
+		"enableProfiling": false,
+		"enableVerboseCompiler": false
+	},
+
 	// profiler settings
 	"profiler": {
 		"enabled": false,

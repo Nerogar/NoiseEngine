@@ -6,6 +6,7 @@ import de.nerogar.noise.game.annotations.componentParameter.ComponentParameterPr
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -15,11 +16,12 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 @SupportedAnnotationTypes({ "de.nerogar.noise.game.annotations.ComponentInfo", "de.nerogar.noise.game.annotations.ComponentParameter" })
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class ComponentProcessor extends AbstractProcessor {
 
 	private Messager messager;
 	private Filer    filer;
+	private Elements elements;
 	private Path     distLocation;
 
 	private ComponentParameterProcessor componentParameterProcessor;
@@ -30,6 +32,7 @@ public class ComponentProcessor extends AbstractProcessor {
 		super.init(processingEnv);
 		messager = processingEnv.getMessager();
 		filer = processingEnv.getFiler();
+		elements = processingEnv.getElementUtils();
 		distLocation = createDistLocation();
 
 		componentParameterProcessor = new ComponentParameterProcessor(filer, messager);
@@ -61,7 +64,7 @@ public class ComponentProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
-		componentParameterProcessor.processAnnotations(roundEnv);
+		componentParameterProcessor.processAnnotations(roundEnv, elements);
 		componentInfoProcessor.processAnnotations(roundEnv);
 
 		componentParameterProcessor.writeClasses();

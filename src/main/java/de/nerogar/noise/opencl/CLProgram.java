@@ -1,6 +1,7 @@
 package de.nerogar.noise.opencl;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.serialization.NDSNodeObject;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
@@ -13,8 +14,11 @@ import static org.lwjgl.opencl.CL10.*;
 
 public class CLProgram {
 
-	private static final String ERROR_LOCATION = "CLProgram";
-	private IntBuffer errorCode;
+	public static final  boolean IS_VERBOSE_COMPILER_ENABLED;
+	private static final String  COMPILER_OPTIONS;
+
+	private static final String    ERROR_LOCATION = "CLProgram";
+	private              IntBuffer errorCode;
 
 	private CLContext clContext;
 
@@ -32,8 +36,8 @@ public class CLProgram {
 	}
 
 	private void build() {
-		int buildErrorCode = clBuildProgram(clProgram, clContext.getCLDevice().getClDevicePointer(), "", null, 0L);
-		if (buildErrorCode != CL_SUCCESS) {
+		int buildErrorCode = clBuildProgram(clProgram, clContext.getCLDevice().getClDevicePointer(), COMPILER_OPTIONS, null, 0L);
+		if (buildErrorCode != CL_SUCCESS || IS_VERBOSE_COMPILER_ENABLED) {
 			logBuildError(clProgram, clContext.getCLDevice().getClDevicePointer());
 		}
 		CLContext.checkCLError(buildErrorCode, ERROR_LOCATION);
@@ -44,7 +48,7 @@ public class CLProgram {
 		clGetProgramBuildInfo(program, device, CL10.CL_PROGRAM_BUILD_LOG, (ByteBuffer) null, lengthBuffer);
 		int length = (int) lengthBuffer.get();
 		ByteBuffer errorbuffer = BufferUtils.createByteBuffer(length);
-		clGetProgramBuildInfo(program, device, CL10.CL_PROGRAM_BUILD_LOG, errorbuffer, (PointerBuffer) null);
+		clGetProgramBuildInfo(program, device, CL10.CL_PROGRAM_BUILD_LOG, errorbuffer, null);
 
 		StringBuilder sb = new StringBuilder(length + 1);
 		for (int i = 0; i < errorbuffer.capacity(); i++) {
@@ -61,6 +65,24 @@ public class CLProgram {
 
 	public CLContext getCLContext() {
 		return clContext;
+	}
+
+	static {
+		String options = "";
+
+		boolean verboseCompilerEnabled = false;
+
+		if (Noise.getSettings().contains("openCL")) {
+			NDSNodeObject openClProperties = Noise.getSettings().getObject("openCL");
+			if (openClProperties.getBoolean("enableVerboseCompiler")) {
+				options += " -cl-nv-verbose";
+				verboseCompilerEnabled = true;
+			}
+		}
+
+		IS_VERBOSE_COMPILER_ENABLED = verboseCompilerEnabled;
+
+		COMPILER_OPTIONS = options;
 	}
 
 }

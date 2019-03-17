@@ -5,6 +5,7 @@ import de.nerogar.noise.game.annotations.ComponentParameter;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -12,6 +13,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,24 +31,25 @@ public class ComponentParameterProcessor {
 		this.messager = messager;
 	}
 
-	private ComponentSerializeTemplate getTemplate(String fullClassName, String simpleClassName) {
-		return classTemplateMap.computeIfAbsent(fullClassName, s -> new ComponentSerializeTemplate(simpleClassName));
+	private ComponentSerializeTemplate getTemplate(String fullClassName, String simpleClassName, String packageName) {
+		return classTemplateMap.computeIfAbsent(fullClassName, s -> new ComponentSerializeTemplate(simpleClassName, packageName));
 	}
 
 	public ComponentSerializeTemplate getTemplate(String fullClassName) {
 		return classTemplateMap.get(fullClassName);
 	}
 
-	public void processAnnotations(RoundEnvironment roundEnv) {
+	public void processAnnotations(RoundEnvironment roundEnv, Elements elements) {
 		Set<VariableElement> fields = ElementFilter.fieldsIn(roundEnv.getElementsAnnotatedWith(ComponentParameter.class));
 
 		for (VariableElement field : fields) {
 			TypeElement enclosingClass = (TypeElement) field.getEnclosingElement();
 			String fullClassName = enclosingClass.getQualifiedName().toString();
 			String simpleClassName = field.getEnclosingElement().getSimpleName().toString();
+			String packageName = elements.getPackageOf(field).toString();
 			String fieldName = field.getSimpleName().toString();
 
-			ComponentSerializeTemplate componentSerializeTemplate = getTemplate(fullClassName, simpleClassName);
+			ComponentSerializeTemplate componentSerializeTemplate = getTemplate(fullClassName, simpleClassName, packageName);
 
 			TypeMirror typeMirror = field.asType();
 			TypeKind kind = typeMirror.getKind();

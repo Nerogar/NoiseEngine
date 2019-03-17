@@ -3,23 +3,27 @@ package de.nerogar.noise.opencl;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opencl.CL10GL;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.opencl.CL10.*;
+import static org.lwjgl.opencl.CL10GL.clEnqueueAcquireGLObjects;
+import static org.lwjgl.opengl.GL11.glFinish;
 
 public class CLKernel {
 
-	private static final String ERROR_LOCATION = "CLKernel";
-	private IntBuffer errorCode;
+	private static final String    ERROR_LOCATION = "CLKernel";
+	private              IntBuffer errorCode;
 
 	private CLProgram clProgram;
 
 	private long clKernel;
 
 	private int           workSizeDimensions;
-	private PointerBuffer workSizeBuffer;
+	private PointerBuffer globalWorkSizeBuffer;
+	private PointerBuffer localWorkSizeBuffer;
 
 	private ArrayList<CLBuffer> glBuffers;
 
@@ -28,32 +32,43 @@ public class CLKernel {
 
 		errorCode = BufferUtils.createIntBuffer(1);
 
-		if (clProgram.getCLContext().isContextGLShared()) glBuffers = new ArrayList<CLBuffer>();
+		if (clProgram.getCLContext().isContextGLShared()) glBuffers = new ArrayList<>();
 
 		clKernel = clCreateKernel(clProgram.getCLProgram(), kernelName, errorCode);
 
 		workSizeDimensions = workSize.length;
-		workSizeBuffer = BufferUtils.createPointerBuffer(workSizeDimensions);
+		globalWorkSizeBuffer = BufferUtils.createPointerBuffer(workSizeDimensions);
 		for (int i = 0; i < workSizeDimensions; i++) {
-			workSizeBuffer.put(workSize[i]);
+			globalWorkSizeBuffer.put(workSize[i]);
 		}
-		workSizeBuffer.flip();
+		globalWorkSizeBuffer.flip();
 
 		CLContext.checkCLError(errorCode, ERROR_LOCATION);
+	}
+
+	public void setLocalWorkSize(int... localWorkSize) {
+		if (workSizeDimensions != localWorkSize.length) throw new IllegalArgumentException("global and local work size must have the same dimensionality");
+		localWorkSizeBuffer = BufferUtils.createPointerBuffer(workSizeDimensions);
+		for (int i = 0; i < workSizeDimensions; i++) {
+			localWorkSizeBuffer.put(localWorkSize[i]);
+		}
+		localWorkSizeBuffer.flip();
 	}
 
 	//---[args]---
 	public void setArgBuffer(int index, CLBuffer buffer) {
 		clSetKernelArg1p(clKernel, index, buffer.getBufferPointer());
 
-		if (buffer.isGLBuffer()) {
-			for (int i = glBuffers.size(); i <= index; i++) {
-				glBuffers.add(null);
-			}
-			glBuffers.set(index, buffer);
-		} else {
-			if (glBuffers.size() > index) {
-				glBuffers.set(index, null);
+		if (glBuffers != null) {
+			if (buffer.isGLBuffer()) {
+				for (int i = glBuffers.size(); i <= index; i++) {
+					glBuffers.add(null);
+				}
+				glBuffers.set(index, buffer);
+			} else {
+				if (glBuffers.size() > index) {
+					glBuffers.set(index, null);
+				}
 			}
 		}
 	}
@@ -68,7 +83,7 @@ public class CLKernel {
 	}
 
 	public void setArg3b(int index, byte b0, byte b1, byte b2) {
-		clSetKernelArg3b(clKernel, index, b0, b1, b2);
+		clSetKernelArg4b(clKernel, index, b0, b1, b2, (byte) 0);
 	}
 
 	public void setArg4b(int index, byte b0, byte b1, byte b2, byte b3) {
@@ -85,7 +100,7 @@ public class CLKernel {
 	}
 
 	public void setArg3s(int index, short s0, short s1, short s2) {
-		clSetKernelArg3s(clKernel, index, s0, s1, s2);
+		clSetKernelArg4s(clKernel, index, s0, s1, s2, (short) 0);
 	}
 
 	public void setArg4s(int index, short s0, short s1, short s2, short s3) {
@@ -102,7 +117,7 @@ public class CLKernel {
 	}
 
 	public void setArg3i(int index, int i0, int i1, int i2) {
-		clSetKernelArg3i(clKernel, index, i0, i1, i2);
+		clSetKernelArg4i(clKernel, index, i0, i1, i2, 0);
 	}
 
 	public void setArg4i(int index, int i0, int i1, int i2, int i3) {
@@ -119,7 +134,7 @@ public class CLKernel {
 	}
 
 	public void setArg3l(int index, long l0, long l1, long l2) {
-		clSetKernelArg3l(clKernel, index, l0, l1, l2);
+		clSetKernelArg4l(clKernel, index, l0, l1, l2, 0);
 	}
 
 	public void setArg4l(int index, long l0, long l1, long l2, long l3) {
@@ -136,7 +151,7 @@ public class CLKernel {
 	}
 
 	public void setArg3f(int index, float f0, float f1, float f2) {
-		clSetKernelArg3f(clKernel, index, f0, f1, f2);
+		clSetKernelArg4f(clKernel, index, f0, f1, f2, 0);
 	}
 
 	public void setArg4f(int index, float f0, float f1, float f2, float f3) {
@@ -153,7 +168,7 @@ public class CLKernel {
 	}
 
 	public void setArg3d(int index, double d0, double d1, double d2) {
-		clSetKernelArg3d(clKernel, index, d0, d1, d2);
+		clSetKernelArg4d(clKernel, index, d0, d1, d2, 0);
 	}
 
 	public void setArg4d(int index, double d0, double d1, double d2, double d3) {
@@ -162,25 +177,68 @@ public class CLKernel {
 
 	//---[end args]---
 
-	public void enqueueExecution(boolean block) {
-		//acquire gl obects
+	public long enqueueExecution(boolean blockGL, boolean blockCL) {
+		long event = 0;
+
+		if (CLContext.IS_PROFILING_ENABLED) {
+			try (MemoryStack stack = MemoryStack.stackPush()) {
+				PointerBuffer eventBuffer = stack.callocPointer(1);
+				enqueueExecution(blockGL, blockCL, eventBuffer);
+				event = eventBuffer.get(0);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			enqueueExecution(blockGL, blockCL, null);
+		}
+
+		return event;
+	}
+
+	private void enqueueExecution(boolean blockGL, boolean blockCL, PointerBuffer eventBuffer) {
+		if (blockGL) {
+			glFinish();
+		}
+
+		//acquire gl objects
 		if (glBuffers != null) {
 			for (CLBuffer buffer : glBuffers) {
-				if (buffer != null) CL10GL.clEnqueueAcquireGLObjects(clProgram.getCLContext().getCLCommandQueue(), buffer.getBufferPointer(), null, null);
+				if (buffer != null) clEnqueueAcquireGLObjects(clProgram.getCLContext().getCLCommandQueue(), buffer.getBufferPointer(), null, null);
 			}
 		}
 
-		clEnqueueNDRangeKernel(clProgram.getCLContext().getCLCommandQueue(), clKernel, workSizeDimensions, null, workSizeBuffer, null, null, null);
+		clEnqueueNDRangeKernel(
+				clProgram.getCLContext().getCLCommandQueue(),
+				clKernel,
+				workSizeDimensions,
+				null,
+				globalWorkSizeBuffer,
+				localWorkSizeBuffer,
+				null,
+				eventBuffer
+		                      );
 
-		if (block) clFinish(clProgram.getCLContext().getCLCommandQueue());
+		if (blockCL) clFinish(clProgram.getCLContext().getCLCommandQueue());
 
-		//release gl obects
+		//release gl objects
 		if (glBuffers != null) {
 			for (CLBuffer buffer : glBuffers) {
 				if (buffer != null) CL10GL.clEnqueueReleaseGLObjects(clProgram.getCLContext().getCLCommandQueue(), buffer.getBufferPointer(), null, null);
 			}
 		}
-		if (block) clFinish(clProgram.getCLContext().getCLCommandQueue());
+		if (blockCL) clFinish(clProgram.getCLContext().getCLCommandQueue());
+	}
+
+	public long getProfilingTime(long event) {
+		if (!CLContext.IS_PROFILING_ENABLED) return 0;
+		clWaitForEvents(event);
+		long[] timeStart = { 0 };
+		long[] timeEnd = { 0 };
+
+		clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, timeStart, null);
+		clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, timeEnd, null);
+
+		return timeEnd[0] - timeStart[0];
 	}
 
 }
