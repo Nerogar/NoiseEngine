@@ -1,23 +1,30 @@
 package de.nerogar.noise.render;
 
-import static org.lwjgl.glfw.GLFW.*;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFWVidMode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFWMonitorCallback;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Monitor {
 
 	private static List<Monitor> monitors;
 
-	private long pointer;
-	private String name;
+	private final long   pointer;
+	private final String name;
 
-	private Monitor(long pointer, String name) {
+	private final int width;
+	private final int height;
+
+	private Monitor(long pointer) {
 		this.pointer = pointer;
-		this.name = name;
+		this.name = glfwGetMonitorName(pointer);
+
+		GLFWVidMode videoMode = glfwGetVideoMode(pointer);
+		width = videoMode.width();
+		height = videoMode.height();
 	}
 
 	public long getPointer() {
@@ -26,6 +33,14 @@ public class Monitor {
 
 	public String getName() {
 		return name;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
 	}
 
 	@Override
@@ -38,22 +53,19 @@ public class Monitor {
 	}
 
 	static {
-		monitors = new ArrayList<Monitor>();
+		monitors = new ArrayList<>();
 
 		PointerBuffer monitorBuffer = glfwGetMonitors();
 		while (monitorBuffer.hasRemaining()) {
 			long monitorPointer = monitorBuffer.get();
-			monitors.add(new Monitor(monitorPointer, glfwGetMonitorName(monitorPointer)));
+			monitors.add(new Monitor(monitorPointer));
 		}
 
-		glfwSetMonitorCallback(new GLFWMonitorCallback() {
-			@Override
-			public void invoke(long monitor, int event) {
-				if (event == GLFW_CONNECTED) {
-					monitors.add(new Monitor(monitor, glfwGetMonitorName(monitor)));
-				} else if (event == GLFW_DISCONNECTED) {
-					monitors.removeIf(a -> a.pointer == monitor);
-				}
+		glfwSetMonitorCallback((long monitor, int event) -> {
+			if (event == GLFW_CONNECTED) {
+				monitors.add(new Monitor(monitor));
+			} else if (event == GLFW_DISCONNECTED) {
+				monitors.removeIf(a -> a.pointer == monitor);
 			}
 		});
 	}
