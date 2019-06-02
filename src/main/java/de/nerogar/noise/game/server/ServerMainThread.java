@@ -35,12 +35,12 @@ public abstract class ServerMainThread<
 
 	private boolean isRunning;
 
-	protected EventManager eventManager;
+	private EventManager eventManager;
 
 	// network
-	private   ServerThread     serverThread;
-	protected INetworkAdapter  networkAdapter;
-	private   List<Connection> connections;
+	private ServerThread     serverThread;
+	private INetworkAdapter  networkAdapter;
+	private List<Connection> connections;
 
 	// current active game session
 	private GAME_SYSTEM_CONTAINER_T                    gameSystemContainer;
@@ -86,13 +86,13 @@ public abstract class ServerMainThread<
 
 	protected abstract MapLoader createMapLoader(List<MAP_T> currentMaps, String mapID, ServerThread serverThread, Faction[] factions);
 
-	protected abstract GAME_SYSTEM_CONTAINER_T createGameSystemContainer();
+	protected abstract GAME_SYSTEM_CONTAINER_T createGameSystemContainer(EventManager eventManager, INetworkAdapter networkAdapter);
 
-	protected abstract MAP_SYSTEM_CONTAINER_T createMapSystemContainer(CoreMap map);
+	protected abstract MAP_SYSTEM_CONTAINER_T createMapSystemContainer(MAP_T map);
 
-	protected abstract FACTION_SYSTEM_CONTAINER_T createFactionSystemContainer(Faction faction);
+	protected abstract FACTION_SYSTEM_CONTAINER_T createFactionSystemContainer(EventManager eventManager, Faction faction);
 
-	protected abstract FACTION_MAP_SYSTEM_CONTAINER_T createFactionMapSystemContainer(CoreMap map, Faction faction);
+	protected abstract FACTION_MAP_SYSTEM_CONTAINER_T createFactionMapSystemContainer(MAP_T map, Faction faction);
 
 	private void loop(float timeDelta) {
 		processMapLoader();
@@ -208,7 +208,7 @@ public abstract class ServerMainThread<
 		// load map meta
 		serverMapLoader = createMapLoader(currentMaps, mapID, serverThread, factions.toArray(new Faction[0]));
 		serverMapLoader.loadMeta();
-		for (CoreMap currentMap : currentMaps) {
+		for (MAP_T currentMap : currentMaps) {
 			eventManager.addTriggerChild(currentMap.getEventManager());
 		}
 /*
@@ -245,7 +245,7 @@ public abstract class ServerMainThread<
 
 		// create system containers
 		// game system
-		gameSystemContainer = createGameSystemContainer();
+		gameSystemContainer = createGameSystemContainer(eventManager, networkAdapter);
 
 		// map systems
 		mapSystemContainers = new ArrayList<>(currentMaps.size());
@@ -257,7 +257,7 @@ public abstract class ServerMainThread<
 		// faction systems
 		factionSystemContainers = new ArrayList<>(factions.size());
 		for (int i = 0; i < factions.size(); i++) {
-			FACTION_SYSTEM_CONTAINER_T factionSystemContainer = createFactionSystemContainer(factions.get(i));
+			FACTION_SYSTEM_CONTAINER_T factionSystemContainer = createFactionSystemContainer(eventManager, factions.get(i));
 			factions.get(i).setSystemContainer(factionSystemContainer, gameSystemContainer);
 
 			factionSystemContainers.add(factionSystemContainer);

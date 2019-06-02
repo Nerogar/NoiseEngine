@@ -17,20 +17,22 @@ public abstract class LogicSystem {
 		this.eventManager = eventManager;
 	}
 
-	protected boolean checkSide(Side side)              { return side == getContainer().getSide(); }
+	protected boolean checkSide(Side side)               { return side == getContainer().getSide(); }
 
-	public SystemContainer getContainer()               { return container; }
+	public SystemContainer getContainer()                { return container; }
 
-	public INetworkAdapter getNetworkAdapter()          { return networkAdapter; }
+	public INetworkAdapter getNetworkAdapter()           { return networkAdapter; }
 
-	public EventManager getEventManager()               { return eventManager; }
+	public EventManager getEventManager()                { return eventManager; }
 
-	public void init()                                  { }
+	public void init()                                   { }
 
-	public void setSystemData(NDSNodeObject systemData) { }
+	public void setSystemData(NDSNodeObject systemData)  { }
 
-	public void initWithData()                          { }
+	public void saveSystemData(NDSNodeObject systemData) { }
 
-	public void cleanup()                               { }
+	public void initWithData()                           { }
+
+	public void cleanup()                                { }
 
 }

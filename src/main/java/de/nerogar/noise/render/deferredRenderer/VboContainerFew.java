@@ -1,9 +1,9 @@
 package de.nerogar.noise.render.deferredRenderer;
 
-import de.nerogar.noise.render.Camera;
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.render.Shader;
 import de.nerogar.noise.render.VertexBufferObjectInstanced;
+import de.nerogar.noise.render.camera.IReadOnlyCamera;
 import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Vector3f;
 
@@ -160,7 +160,7 @@ class VboContainerFew implements VboContainer {
 	}
 
 	@Override
-	public void render(Camera camera) {
+	public void render(IReadOnlyCamera camera) {
 		Shader currentShader;
 
 		if (container.getSurfaceShader() == null) {

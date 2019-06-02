@@ -20,8 +20,8 @@ public class ComponentsDebug {
 
 				for (Field field : componentClass.getDeclaredFields()) {
 					sb.append("\t").append(field.getName()).append(": ");
-					//if (!field.canAccess(component)) {
-					if (!field.isAccessible()) {
+					if (!field.canAccess(component)) {
+					//if (!field.isAccessible()) {
 						field.setAccessible(true);
 					}
 					try {

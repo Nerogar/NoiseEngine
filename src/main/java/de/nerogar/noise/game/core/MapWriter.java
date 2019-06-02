@@ -1,17 +1,56 @@
 package de.nerogar.noise.game.core;
 
 import de.nerogar.noise.game.CoreMap;
+import de.nerogar.noise.game.Entity;
+import de.nerogar.noise.game.core.components.PositionComponent;
 import de.nerogar.noise.serialization.NDSFile;
+import de.nerogar.noise.serialization.NDSNodeObject;
 import de.nerogar.noise.serialization.NDSWriter;
 
-public class MapWriter {
+public abstract class MapWriter<MAP_T extends CoreMap> {
 
-	public static void save(CoreMap map, String mapID) {
+	public void save(MAP_T map, String mapID) {
 		NDSFile file = new NDSFile();
 
-		NDSWriter.writeFile(file, "maps/" + mapID + ".map");
+		saveMapMeta(map, file.getData());
+		saveMap(map, file.getData());
+
+		NDSWriter.writeFile(file, "maps/" + mapID + "/testSave.map");
 	}
-/*
+
+	protected abstract void saveMapMeta(MAP_T map, NDSNodeObject metaFile);
+
+	protected void saveEntities(MAP_T map, NDSNodeObject file) {
+		NDSNodeObject[] entitiesArray = new NDSNodeObject[map.getEntityList().getEntities().size()];
+		file.addObjectArray("entities", entitiesArray);
+
+		int i = 0;
+		for (Entity entity : map.getEntityList().getEntities()) {
+			NDSNodeObject entityObject = new NDSNodeObject(null);
+
+			entityObject.addShort("eID", entity.getEntityID());
+			entityObject.addInt("id", entity.getID());
+
+			PositionComponent position = entity.getComponent(PositionComponent.class);
+			entityObject.addFloat("x", position.getX());
+			entityObject.addFloat("y", position.getY());
+			entityObject.addFloat("z", position.getZ());
+
+			entitiesArray[i] = entityObject;
+			i++;
+		}
+	}
+
+	protected void saveMap(MAP_T map, NDSNodeObject file) {
+		NDSNodeObject systemDataNode = new NDSNodeObject("systems");
+		file.addObject(systemDataNode);
+
+		map.getSystemContainer().saveSystemData(systemDataNode);
+
+		saveEntities(map, file);
+	}
+
+	/*
 	private static NDSNodeObject getEntityNode(Collection<Entity> entityCollection) {
 		NDSNodeObject entityNode = new NDSNodeObject("entity");
 

@@ -159,6 +159,12 @@ public abstract class SystemContainer implements Sided {
 		}
 	}
 
+	public void saveSystemData(NDSNodeObject systemData) {
+		for (LogicSystem logicSystem : systemSet) {
+			logicSystem.saveSystemData(systemData);
+		}
+	}
+
 	public void initSystemsWithData() {
 		for (LogicSystem logicSystem : systemSet) {
 			logicSystem.initWithData();

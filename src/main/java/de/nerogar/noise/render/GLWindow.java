@@ -1,7 +1,9 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.input.GlfwJoystickInputHandler;
 import de.nerogar.noise.input.InputHandler;
+import de.nerogar.noise.render.vr.OvrContext;
 import de.nerogar.noise.util.NoiseResource;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 
@@ -28,11 +30,13 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 	private int     swapInterval;
 	private boolean resizable;
 
-	private GLContext glContext;
+	private GLContext  glContext;
+	private OvrContext ovrContext;
 
 	private GLWindowSizeChangeListener sizeChangeListener;
 
-	private InputHandler inputHandler;
+	private InputHandler             inputHandler;
+	private GlfwJoystickInputHandler glfwJoystickInputHandler;
 
 	//holds references to callbacks, otherwise the gc will delete them
 
@@ -49,10 +53,26 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 	 * @param height       initial window height
 	 * @param resizable    initial resizable status
 	 * @param swapInterval initial swap interval (0 = unbound)
-	 * @param monitor      the monitor for fullscreen windows, null otherwise
-	 * @param parentWindow the window to share opengl objects with, null otherwise
 	 */
-	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval, Monitor monitor, GLWindow parentWindow) {
+	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval) {
+		this(title, width, height, resizable, swapInterval, null, null, false);
+	}
+
+	/**
+	 * Creates a new window for OpenGL. A new GLContext will be created.
+	 * To share objects like textures or vertex buffers between windows, use the <code>parentWindow</code> parameter
+	 *
+	 * @param title            initial window Title
+	 * @param width            initial window width
+	 * @param height           initial window height
+	 * @param resizable        initial resizable status
+	 * @param swapInterval     initial swap interval (0 = unbound)
+	 * @param monitor          the monitor for fullscreen windows, null otherwise
+	 * @param parentWindow     the window to share openGL objects with, null otherwise
+	 * @param createOvrContext if this is true, an OpenVR context will be created for this OpenGL context.
+	 *                         Only one OpenVR context can exist at a time. Creating more than one context will generate exceptions.
+	 */
+	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval, Monitor monitor, GLWindow parentWindow, boolean createOvrContext) {
 		super(title);
 
 		windows.add(this);
@@ -61,13 +81,20 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 		this.windowWidth = width;
 		this.windowHeight = height;
 
+		inputHandler = new InputHandler();
+
+		if (createOvrContext) {
+			ovrContext = new OvrContext(this);
+		}
+
 		glfwDefaultWindowHints();
 		glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 
 		windowPointer = glfwCreateWindow(width, height, title, monitor == null ? NULL : monitor.getPointer(), parentWindow == null ? NULL : parentWindow.windowPointer);
 		glfwSetInputMode(windowPointer, GLFW_STICKY_KEYS, GL_TRUE);
-		inputHandler = new InputHandler(this, windowPointer);
+		inputHandler.init(this, windowPointer);
+		glfwJoystickInputHandler = new GlfwJoystickInputHandler(inputHandler);
 
 		GLWindow.makeContextCurrent(windowPointer);
 		glContext = new GLContext(windowPointer);//GLContext.createFromCurrent();
@@ -154,6 +181,10 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 		return resizable;
 	}
 
+	public OvrContext getOvrContext() {
+		return ovrContext;
+	}
+
 	public GLContext getGLContext() {
 		return glContext;
 	}
@@ -228,6 +259,11 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 	public static void updateAll() {
 		for (GLWindow window : windows) {
 			window.inputHandler.update();
+			window.glfwJoystickInputHandler.update();
+
+			if (window.ovrContext != null) {
+				window.ovrContext.update();
+			}
 
 			glfwSwapBuffers(window.windowPointer);
 		}

@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// todo Components class cannot have static methods, because server and client will access the same memory, creating concurrent modification exceptions
 public class Components {
 
 	private static Map<String, String>                     classNames       = new HashMap<>();

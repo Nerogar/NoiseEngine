@@ -16,7 +16,7 @@ public class JoystickEvent {
 
 	protected boolean processed = false;
 
-	protected JoystickEvent(int type, int id, int action) {
+	public JoystickEvent(int type, int id, int action) {
 		this.type = type;
 		this.id = id;
 		this.action = action;

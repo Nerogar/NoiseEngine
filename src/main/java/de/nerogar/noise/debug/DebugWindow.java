@@ -51,7 +51,7 @@ public class DebugWindow {
 
 		if (!ENABLED) return;
 
-		window = new GLWindow("debug", 800, 400, true, 0, null, null);
+		window = new GLWindow("debug", 800, 400, true, 0);
 
 		shader = ShaderLoader.loadShader("<debug/profiler.vert>", "<debug/profiler.frag>");
 		vertexList = new VertexList();

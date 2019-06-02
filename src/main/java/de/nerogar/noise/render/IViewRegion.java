@@ -1,5 +1,6 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.render.camera.Camera;
 import de.nerogar.noise.util.Bounding;
 import de.nerogar.noise.util.Vector3f;
 

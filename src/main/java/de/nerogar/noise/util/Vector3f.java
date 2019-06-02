@@ -1,6 +1,7 @@
 package de.nerogar.noise.util;
 
 public class Vector3f implements Vectorf<Vector3f> {
+
 	private static final float SQRT_3 = (float) Math.sqrt(3.0);
 
 	private float x;
@@ -9,6 +10,7 @@ public class Vector3f implements Vectorf<Vector3f> {
 	private float z;
 	private float value;
 	private boolean isValueDirty = true;
+
 	//constructors
 	public Vector3f(float x, float y, float z) {
 		this.x = x;
@@ -47,14 +49,14 @@ public class Vector3f implements Vectorf<Vector3f> {
 	@Override
 	public float get(int component) {
 		switch (component) {
-		case 0:
-			return x;
-		case 1:
-			return y;
-		case 2:
-			return z;
-		default:
-			return 0f;
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+			default:
+				return 0f;
 		}
 	}
 
@@ -74,15 +76,15 @@ public class Vector3f implements Vectorf<Vector3f> {
 	@Override
 	public Vector3f set(int component, float f) {
 		switch (component) {
-		case 0:
-			x = f;
-			break;
-		case 1:
-			y = f;
-			break;
-		case 2:
-			z = f;
-			break;
+			case 0:
+				x = f;
+				break;
+			case 1:
+				y = f;
+				break;
+			case 2:
+				z = f;
+				break;
 		}
 		isValueDirty = true;
 		return this;
@@ -136,15 +138,15 @@ public class Vector3f implements Vectorf<Vector3f> {
 	@Override
 	public Vector3f add(int component, float f) {
 		switch (component) {
-		case 0:
-			x += f;
-			break;
-		case 1:
-			y += f;
-			break;
-		case 2:
-			z += f;
-			break;
+			case 0:
+				x += f;
+				break;
+			case 1:
+				y += f;
+				break;
+			case 2:
+				z += f;
+				break;
 		}
 		isValueDirty = true;
 		return this;
@@ -222,7 +224,8 @@ public class Vector3f implements Vectorf<Vector3f> {
 		set(
 				y * v.getZ() - z * v.getY(),
 				z * v.getX() - x * v.getZ(),
-				x * v.getY() - y * v.getX());
+				x * v.getY() - y * v.getX()
+		   );
 
 		return this;
 	}
@@ -234,7 +237,8 @@ public class Vector3f implements Vectorf<Vector3f> {
 		set(
 				getX() - dot * v.get(0),
 				getY() - dot * v.get(1),
-				getZ() - dot * v.get(2));
+				getZ() - dot * v.get(2)
+		   );
 	}
 
 	@Override
@@ -264,6 +268,32 @@ public class Vector3f implements Vectorf<Vector3f> {
 		this.value = value;
 		isValueDirty = false;
 		return this;
+	}
+
+	public Vector3f transform(Matrix4f m) {
+		float x = this.x;
+		float y = this.y;
+		float z = this.z;
+
+		return set(
+				x * m.get(0, 0) + y * m.get(0, 1) + z * m.get(0, 2),
+				x * m.get(1, 0) + y * m.get(1, 1) + z * m.get(1, 2),
+				x * m.get(2, 0) + y * m.get(2, 1) + z * m.get(2, 2)
+		          );
+
+	}
+
+	public Vector3f transform(Matrix4f m, float w) {
+		float x = this.x;
+		float y = this.y;
+		float z = this.z;
+
+		return set(
+				x * m.get(0, 0) + y * m.get(0, 1) + z * m.get(0, 2) + w * m.get(0, 3),
+				x * m.get(1, 0) + y * m.get(1, 1) + z * m.get(1, 2) + w * m.get(1, 3),
+				x * m.get(2, 0) + y * m.get(2, 1) + z * m.get(2, 2) + w * m.get(2, 3)
+				);
+
 	}
 
 	private void recalculateValue() {

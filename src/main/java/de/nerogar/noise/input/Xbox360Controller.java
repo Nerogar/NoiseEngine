@@ -1,6 +1,6 @@
 package de.nerogar.noise.input;
 
-public class Xbox360Controller extends Joystick {
+public class Xbox360Controller extends GlfwJoystick {
 
 	public static final int BUTTON_A           = 0;
 	public static final int BUTTON_B           = 1;

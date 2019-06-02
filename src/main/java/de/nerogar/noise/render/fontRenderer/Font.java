@@ -178,7 +178,7 @@ public class Font {
 	/**
 	 * @return the distance between the baseline of two rendered lines in pixels
 	 */
-	protected int getLineSpace() {
+	public int getLineSpace() {
 		return pointSize + pointSize / 3;
 	}
 

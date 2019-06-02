@@ -1,20 +1,21 @@
-package de.nerogar.noise.render;
+package de.nerogar.noise.render.camera;
 
+import de.nerogar.noise.render.ViewFrustum;
 import de.nerogar.noise.util.Matrix4fUtils;
 
 import java.util.Locale;
 
-public class OrthographicCamera extends Camera {
+public class PerspectiveCamera extends DefaultCamera {
 
-	private float height;
+	private float fov;
 	private float aspect;
 	private float near;
 	private float far;
 
-	public OrthographicCamera(float height, float aspect, float near, float far) {
-		super(new ViewBox());
+	public PerspectiveCamera(float fov, float aspect, float near, float far) {
+		super(new ViewFrustum());
 
-		setHeight(height);
+		setFOV(fov);
 		setAspect(aspect);
 		setNear(near);
 		setFar(far);
@@ -23,12 +24,16 @@ public class OrthographicCamera extends Camera {
 	@Override
 	protected void setUnitRays() {
 
-		// set rays in view space
-		unitRayTop.getStart().set(0, height/2, 0);
-		unitRayRight.getDir().set(0, 0, -1);
+		float fovTopRad = getFOV() * PI / 360.0f;
+		float h = (float) Math.tan(fovTopRad);
+		float w = h * aspect;
 
-		unitRayRight.getStart().set(height * aspect/2, 0, 0);
-		unitRayTop.getDir().set(0, 0, -1);
+		// set rays in view space
+		unitRayTop.getStart().set(0, 0, 0);
+		unitRayRight.getDir().set(w, 0, -1);
+
+		unitRayRight.getStart().set(0, 0, 0);
+		unitRayTop.getDir().set(0, h, -1);
 
 		unitRayCenter.getStart().set(0, 0, 0);
 		unitRayCenter.getDir().set(0, 0, -1);
@@ -53,8 +58,7 @@ public class OrthographicCamera extends Camera {
 
 	@Override
 	protected void setProjectionMatrix() {
-		float width = height * aspect;
-		Matrix4fUtils.setOrthographicProjection(projectionMatrix, -width / 2f, width / 2f, height / 2f, -height / 2f, near, far);
+		Matrix4fUtils.setPerspectiveProjection(projectionMatrix, fov, aspect, near, far);
 
 		projectionMatrixDirty = false;
 
@@ -62,18 +66,19 @@ public class OrthographicCamera extends Camera {
 		viewRegion.setPlanes(this);
 	}
 
-	public void setHeight(float height) {
-		if (this.height == height) return;
-		this.height = height;
+	public void setFOV(float fov) {
+		if (this.fov == fov) return;
+		this.fov = fov;
 
 		// set unit size:
-		unitSize = 1.0f / height;
+		float fovRadiants = (fov * PI / 180.0f);
+		unitSize = (float) Math.tan(fovRadiants / 2.0f) / 2.0f;
 
 		projectionMatrixDirty = true;
 	}
 
-	public float getHeight() {
-		return height;
+	public float getFOV() {
+		return fov;
 	}
 
 	@Override
@@ -108,7 +113,7 @@ public class OrthographicCamera extends Camera {
 
 	@Override
 	public String toString() {
-		return String.format(Locale.US, "OrthographicCamera(height: %.2f, aspect: %.2f, yaw:%.2f, pitch:%.2f, roll:%.2f, x:%.2f, y:%.2f, z:%.2f)", height, aspect, yaw, pitch, roll, x, y, z);
+		return String.format(Locale.US, "PerspectiveCamera(fov: %.2f, aspect: %.2f, yaw:%.2f, pitch:%.2f, roll:%.2f, x:%.2f, y:%.2f, z:%.2f)", fov, aspect, yaw, pitch, roll, x, y, z);
 	}
 
 }

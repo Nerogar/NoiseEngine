@@ -1,5 +1,6 @@
 package de.nerogar.noise.game;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.util.Logger;
 
 public class NoiseGame {
@@ -35,5 +36,9 @@ public class NoiseGame {
 	// network adapters
 	public static final int NETWORK_ADAPTER_DEFAULT    = 1;
 	public static final int NETWORK_ADAPTER_START_MAPS = 10;
+
+	static {
+		logger.setParent(Noise.getLogger());
+	}
 
 }

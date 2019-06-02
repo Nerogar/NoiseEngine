@@ -74,7 +74,10 @@ public class Texture2D extends Texture {
 		BGRA_32_32_32_32F(GL_RGBA32F, GL_RGBA, GL_FLOAT),
 
 		/** 1 component, 32 bits, only used for depth textures, input is a single float */
-		DEPTH(GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT);
+		DEPTH(GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT),
+
+		/** 2 components, 24 bits depth, 8 bit stencil */
+		DEPTH_STENCIL(GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
 
 		public final int internal;
 		public final int format;

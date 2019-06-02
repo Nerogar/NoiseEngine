@@ -4,6 +4,7 @@ import de.nerogar.noise.game.Components;
 import de.nerogar.noise.game.core.components.SynchronizedComponent;
 import de.nerogar.noise.game.core.network.NetworkEvent;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,6 +17,8 @@ public class ComponentPacket extends NetworkEvent {
 	private SynchronizedComponent component;
 	private DataInputStream       input;
 
+	private byte[] data;
+
 	public ComponentPacket() {
 	}
 
@@ -24,6 +27,14 @@ public class ComponentPacket extends NetworkEvent {
 
 		id = component.getEntity().getID();
 		componentID = Components.getIDFromComponent(component.getClass());
+
+		try {
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			component.toStream(new DataOutputStream(byteArrayOutputStream));
+			data = byteArrayOutputStream.toByteArray();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -39,7 +50,7 @@ public class ComponentPacket extends NetworkEvent {
 		out.writeInt(id);
 		out.writeShort(componentID);
 
-		component.toStream(out);
+		out.write(data);
 	}
 
 	public int getId()                { return id; }

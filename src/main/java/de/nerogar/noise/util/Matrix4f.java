@@ -349,7 +349,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 
 	@Override
 	public Matrix4f inverted() {
-		return null;
+		return clone().invert();
 	}
 
 	@Override

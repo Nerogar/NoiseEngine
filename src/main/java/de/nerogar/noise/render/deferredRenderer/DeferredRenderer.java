@@ -2,6 +2,8 @@ package de.nerogar.noise.render.deferredRenderer;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.*;
+import de.nerogar.noise.render.camera.IMultiCamera;
+import de.nerogar.noise.render.camera.IReadOnlyCamera;
 import de.nerogar.noise.util.*;
 
 import java.util.Collection;
@@ -29,7 +31,6 @@ public class DeferredRenderer {
 	private static final int TEXTURE_ATTACHMENT_FINAL          = 0;
 	private static final int TEXTURE_ATTACHMENT_FILTER         = 0;
 
-
 	private static final int TEXTURE_SLOT_COLOR           = 0;
 	private static final int TEXTURE_SLOT_NORMAL          = 1;
 	private static final int TEXTURE_SLOT_LIGHT           = 2;
@@ -45,27 +46,27 @@ public class DeferredRenderer {
 	private DeferredRendererProfiler             profiler;
 
 	// gBuffer
-	private Shader            gBufferShader;
-	private Shader            gBufferShaderSingle;
-	private FrameBufferObject gBuffer;
+	private Shader              gBufferShader;
+	private Shader              gBufferShaderSingle;
+	private FrameBufferObject[] gBuffer;
 
 	// lights
 	private LightContainer              lightContainer;
 	private VertexBufferObjectInstanced lightVbo;
 	private Shader                      lightShader;
-	private FrameBufferObject           lightFrameBuffer;
+	private FrameBufferObject[]         lightFrameBuffer;
 
 	// effects
-	private EffectContainer   effectContainer;
-	private FrameBufferObject effectFrameBuffer;
+	private EffectContainer     effectContainer;
+	private FrameBufferObject[] effectFrameBuffer;
 
 	// final pass
-	private Shader            finalShader;
-	private FrameBufferObject finalFrameBuffer;
+	private Shader              finalShader;
+	private FrameBufferObject[] finalFrameBuffer;
 
 	// getFiltered
-	private Shader            filterShader;
-	private FrameBufferObject filterFrameBuffer;
+	private Shader              filterShader;
+	private FrameBufferObject[] filterFrameBuffer;
 
 	// settings
 	private Map<String, String> settingsParameter;
@@ -87,8 +88,8 @@ public class DeferredRenderer {
 	private boolean antiAliasingEnabled;
 
 	// debug
-	private static final boolean SHOW_AXIS = Noise.getSettings().getObject("deferredRenderer").getBoolean("showAxis");
-	private DeferredRenderable originAxis;
+	private static final boolean            SHOW_AXIS = Noise.getSettings().getObject("deferredRenderer").getBoolean("showAxis");
+	private              DeferredRenderable originAxis;
 
 	/**
 	 * @param width  initial width of the target {@link FrameBufferObject FrameBufferObject}
@@ -126,20 +127,7 @@ public class DeferredRenderer {
 		Mesh sphere = WavefrontLoader.loadObject("<icoSphere.obj>");
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
-		gBuffer = new FrameBufferObject(width, height, true,
-		                                Texture2D.DataType.BGRA_8_8_8_8I, // color
-		                                Texture2D.DataType.BGRA_10_10_10_2, // normal
-		                                Texture2D.DataType.BGRA_8_8_8_8I // light
-		);
-
-		lightFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
-
-		effectFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
-		effectFrameBuffer.attachTexture(-1, gBuffer.getTextureAttachment(-1));
-
-		finalFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
-
-		filterFrameBuffer = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+		createFramebuffers(1);
 
 		loadShaders();
 		setFrameBufferResolution(width, height);
@@ -150,6 +138,56 @@ public class DeferredRenderer {
 			loadOriginAxis();
 			addObject(originAxis);
 		}
+	}
+
+	private void createFramebuffers(int count) {
+		if (gBuffer == null) {
+			gBuffer = new FrameBufferObject[count];
+			lightFrameBuffer = new FrameBufferObject[count];
+			effectFrameBuffer = new FrameBufferObject[count];
+			finalFrameBuffer = new FrameBufferObject[count];
+			filterFrameBuffer = new FrameBufferObject[count];
+		} else if (gBuffer.length < count) {
+			FrameBufferObject[] gBufferOld = gBuffer;
+			FrameBufferObject[] lightFrameBufferOld = lightFrameBuffer;
+			FrameBufferObject[] effectFrameBufferOld = effectFrameBuffer;
+			FrameBufferObject[] finalFrameBufferOld = finalFrameBuffer;
+			FrameBufferObject[] filterFrameBufferOld = filterFrameBuffer;
+
+			gBuffer = new FrameBufferObject[count];
+			lightFrameBuffer = new FrameBufferObject[count];
+			effectFrameBuffer = new FrameBufferObject[count];
+			finalFrameBuffer = new FrameBufferObject[count];
+			filterFrameBuffer = new FrameBufferObject[count];
+
+			for (int i = 0; i < gBufferOld.length; i++) {
+				gBuffer[i] = gBufferOld[i];
+				lightFrameBuffer[i] = lightFrameBufferOld[i];
+				effectFrameBuffer[i] = effectFrameBufferOld[i];
+				finalFrameBuffer[i] = finalFrameBufferOld[i];
+				filterFrameBuffer[i] = filterFrameBufferOld[i];
+			}
+		}
+
+		for (int i = 0; i < gBuffer.length; i++) {
+			if (gBuffer[i] != null) continue;
+
+			gBuffer[i] = new FrameBufferObject(width, height, true,
+			                                   Texture2D.DataType.BGRA_8_8_8_8I, // color
+			                                   Texture2D.DataType.BGRA_10_10_10_2, // normal
+			                                   Texture2D.DataType.BGRA_8_8_8_8I // light
+			);
+
+			lightFrameBuffer[i] = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_16_16_16F);
+
+			effectFrameBuffer[i] = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+			effectFrameBuffer[i].attachTexture(-1, gBuffer[i].getTextureAttachment(-1));
+
+			finalFrameBuffer[i] = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+
+			filterFrameBuffer[i] = new FrameBufferObject(width, height, false, Texture2D.DataType.BGRA_8_8_8_8I);
+		}
+
 	}
 
 	private void loadOriginAxis() {
@@ -267,7 +305,7 @@ public class DeferredRenderer {
 
 	private static final int[] lightInstanceComponents = new int[] { 3, 3, 1, 1 };
 
-	private int rebuildLightVbo(Camera camera) {
+	private int rebuildLightVbo(IReadOnlyCamera camera) {
 		float[] position = new float[lightContainer.size() * 3];
 		float[] color = new float[lightContainer.size() * 3];
 		float[] reach = new float[lightContainer.size()];
@@ -363,11 +401,13 @@ public class DeferredRenderer {
 		this.width = width;
 		this.height = height;
 
-		gBuffer.setResolution(width, height);
-		lightFrameBuffer.setResolution(width, height);
-		effectFrameBuffer.setResolution(width, height);
-		finalFrameBuffer.setResolution(width, height);
-		filterFrameBuffer.setResolution(width, height);
+		for (int i = 0; i < this.gBuffer.length; i++) {
+			gBuffer[i].setResolution(width, height);
+			lightFrameBuffer[i].setResolution(width, height);
+			effectFrameBuffer[i].setResolution(width, height);
+			finalFrameBuffer[i].setResolution(width, height);
+			filterFrameBuffer[i].setResolution(width, height);
+		}
 
 		lightShader.activate();
 		lightShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
@@ -451,7 +491,7 @@ public class DeferredRenderer {
 				projectionMatrix.get(2, 3),
 				projectionMatrix.get(3, 2),
 				projectionMatrix.get(3, 3)
-		                        );
+		                   );
 	}
 
 	/**
@@ -464,9 +504,20 @@ public class DeferredRenderer {
 	 *
 	 * @param camera the camera for viewing the scene
 	 */
-	public void render(Camera camera) {
+	public void render(IMultiCamera camera) {
+		if (gBuffer.length < camera.cameras().length) {
+			createFramebuffers(camera.cameras().length);
+		}
+
+		for (int i = 0; i < camera.cameras().length; i++) {
+			renderView(i, camera.cameras()[i]);
+		}
+	}
+
+	private void renderView(int view, IReadOnlyCamera camera) {
+
 		// render gBuffer
-		gBuffer.bind();
+		gBuffer[view].bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -495,10 +546,10 @@ public class DeferredRenderer {
 		glDisable(GL_DEPTH_TEST);
 
 		// bind gBuffer textures
-		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_COLOR).bind(TEXTURE_SLOT_COLOR);
-		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_NORMAL).bind(TEXTURE_SLOT_NORMAL);
-		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_LIGHT).bind(TEXTURE_SLOT_LIGHT);
-		gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_DEPTH).bind(TEXTURE_SLOT_DEPTH);
+		gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_COLOR).bind(TEXTURE_SLOT_COLOR);
+		gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_NORMAL).bind(TEXTURE_SLOT_NORMAL);
+		gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_LIGHT).bind(TEXTURE_SLOT_LIGHT);
+		gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_DEPTH).bind(TEXTURE_SLOT_DEPTH);
 
 		// calculate unit rays for depth -> position reconstruction
 		Ray unitRayCenter = camera.unproject(0, 0);
@@ -510,7 +561,7 @@ public class DeferredRenderer {
 		unitRayTop.getDir().subtract(unitRayCenter.getDir());
 
 		// render lights
-		lightFrameBuffer.bind();
+		lightFrameBuffer[view].bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -536,11 +587,11 @@ public class DeferredRenderer {
 
 		glDisable(GL_CULL_FACE);
 
-		lightFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_LIGHTS).bind(TEXTURE_SLOT_LIGHTS);
+		lightFrameBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_LIGHTS).bind(TEXTURE_SLOT_LIGHTS);
 		if (reflectionTexture != null) reflectionTexture.bind(TEXTURE_SLOT_REFLECTION_CUBE);
 
 		// render effects
-		effectFrameBuffer.bind();
+		effectFrameBuffer[view].bind();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -568,10 +619,10 @@ public class DeferredRenderer {
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
 
-		effectFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_EFFECTS).bind(TEXTURE_SLOT_EFFECTS);
+		effectFrameBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_EFFECTS).bind(TEXTURE_SLOT_EFFECTS);
 
 		// final pass
-		finalFrameBuffer.bind();
+		finalFrameBuffer[view].bind();
 
 		finalShader.activate();
 		finalShader.setUniform3f("sunLightColor", sunLightColor.getR(), sunLightColor.getG(), sunLightColor.getB());
@@ -589,8 +640,8 @@ public class DeferredRenderer {
 
 		// getFiltered
 		if (antiAliasingEnabled) {
-			finalFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_FINAL).bind(TEXTURE_SLOT_FINAL);
-			filterFrameBuffer.bind();
+			finalFrameBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_FINAL).bind(TEXTURE_SLOT_FINAL);
+			filterFrameBuffer[view].bind();
 			filterShader.activate();
 			fullscreenQuad.render();
 			filterShader.deactivate();
@@ -606,33 +657,57 @@ public class DeferredRenderer {
 	/**
 	 * @return the final color output as a {@link Texture2D Texture2D}
 	 */
-	public Texture2D getColorOutput() {
+	public Texture2D getColorOutput() { return getColorOutput(0); }
+
+	/**
+	 * @param view the view index for cameras with multiple views
+	 * @return the final color output as a {@link Texture2D Texture2D}
+	 */
+	public Texture2D getColorOutput(int view) {
 		if (antiAliasingEnabled) {
-			return filterFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_FINAL);
+			return filterFrameBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_FINAL);
 		} else {
-			return finalFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_FILTER);
+			return finalFrameBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_FILTER);
 		}
 	}
 
 	/**
 	 * @return the depth buffer as a {@link Texture2D Texture2D}
 	 */
-	public Texture2D getDepthBuffer() {
-		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_DEPTH);
+	public Texture2D getDepthBuffer() { return getDepthBuffer(0); }
+
+	/**
+	 * @param view the view index for cameras with multiple views
+	 * @return the depth buffer as a {@link Texture2D Texture2D}
+	 */
+	public Texture2D getDepthBuffer(int view) {
+		return gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_DEPTH);
 	}
 
 	/**
 	 * @return the color buffer as a {@link Texture2D Texture2D}
 	 */
-	public Texture2D getColorBuffer() {
-		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_COLOR);
+	public Texture2D getColorBuffer() { return getColorBuffer(0); }
+
+	/**
+	 * @param view the view index for cameras with multiple views
+	 * @return the color buffer as a {@link Texture2D Texture2D}
+	 */
+	public Texture2D getColorBuffer(int view) {
+		return gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_COLOR);
 	}
 
 	/**
 	 * @return the normal buffer as a {@link Texture2D Texture2D}
 	 */
-	public Texture2D getNormalBuffer() {
-		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_NORMAL);
+	public Texture2D getNormalBuffer() { return getNormalBuffer(0); }
+
+	/**
+	 * @param view the view index for cameras with multiple views
+	 * @return the normal buffer as a {@link Texture2D Texture2D}
+	 */
+	public Texture2D getNormalBuffer(int view) {
+		return gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_NORMAL);
 	}
 
 	/**
@@ -640,8 +715,16 @@ public class DeferredRenderer {
 	 *
 	 * @return the light buffer as a {@link Texture2D Texture2D}
 	 */
-	public Texture2D getLightBuffer() {
-		return gBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_LIGHT);
+	public Texture2D getLightBuffer() { return getLightBuffer(0); }
+
+	/**
+	 * the light buffer contains light information
+	 *
+	 * @param view the view index for cameras with multiple views
+	 * @return the light buffer as a {@link Texture2D Texture2D}
+	 */
+	public Texture2D getLightBuffer(int view) {
+		return gBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_GBUFFER_LIGHT);
 	}
 
 	/**
@@ -649,8 +732,16 @@ public class DeferredRenderer {
 	 *
 	 * @return the light buffer as a {@link Texture2D Texture2D}
 	 */
-	public Texture2D getLightsBuffer() {
-		return lightFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_LIGHTS);
+	public Texture2D getLightsBuffer() { return getLightsBuffer(0); }
+
+	/**
+	 * the lights buffer contains lights from the {@link LightContainer LightContainer} returned by {@link DeferredRenderer#getLightContainer() getLightContainer()}
+	 *
+	 * @param view the view index for cameras with multiple views
+	 * @return the light buffer as a {@link Texture2D Texture2D}
+	 */
+	public Texture2D getLightsBuffer(int view) {
+		return lightFrameBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_LIGHTS);
 	}
 
 	/**
@@ -658,8 +749,16 @@ public class DeferredRenderer {
 	 *
 	 * @return the depth buffer as a {@link Texture2D Texture2D}
 	 */
-	public Texture2D getEffectsBuffer() {
-		return effectFrameBuffer.getTextureAttachment(TEXTURE_ATTACHMENT_EFFECTS);
+	public Texture2D getEffectsBuffer() { return getEffectsBuffer(0); }
+
+	/**
+	 * the effects buffer contains effects from the {@link EffectContainer EffectContainer} returned by {@link DeferredRenderer#getEffectContainer() getEffectContainer()}
+	 *
+	 * @param view the view index for cameras with multiple views
+	 * @return the depth buffer as a {@link Texture2D Texture2D}
+	 */
+	public Texture2D getEffectsBuffer(int view) {
+		return effectFrameBuffer[view].getTextureAttachment(TEXTURE_ATTACHMENT_EFFECTS);
 	}
 
 	/**
@@ -670,10 +769,13 @@ public class DeferredRenderer {
 			container.cleanup();
 		}
 
-		gBuffer.cleanup();
-		lightFrameBuffer.cleanup();
-		finalFrameBuffer.cleanup();
-		filterFrameBuffer.cleanup();
+		for (int i = 0; i < gBuffer.length; i++) {
+			gBuffer[i].cleanup();
+			lightFrameBuffer[i].cleanup();
+			effectFrameBuffer[i].cleanup();
+			finalFrameBuffer[i].cleanup();
+			filterFrameBuffer[i].cleanup();
+		}
 
 		gBufferShader.cleanup();
 		gBufferShaderSingle.cleanup();

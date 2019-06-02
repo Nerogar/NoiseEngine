@@ -1,8 +1,6 @@
 package de.nerogar.noise.input;
 
-import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
-import de.nerogar.noise.util.Logger;
 import org.lwjgl.glfw.*;
 
 import java.util.ArrayList;
@@ -26,7 +24,6 @@ public final class InputHandler {
 	private GLFWCharModsCallback    charModsCallback;
 	private GLFWMouseButtonCallback mouseButtonCallback;
 	private GLFWScrollCallback      scrollCallback;
-	private GLFWJoystickCallback    joystickCallback;
 	private GLFWWindowFocusCallback windowFocusCallback;
 
 	private boolean ignoreMouseDelta;
@@ -42,10 +39,7 @@ public final class InputHandler {
 
 	private List<Joystick> joysticks;
 
-	public InputHandler(GLWindow window, long windowPointer) {
-		this.window = window;
-		this.windowPointer = windowPointer;
-
+	public InputHandler() {
 		ignoreMouseDelta = true;
 
 		inputText = new StringBuilder();
@@ -53,11 +47,11 @@ public final class InputHandler {
 		mouseButtonEvents = new ArrayList<>();
 
 		joysticks = new ArrayList<>();
+	}
 
-		for (int i = GLFW_JOYSTICK_1; i <= GLFW_JOYSTICK_LAST; i++) {
-			setJoystickActive(i, glfwJoystickPresent(i));
-		}
-
+	public void init(GLWindow window, long windowPointer) {
+		this.window = window;
+		this.windowPointer = windowPointer;
 		setCallbacks();
 	}
 
@@ -106,19 +100,6 @@ public final class InputHandler {
 			}
 		};
 
-		joystickCallback = new GLFWJoystickCallback() {
-			@Override
-			public void invoke(int id, int status) {
-				if (status == GLFW_CONNECTED) {
-					setJoystickActive(id, true);
-					Noise.getLogger().log(Logger.DEBUG, "Joystick " + id + " connected");
-				} else {
-					setJoystickActive(id, false);
-					Noise.getLogger().log(Logger.DEBUG, "Joystick " + id + " disconnected");
-				}
-			}
-		};
-
 		windowFocusCallback = new GLFWWindowFocusCallback() {
 			@Override
 			public void invoke(long window, boolean focused) {
@@ -138,7 +119,6 @@ public final class InputHandler {
 		glfwSetCharModsCallback(windowPointer, charModsCallback);
 		glfwSetMouseButtonCallback(windowPointer, mouseButtonCallback);
 		glfwSetScrollCallback(windowPointer, scrollCallback);
-		glfwSetJoystickCallback(joystickCallback);
 
 	}
 
@@ -154,7 +134,6 @@ public final class InputHandler {
 		resetKeyboardKeyEvents();
 		resetMouseButtonEvents();
 		resetDeltaValues();
-		pollJoysticks();
 	}
 
 	//---[mouse]---
@@ -284,37 +263,17 @@ public final class InputHandler {
 	}
 
 	//---[joystick]---
-
-	private void setJoystickActive(int id, boolean active) {
-		if (active) {
-			String joystickName = glfwGetJoystickName(id);
-
-			Joystick joystick;
-
-			if (Xbox360Controller.accept(joystickName)) {
-				joystick = new Xbox360Controller(id, joystickName);
-			} else {
-				int buttonCount = glfwGetJoystickButtons(id).limit();
-				int axisCount = glfwGetJoystickAxes(id).limit();
-				joystick = new Joystick(id, joystickName, buttonCount, axisCount);
-			}
-
+	public void addJoystick(Joystick joystick) {
+		if (!joysticks.contains(joystick)) {
 			joysticks.add(joystick);
-
-		} else {
-			for (Joystick joystick : joysticks) {
-				if (joystick.getId() == id) joystick.setDisconnected();
-			}
-
-			joysticks.removeIf((joystick) -> joystick.getId() == id);
 		}
 	}
 
-	private void pollJoysticks() {
-		joysticks.forEach(Joystick::poll);
+	public void removeJoystick(Joystick joystick) {
+		joysticks.remove(joystick);
 	}
 
-	public List<Joystick> getJoysticks(){
+	public List<Joystick> getJoysticks() {
 		return joysticks;
 	}
 

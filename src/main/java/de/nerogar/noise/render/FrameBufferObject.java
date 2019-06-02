@@ -63,7 +63,7 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 	}
 
 	private void createDepthTexture() {
-		depthTexture = new Texture2D("depth", 0, 0, null, InterpolationType.NEAREST, DataType.DEPTH);
+		depthTexture = new Texture2D("depthStencil", 0, 0, null, InterpolationType.NEAREST, DataType.DEPTH_STENCIL);
 	}
 
 	/**
@@ -132,9 +132,9 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 			depthTexture.setHeight(height);
 			depthTexture.createTexture(null);
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture.getID(), 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture.getID(), 0);
 		} else {
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 		}
 
 		setDrawBuffers();

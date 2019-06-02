@@ -1,7 +1,7 @@
 package de.nerogar.noise.render.deferredRenderer;
 
-import de.nerogar.noise.render.Camera;
 import de.nerogar.noise.render.IViewRegion;
+import de.nerogar.noise.render.camera.IReadOnlyCamera;
 
 import java.util.function.Consumer;
 
@@ -9,7 +9,7 @@ interface VboContainer {
 
 	boolean prepareRender(IViewRegion frustum);
 
-	void render(Camera camera);
+	void render(IReadOnlyCamera camera);
 
 	void addObject(DeferredRenderable object);
 

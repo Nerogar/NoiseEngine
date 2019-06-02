@@ -1,5 +1,7 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.render.camera.Camera;
+import de.nerogar.noise.render.camera.OrthographicCamera;
 import de.nerogar.noise.util.Bounding;
 import de.nerogar.noise.util.BoundingHexahedron;
 import de.nerogar.noise.util.Ray;

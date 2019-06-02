@@ -1,11 +1,12 @@
-package de.nerogar.noise.render;
+package de.nerogar.noise.render.camera;
 
+import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Matrix4fUtils;
 import de.nerogar.noise.util.Ray;
 import de.nerogar.noise.util.Vector3f;
 
-public abstract class Camera {
+public abstract class DefaultCamera extends Camera {
 
 	protected static final float PI = (float) Math.PI;
 
@@ -17,10 +18,10 @@ public abstract class Camera {
 	protected Matrix4f pitchMatrix;
 	protected Matrix4f rollMatrix;
 
-	protected boolean viewMatrixDirty = true;
+	protected boolean  viewMatrixDirty = true;
 	protected Matrix4f viewMatrix;
 
-	protected boolean projectionMatrixDirty = true;
+	protected boolean  projectionMatrixDirty = true;
 	protected Matrix4f projectionMatrix;
 
 	protected Vector3f directionRight;
@@ -34,7 +35,11 @@ public abstract class Camera {
 
 	protected IViewRegion viewRegion;
 
-	public Camera(IViewRegion viewRegion) {
+	private final IReadOnlyCamera[] cameraAsArray;
+
+	public DefaultCamera(IViewRegion viewRegion) {
+		cameraAsArray = new IReadOnlyCamera[] { this };
+
 		positionMatrix = new Matrix4f();
 		yawMatrix = new Matrix4f();
 		pitchMatrix = new Matrix4f();
@@ -58,6 +63,9 @@ public abstract class Camera {
 		setPitchMatrix();
 		setRollMatrix();
 	}
+
+	@Override
+	public IReadOnlyCamera[] cameras() { return cameraAsArray; }
 
 	public abstract void setAspect(float aspect);
 
