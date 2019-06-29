@@ -33,6 +33,10 @@ public abstract class LogicSystem {
 
 	public void initWithData()                           { }
 
+	public void doLoadStep()                             { }
+
+	public float getLoadProgress()                       { return 1; }
+
 	public void cleanup()                                { }
 
 }

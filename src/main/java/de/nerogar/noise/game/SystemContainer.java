@@ -51,6 +51,10 @@ public abstract class SystemContainer implements Sided {
 		return (C) systemClassMap.get(systemClass);
 	}
 
+	public Iterable<LogicSystem> getSystems(){
+		return systemSet;
+	}
+
 	protected abstract void addSystems();
 
 	protected void addSystem(LogicSystem system) {
@@ -119,7 +123,7 @@ public abstract class SystemContainer implements Sided {
 	}
 
 	/**
-	 * a String needed to uniquely identify system containers across the network
+	 * a String needed to uniquely identify systems containers across the network
 	 *
 	 * @return a string for identification
 	 */

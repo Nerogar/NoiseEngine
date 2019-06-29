@@ -32,14 +32,6 @@ public abstract class CoreMap implements Sided {
 
 	private EntityList entityList;
 
-	/*
-	 * 3d indices are calculated as:
-	 * index = ((z * dimX + x) * dimY) + y
-	 *
-	 * 2d indices are calculated as:
-	 * index = z * dimX + x
-	 */
-
 	public CoreMap(int id, INetworkAdapter networkAdapter, EventManager eventManager) {
 		this.id = id;
 
