@@ -74,6 +74,8 @@ import java.util.List;
 			int nextChar = reader.read();
 			reader.unread(nextChar);
 
+			boolean whitespaceSkipped = false;
+
 			if (currentChar == '/') {
 
 				if (nextChar == '/') {
@@ -86,6 +88,7 @@ import java.util.List;
 
 					next(); // skip '\n'
 
+					whitespaceSkipped = true;
 				} else if (nextChar == '*') {
 					next(); // skip '/' (currentChar == '*')
 					next(); // skip '*' (currentChar == first char of the comment)
@@ -97,16 +100,19 @@ import java.util.List;
 					}
 
 					next(); // skip '/' (end of comment)
+
+					whitespaceSkipped = true;
 				}
 
 			}
 
-			if (!Character.isWhitespace(currentChar)) {
-				break;
-			} else {
+			if (Character.isWhitespace(currentChar)) {
 				next();
+				whitespaceSkipped = true;
 			}
 
+			if (!whitespaceSkipped) break;
+			
 		}
 
 	}
@@ -126,14 +132,22 @@ import java.util.List;
 			if (currentChar == '\\') {
 				next();
 				switch (currentChar) {
-					case '\"': sb.append('\"'); break;
-					case '\\': sb.append('\\'); break;
-					case '/': sb.append('/'); break;
-					case 'b': sb.append('\b'); break;
-					case 'f': sb.append('\f'); break;
-					case 'n': sb.append('\n'); break;
-					case 'r': sb.append('\r'); break;
-					case 't': sb.append('\t'); break;
+					case '\"':
+						sb.append('\"'); break;
+					case '\\':
+						sb.append('\\'); break;
+					case '/':
+						sb.append('/'); break;
+					case 'b':
+						sb.append('\b'); break;
+					case 'f':
+						sb.append('\f'); break;
+					case 'n':
+						sb.append('\n'); break;
+					case 'r':
+						sb.append('\r'); break;
+					case 't':
+						sb.append('\t'); break;
 					case 'u': {
 						int hex0 = next();
 						int hex1 = next();
@@ -143,7 +157,8 @@ import java.util.List;
 						String hexString = new StringBuilder().appendCodePoint(hex0).appendCodePoint(hex1).appendCodePoint(hex2).appendCodePoint(hex3).toString();
 						sb.appendCodePoint(Integer.parseInt(hexString, 16));
 					} break;
-					default: throw new NDSjsonException(ERROR_INVALID_JSON);
+					default:
+						throw new NDSjsonException(ERROR_INVALID_JSON);
 				}
 			} else {
 				sb.appendCodePoint(currentChar);
@@ -366,11 +381,11 @@ import java.util.List;
 			switch (childValue.type) {
 				case TYPE_OBJECT:
 					if (childValue.object == null) {
-						object.addObject(new NDSNodeObject(childName, true));
+						object.addObject(childName, new NDSNodeObject(true));
 					} else {
 						NDSNodeObject childObject = (NDSNodeObject) childValue.object;
 						childObject.name = childName;
-						object.addObject(childObject);
+						object.addObject(childName, childObject);
 					}
 					break;
 				case TYPE_STRING:
