@@ -13,11 +13,19 @@ public class NDSNodeObject extends NDSNode {
 	private Map<String, NDSNode> children;
 	private boolean              isNull;
 
-	public NDSNodeObject(String name) {
+	public NDSNodeObject() {
+		this(null, false);
+	}
+
+	protected NDSNodeObject(String name) {
 		this(name, false);
 	}
 
-	public NDSNodeObject(String name, boolean isNull) {
+	public NDSNodeObject(boolean isNull) {
+		this(null, isNull);
+	}
+
+	protected NDSNodeObject(String name, boolean isNull) {
 		super(name);
 
 		this.isNull = isNull;
@@ -440,7 +448,8 @@ public class NDSNodeObject extends NDSNode {
 
 	// object
 
-	public void addObject(NDSNodeObject node) {
+	public void addObject(String childName, NDSNodeObject node) {
+		node.setName(childName);
 		addChild(node);
 	}
 
