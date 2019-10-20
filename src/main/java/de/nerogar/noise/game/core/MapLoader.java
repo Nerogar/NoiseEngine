@@ -18,21 +18,21 @@ public abstract class MapLoader<MAP_T extends CoreMap> extends Thread {
 
 	private boolean done;
 
-	private List<MAP_T> maps;
-	private String      mapID;
-	private Faction[]   factions;
+	private List<MAP_T>   maps;
+	private String        mapID;
+	private List<Faction> factions;
 
 	private NDSFile       saveFile;
 	private List<NDSFile> mapFiles;
 
-	public MapLoader(List<MAP_T> maps, String mapID, Faction[] factions) {
+	public MapLoader(List<MAP_T> maps, String mapID, List<Faction> factions) {
 		super("map loader: " + mapID);
 		this.maps = maps;
 		this.mapID = mapID;
 		this.factions = factions;
 	}
 
-	protected abstract MAP_T newMap(int id, Faction[] factions);
+	protected abstract MAP_T newMap(int id, List<Faction> factions);
 
 	public void loadMeta() {
 		try {
@@ -98,7 +98,7 @@ public abstract class MapLoader<MAP_T extends CoreMap> extends Thread {
 					generate(i, mapFile);
 
 					if (!mapFile.getData().contains("systems")) {
-						mapFile.getData().addObject(new NDSNodeObject("systems"));
+						mapFile.getData().addObject("systems", new NDSNodeObject());
 					}
 
 					if (!mapFile.getData().contains("entities")) {
@@ -108,6 +108,9 @@ public abstract class MapLoader<MAP_T extends CoreMap> extends Thread {
 
 				loadMap(map, mapFile.getData());
 			}
+
+			loadGame(saveFile.getData());
+
 		} catch (FileNotFoundException e) {
 			NoiseGame.logger.log(Logger.ERROR, "could not load map data: " + mapID);
 			e.printStackTrace(NoiseGame.logger.getErrorStream());
@@ -118,6 +121,12 @@ public abstract class MapLoader<MAP_T extends CoreMap> extends Thread {
 
 	public boolean isDone() {
 		return done;
+	}
+
+	protected void loadGame(NDSNodeObject file) {
+		NDSNodeObject systemDataNode = file.getObject("systems");
+
+		maps.get(0).getGameSystemContainer().setSystemData(systemDataNode);
 	}
 
 	protected void loadMap(MAP_T map, NDSNodeObject file) {

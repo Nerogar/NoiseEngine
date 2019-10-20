@@ -16,7 +16,9 @@ public class Color {
 
 	float[] colors;
 
-	/** Creates a new black color. */
+	/**
+	 * Creates a new black color.
+	 */
 	public Color() {
 		this(0.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -82,6 +84,68 @@ public class Color {
 	 */
 	public int getARGB() {
 		return (((int) (colors[3] * 255) & 0xff) << 24) | (((int) (colors[0] * 255) & 0xff) << 16) | (((int) (colors[1] * 255) & 0xff) << 8) | (((int) (colors[2] * 255) & 0xff));
+	}
+
+	/**
+	 * Creates a new color where each component is multiplied with the <code>v</code>.
+	 *
+	 * @param v the scalar for multiplication
+	 * @return the new {@link Color}
+	 */
+	public Color multiply(float v) {
+		return new Color(
+				getR() * v,
+				getG() * v,
+				getB() * v,
+				getA() * v
+		);
+	}
+
+	/**
+	 * Creates a new color where each component is multiplied with the same component from <code>other</code>.
+	 *
+	 * @param other the other color
+	 * @return the new {@link Color}
+	 */
+	public Color multiply(Color other) {
+		return new Color(
+				getR() * other.getR(),
+				getG() * other.getG(),
+				getB() * other.getB(),
+				getA() * other.getA()
+		);
+	}
+
+	/**
+	 * Creates a new color where each of the RGB components is multiplied with the <code>v</code>.
+	 * The alpha value is preserved.
+	 *
+	 * @param v the scalar for multiplication
+	 * @return the new {@link Color}
+	 */
+	public Color multiplyRGB(float v) {
+		return new Color(
+				getR() * v,
+				getG() * v,
+				getB() * v,
+				getA()
+		);
+	}
+
+	/**
+	 * Creates a new color where each of the RGB components is multiplied with the same component from <code>other</code>.
+	 * The alpha value is preserved.
+	 *
+	 * @param other the other color
+	 * @return the new {@link Color}
+	 */
+	public Color multiplyRGB(Color other) {
+		return new Color(
+				getR() * other.getR(),
+				getG() * other.getG(),
+				getB() * other.getB(),
+				getA()
+		);
 	}
 
 	@Override

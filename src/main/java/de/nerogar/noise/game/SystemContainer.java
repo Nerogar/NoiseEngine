@@ -41,7 +41,7 @@ public abstract class SystemContainer implements Sided {
 
 		systemInitList = new ArrayList<>();
 
-		systemSyncListener = this::systemSyncListenerFunction;
+		systemSyncListener = this::onSystemSync;
 		eventManager.registerImmediate(SystemSyncEvent.class, systemSyncListener);
 	}
 
@@ -76,7 +76,7 @@ public abstract class SystemContainer implements Sided {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends SystemSyncParameter> void systemSyncListenerFunction(SystemSyncEvent event) {
+	private <T extends SystemSyncParameter> void onSystemSync(SystemSyncEvent event) {
 		if (!systemIdMap.containsKey(event.getSyncParameter().getSystemId())) return;
 
 		T parameter = (T) event.getSyncParameter();
@@ -96,6 +96,7 @@ public abstract class SystemContainer implements Sided {
 		for (Map.Entry<String, SynchronizedSystem> systemEntry : systemNameMap.entrySet()) {
 			SynchronizedSystem synchronizedSystem = systemEntry.getValue();
 			Short id = systemIdMap.get(systemEntry.getKey());
+			synchronizedSystem.setId(id);
 			this.systemIdMap.put(id, synchronizedSystem);
 		}
 

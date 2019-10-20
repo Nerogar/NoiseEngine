@@ -7,6 +7,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Initialization steps:
+ *   1. Constructor is called for client and server
+ *   2. init() is called for client and server
+ *       - data loading should be done here
+ *       - sync functions can be registered here
+ *   3. sendNetworkInit() is called on the server
+ *   4. networkInit() is called on the client with the data sent by the server
+ *   5. setSystemData() is called on the client and server with the map data
+ *       - map data is loaded. Synchronization should now be done with sync functions.
+ */
 public abstract class SynchronizedSystem extends LogicSystem {
 
 	private String name;

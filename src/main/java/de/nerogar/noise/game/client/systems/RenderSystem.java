@@ -26,13 +26,13 @@ public class RenderSystem extends LogicSystem {
 
 	@Override
 	public void init() {
-		windowSizeChangeListener = this::windowSizeChangeListenerFunction;
+		windowSizeChangeListener = this::onWindowSizeChange;
 		getEventManager().register(WindowSizeChangeEvent.class, windowSizeChangeListener);
 
-		renderEventListener = this::renderEventListenerFunction;
+		renderEventListener = this::onRender;
 		getEventManager().registerImmediate(RenderEvent.class, renderEventListener);
 
-		activeMapChangeListener = this::activeMapChangeListenerFunction;
+		activeMapChangeListener = this::onActiveMapChange;
 		getEventManager().registerImmediate(ActiveMapChangeEvent.class, activeMapChangeListener);
 
 		renderer = new DeferredRenderer(100, 100);
@@ -47,18 +47,18 @@ public class RenderSystem extends LogicSystem {
 
 	public boolean isActive()             { return active; }
 
-	private void windowSizeChangeListenerFunction(WindowSizeChangeEvent event) {
+	private void onWindowSizeChange(WindowSizeChangeEvent event) {
 		renderer.setFrameBufferResolution(event.getWidth(), event.getHeight());
 		camera.setAspect(event.getAspect());
 	}
 
-	private void renderEventListenerFunction(RenderEvent event) {
+	private void onRender(RenderEvent event) {
 		if (active) {
 			renderer.render(camera);
 		}
 	}
 
-	private void activeMapChangeListenerFunction(ActiveMapChangeEvent event) {
+	private void onActiveMapChange(ActiveMapChangeEvent event) {
 		active = event.getNewMap() == map;
 	}
 

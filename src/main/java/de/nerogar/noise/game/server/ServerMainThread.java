@@ -84,7 +84,7 @@ public abstract class ServerMainThread<
 		this.speedFactor = speedFactor;
 	}
 
-	protected abstract MapLoader createMapLoader(List<MAP_T> currentMaps, String mapID, ServerThread serverThread, Faction[] factions);
+	protected abstract MapLoader createMapLoader(List<MAP_T> currentMaps, String mapID, ServerThread serverThread, List<Faction> factions);
 
 	protected abstract GAME_SYSTEM_CONTAINER_T createGameSystemContainer(EventManager eventManager, INetworkAdapter networkAdapter);
 
@@ -196,7 +196,7 @@ public abstract class ServerMainThread<
 			NoiseGame.logger.log(Logger.WARNING, "start packet received while game is running");
 		}
 
-		// TODO for now, only one factions exists, everyone is in that faction
+		// TODO for now, only one faction exists, everyone is in that faction
 		factions = new ArrayList<>();
 		factions.add(new Faction((byte) 1, new Color(0f, 0f, 1f, 1f)));
 		for (Connection connection : connections) {
@@ -206,7 +206,7 @@ public abstract class ServerMainThread<
 		currentMaps = new ArrayList<>();
 
 		// load map meta
-		serverMapLoader = createMapLoader(currentMaps, mapID, serverThread, factions.toArray(new Faction[0]));
+		serverMapLoader = createMapLoader(currentMaps, mapID, serverThread, factions);
 		serverMapLoader.loadMeta();
 		for (MAP_T currentMap : currentMaps) {
 			eventManager.addTriggerChild(currentMap.getEventManager());

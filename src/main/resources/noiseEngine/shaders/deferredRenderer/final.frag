@@ -157,7 +157,8 @@ void main(){
 #endif
 
 	//final
-	color.rgb = (colorSample.rgb * (sunLight + lightsSample)) - vec3(ao) + specularIntensity * sunLightColor;
+	//color.rgb = (colorSample.rgb * (sunLight + lightsSample)) - vec3(ao) + specularIntensity * sunLightColor;
+	color.rgb = ((colorSample.rgb * (sunLight + lightsSample)) + specularIntensity * sunLightColor) * vec3(1f - ao);
 	color = mix(color, skyReflectColor, lightSample.g);
 
 	//effects

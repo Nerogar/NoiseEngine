@@ -5,7 +5,8 @@ import de.nerogar.noise.input.GlfwJoystickInputHandler;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.render.vr.OvrContext;
 import de.nerogar.noise.util.NoiseResource;
-import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallbackI;
+import org.lwjgl.glfw.GLFWWindowRefreshCallbackI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +35,15 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 	private OvrContext ovrContext;
 
 	private GLWindowSizeChangeListener sizeChangeListener;
+	private GLWindowRefreshListener    refreshListener;
 
 	private InputHandler             inputHandler;
 	private GlfwJoystickInputHandler glfwJoystickInputHandler;
 
 	//holds references to callbacks, otherwise the gc will delete them
 
-	private GLFWFramebufferSizeCallback frameBufferCallback;
+	private GLFWFramebufferSizeCallbackI frameBufferCallback;
+	private GLFWWindowRefreshCallbackI   windowRefreshCallback;
 
 	private boolean isClosed;
 
@@ -99,24 +102,28 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 		GLWindow.makeContextCurrent(windowPointer);
 		glContext = new GLContext(windowPointer);//GLContext.createFromCurrent();
 
-		setSwapInterval(swapInterval > 0 ? swapInterval : 0);
+		setSwapInterval(Math.max(0, swapInterval));
 
-		frameBufferCallback = new GLFWFramebufferSizeCallback() {
-			@Override
-			public void invoke(long window, int newWidth, int newHeight) {
-				long currentContext = GLWindow.getCurrentContext();
-				GLWindow.makeContextCurrent(windowPointer);
-				glViewport(0, 0, newWidth, newHeight);
-				GLWindow.makeContextCurrent(currentContext);
+		frameBufferCallback = (long window, int newWidth, int newHeight) -> {
+			long currentContext = GLWindow.getCurrentContext();
+			GLWindow.makeContextCurrent(windowPointer);
+			glViewport(0, 0, newWidth, newHeight);
+			GLWindow.makeContextCurrent(currentContext);
 
-				windowWidth = newWidth;
-				windowHeight = newHeight;
+			windowWidth = newWidth;
+			windowHeight = newHeight;
 
-				if (sizeChangeListener != null) sizeChangeListener.onChange(newWidth, newHeight);
+			if (sizeChangeListener != null) sizeChangeListener.onChange(newWidth, newHeight);
+		};
+
+		windowRefreshCallback = (long window) -> {
+			if (refreshListener != null) {
+				refreshListener.onRefresh(window);
 			}
 		};
 
 		glfwSetFramebufferSizeCallback(windowPointer, frameBufferCallback);
+		glfwSetWindowRefreshCallback(windowPointer, windowRefreshCallback);
 
 		bind();
 	}
@@ -144,7 +151,13 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 	 * @param monitor the target monitor or null
 	 */
 	public void setFullscreen(Monitor monitor) {
-		glfwSetWindowMonitor(windowPointer, monitor == null ? NULL : monitor.getPointer(), 100, 100, getWidth(), getHeight(), getSwapInterval());
+		glfwSetWindowMonitor(
+				windowPointer,
+				monitor == null ? NULL : monitor.getPointer(),
+				100, 100,
+				getWidth(), getHeight(),
+				monitor == null ? GLFW_DONT_CARE : monitor.getRefreshRate()
+		                    );
 	}
 
 	public void setSwapInterval(int swapInterval) {
@@ -195,6 +208,10 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 
 	public void setSizeChangeListener(GLWindowSizeChangeListener sizeChangeListener) {
 		this.sizeChangeListener = sizeChangeListener;
+	}
+
+	public void setWindowRefreshListener(GLWindowRefreshListener refreshListener) {
+		this.refreshListener = refreshListener;
 	}
 
 	public void minimize() {

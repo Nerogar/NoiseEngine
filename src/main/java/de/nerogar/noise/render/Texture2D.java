@@ -19,7 +19,7 @@ public class Texture2D extends Texture {
 		LINEAR(GL_LINEAR, GL_LINEAR, false),
 		NEAREST(GL_NEAREST, GL_NEAREST, false),
 		LINEAR_MIPMAP(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, true),
-		NEAREST_MIPMAP(GL_NEAREST_MIPMAP_LINEAR, GL_NEAREST, true);
+		NEAREST_MIPMAP(GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, true);
 
 		public final int     openglConstantMin;
 		public final int     openglConstantMag;

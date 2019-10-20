@@ -2,6 +2,7 @@ package de.nerogar.noise.serialization;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
 import static de.nerogar.noise.serialization.NDSConstants.*;
@@ -119,7 +120,7 @@ public class NDSReader {
 
 	public static NDSFile readJsonFile(String filename) throws FileNotFoundException {
 		FileInputStream in = new FileInputStream(filename);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 		return readJson(reader);
 	}
 

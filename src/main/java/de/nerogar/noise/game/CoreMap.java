@@ -48,13 +48,15 @@ public abstract class CoreMap implements Sided {
 		this.entityList = new EntityList(this);
 	}
 
-	public int getId()                                { return id; }
+	public int getId()                                  { return id; }
 
-	public INetworkAdapter getNetworkAdapter()        { return networkAdapter; }
+	public INetworkAdapter getNetworkAdapter()          { return networkAdapter; }
 
-	public EventManager getEventManager()             { return eventManager; }
+	public EventManager getEventManager()               { return eventManager; }
 
-	public MapSystemContainer<?> getSystemContainer() { return systemContainer; }
+	public MapSystemContainer<?> getSystemContainer()   { return systemContainer; }
+
+	public GameSystemContainer getGameSystemContainer() { return gameSystemContainer; }
 
 	@SuppressWarnings("unchecked")
 	public <C extends LogicSystem> C getSystem(Class<C> systemClass) {

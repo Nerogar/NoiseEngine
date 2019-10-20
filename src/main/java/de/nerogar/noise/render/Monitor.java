@@ -17,6 +17,7 @@ public class Monitor {
 
 	private final int width;
 	private final int height;
+	private final int refreshRate;
 
 	private Monitor(long pointer) {
 		this.pointer = pointer;
@@ -25,6 +26,7 @@ public class Monitor {
 		GLFWVidMode videoMode = glfwGetVideoMode(pointer);
 		width = videoMode.width();
 		height = videoMode.height();
+		refreshRate = videoMode.refreshRate();
 	}
 
 	public long getPointer() {
@@ -41,6 +43,10 @@ public class Monitor {
 
 	public int getHeight() {
 		return height;
+	}
+
+	public int getRefreshRate() {
+		return refreshRate;
 	}
 
 	@Override

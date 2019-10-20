@@ -48,7 +48,7 @@ public abstract class Client<
 	private List<FACTION_MAP_SYSTEM_CONTAINER_T> factionMapSystemContainers;
 	private List<MAP_T>                          currentMaps;
 	private int                                  activeMapId;
-	private Faction[]                            factions;
+	private List<Faction>                        factions;
 	private Faction                              ownFaction;
 	private Controller                           controller;
 
@@ -79,7 +79,7 @@ public abstract class Client<
 		eventManager.register(ActiveMapChangeEvent.class, activeMapChangeListener);
 	}
 
-	protected abstract MapLoader createMapLoader(List<MAP_T> currentMaps, String mapID, Connection connection, Faction[] factions);
+	protected abstract MapLoader createMapLoader(List<MAP_T> currentMaps, String mapID, Connection connection, List<Faction> factions);
 
 	protected abstract Controller createController(GLWindow window, EventManager eventManager, List<MAP_T> currentMaps, Faction ownFaction, INetworkAdapter networkAdapter, GuiContainer guiContainer);
 
@@ -206,12 +206,12 @@ public abstract class Client<
 			} else if (p instanceof FactionInfoPacket) {
 				FactionInfoPacket packet = (FactionInfoPacket) p;
 
-				factions = new Faction[packet.getFactionIDs().length];
-				for (int i = 0; i < factions.length; i++) {
-					factions[i] = new Faction(packet.getFactionIDs()[i], new Color(packet.getFactionColors()[i]));
+				factions = new ArrayList<>();
+				for (int i = 0; i < packet.getFactionIDs().length; i++) {
+					factions.add(new Faction(packet.getFactionIDs()[i], new Color(packet.getFactionColors()[i])));
 				}
 
-				ownFaction = factions[packet.getOwnFaction()];
+				ownFaction = factions.get(packet.getOwnFaction());
 
 			} else if (p instanceof MapInfoPacket) {
 				MapInfoPacket packet = (MapInfoPacket) p;

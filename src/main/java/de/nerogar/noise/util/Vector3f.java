@@ -283,6 +283,14 @@ public class Vector3f implements Vectorf<Vector3f> {
 
 	}
 
+	public Vector3f transformed(Matrix4f m, float w) {
+		return clone().transform(m, w);
+	}
+
+	public Vector3f transformed(Matrix4f m) {
+		return clone().transform(m);
+	}
+
 	public Vector3f transform(Matrix4f m, float w) {
 		float x = this.x;
 		float y = this.y;
@@ -292,7 +300,7 @@ public class Vector3f implements Vectorf<Vector3f> {
 				x * m.get(0, 0) + y * m.get(0, 1) + z * m.get(0, 2) + w * m.get(0, 3),
 				x * m.get(1, 0) + y * m.get(1, 1) + z * m.get(1, 2) + w * m.get(1, 3),
 				x * m.get(2, 0) + y * m.get(2, 1) + z * m.get(2, 2) + w * m.get(2, 3)
-				);
+		          );
 
 	}
 

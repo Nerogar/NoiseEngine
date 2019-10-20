@@ -59,10 +59,10 @@ public class GameObjectsSystem extends SynchronizedSystem {
 			idArray[i] = entry.getValue();
 			i++;
 		}
-		NDSNodeObject idMapObject = new NDSNodeObject("idMap");
+		NDSNodeObject idMapObject = new NDSNodeObject();
 		idMapObject.addStringUTF8Array("names", nameArray);
 		idMapObject.addShortArray("ids", idArray);
-		blueprintsFile.getData().addObject(idMapObject);
+		blueprintsFile.getData().addObject("idMap", idMapObject);
 
 		NDSWriter.write(blueprintsFile, out);
 	}

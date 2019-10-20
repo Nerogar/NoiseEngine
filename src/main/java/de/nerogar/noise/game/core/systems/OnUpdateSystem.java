@@ -10,11 +10,11 @@ public abstract class OnUpdateSystem extends LogicSystem {
 
 	@Override
 	public void init() {
-		updateListener = this::updateListenerFunction;
+		updateListener = this::onUpdate;
 		getEventManager().register(UpdateEvent.class, updateListener);
 	}
 
-	protected abstract void updateListenerFunction(UpdateEvent event);
+	protected abstract void onUpdate(UpdateEvent event);
 
 	@Override
 	public void cleanup() {

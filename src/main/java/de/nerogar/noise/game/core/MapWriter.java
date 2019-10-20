@@ -26,7 +26,7 @@ public abstract class MapWriter<MAP_T extends CoreMap> {
 
 		int i = 0;
 		for (Entity entity : map.getEntityList().getEntities()) {
-			NDSNodeObject entityObject = new NDSNodeObject(null);
+			NDSNodeObject entityObject = new NDSNodeObject();
 
 			entityObject.addShort("eID", entity.getEntityID());
 			entityObject.addInt("id", entity.getID());
@@ -42,8 +42,8 @@ public abstract class MapWriter<MAP_T extends CoreMap> {
 	}
 
 	protected void saveMap(MAP_T map, NDSNodeObject file) {
-		NDSNodeObject systemDataNode = new NDSNodeObject("systems");
-		file.addObject(systemDataNode);
+		NDSNodeObject systemDataNode = new NDSNodeObject();
+		file.addObject("systems", systemDataNode);
 
 		map.getSystemContainer().saveSystemData(systemDataNode);
 

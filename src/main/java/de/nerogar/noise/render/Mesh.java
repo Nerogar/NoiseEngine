@@ -1,9 +1,7 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.util.Logger;
-import de.nerogar.noise.util.Vector2f;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.util.*;
 
 public class Mesh {
 
@@ -293,6 +291,46 @@ public class Mesh {
 
 	private void calcTriangleCount() {
 		triangleCount = indexCount / 3;
+	}
+
+	public Float calculateIntersection(Ray ray) {
+		Float intersectionDistance = null;
+
+		float rayOriginX = ray.getStart().getX();
+		float rayOriginY = ray.getStart().getY();
+		float rayOriginZ = ray.getStart().getZ();
+
+		float rayDirX = ray.getDir().getX();
+		float rayDirY = ray.getDir().getY();
+		float rayDirZ = ray.getDir().getZ();
+
+		for (int triangle = 0; triangle < triangleCount; triangle++) {
+			int index0 = indexArray[triangle * 3 + 0];
+			int index1 = indexArray[triangle * 3 + 1];
+			int index2 = indexArray[triangle * 3 + 2];
+
+			/*Float currentIntersectionDistance = MathHelper.rayTriangleIntersectionCulling(
+					rayOriginX, rayOriginY, rayOriginZ,
+					rayDirX, rayDirY, rayDirZ,
+					positionArray[index0 * 3 + 0], positionArray[index0 * 3 + 1], positionArray[index0 * 3 + 2],
+					positionArray[index1 * 3 + 0], positionArray[index1 * 3 + 1], positionArray[index1 * 3 + 2],
+					positionArray[index2 * 3 + 0], positionArray[index2 * 3 + 1], positionArray[index2 * 3 + 2]
+			                                                                             );*/
+
+			Float currentIntersectionDistance = MathHelper.rayTriangleIntersectionCulling(
+					rayOriginX, rayOriginY, rayOriginZ,
+					rayDirX, rayDirY, rayDirZ,
+					positionArray[index0 * 3 + 0], positionArray[index0 * 3 + 1], positionArray[index0 * 3 + 2],
+					positionArray[index1 * 3 + 0], positionArray[index1 * 3 + 1], positionArray[index1 * 3 + 2],
+					positionArray[index2 * 3 + 0], positionArray[index2 * 3 + 1], positionArray[index2 * 3 + 2]
+			                                                                             );
+
+			if (currentIntersectionDistance == null) continue;
+			if (currentIntersectionDistance < 0) continue;
+			if (intersectionDistance == null || currentIntersectionDistance < intersectionDistance) intersectionDistance = currentIntersectionDistance;
+		}
+
+		return intersectionDistance;
 	}
 
 	public void clearArrays() {
