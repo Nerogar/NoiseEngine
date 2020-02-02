@@ -35,12 +35,21 @@ public class BoundingAABB implements Bounding {
 	/**
 	 * setter for the small corner of the AABB
 	 *
-	 * @param x the new x component of the center of the sphere
-	 * @param y the new y component of the center of the sphere
-	 * @param z the new z component of the center of the sphere
+	 * @param x the new x component of the small corner of the AABB
+	 * @param y the new y component of the small corner of the AABB
+	 * @param z the new z component of the small corner of the AABB
 	 */
 	public void setPosition(float x, float y, float z) {
 		this.position.set(x, y, z);
+	}
+
+	/**
+	 * setter for the small corner of the AABB
+	 *
+	 * @param position the small corner
+	 */
+	public void setPosition(Vector3f position) {
+		this.position.set(position);
 	}
 
 	/**
