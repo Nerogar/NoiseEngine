@@ -6,6 +6,8 @@ import de.nerogar.noise.util.Vector3f;
 
 public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 
+	private static final float PI = (float) Math.PI;
+
 	private float yaw, pitch, roll;
 	private float x, y, z;
 	private float scaleX, scaleY, scaleZ, maxScaleComponent;
@@ -275,6 +277,73 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		modCount++;
 
 		updateListener(false, true, false);
+	}
+
+	/**
+	 * Sets the rotation such that the local negative z axis points at the point (x, y, z)
+	 *
+	 * @param lookX the x coordinate to look at
+	 * @param lookY the y coordinate to look at
+	 * @param lookZ the z coordinate to look at
+	 */
+	public void setLookAt(float lookX, float lookY, float lookZ) {
+		float lookVecX = lookX - x;
+		float lookVecY = lookY - y;
+		float lookVecZ = lookZ - z;
+		setLookDirection(lookVecX, lookVecY, lookVecZ);
+	}
+
+	/**
+	 * Sets the rotation such that the local negative z axis points in the direction (x, y, z)
+	 *
+	 * @param lookVecX the x direction to look at
+	 * @param lookVecY the y direction to look at
+	 * @param lookVecZ the z direction to look at
+	 */
+	public void setLookDirection(float lookVecX, float lookVecY, float lookVecZ) {
+		int oldModCount = modCount;
+
+		if (lookVecZ == 0) {
+			float yaw = (lookVecX < 0 ? PI / 2f : -PI / 2f);
+			if (this.yaw != yaw) {
+				this.yaw = yaw;
+				yawMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		} else {
+			float sign = lookVecZ > 0 ? PI : 0;
+			float yaw = (float) Math.atan(lookVecX / lookVecZ) + sign;
+			if (this.yaw != yaw) {
+				this.yaw = yaw;
+				yawMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		}
+
+		if (lookVecX == 0 && lookVecZ == 0) {
+			float pitch = lookVecY > 0 ? PI / 2f : -PI / 2f;
+			if (this.pitch != pitch) {
+				this.pitch = pitch;
+				pitchMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		} else {
+			float lengthXZ = (float) Math.sqrt(lookVecX * lookVecX + lookVecZ * lookVecZ);
+			float pitch = (float) Math.atan(lookVecY / lengthXZ);
+			if (this.pitch != pitch) {
+				this.pitch = pitch;
+				pitchMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		}
+
+		if (modCount != oldModCount) {
+			updateListener(false, true, false);
+		}
 	}
 
 	public float getX() {

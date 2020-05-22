@@ -82,7 +82,7 @@ public abstract class DefaultCamera extends Camera {
 	}
 
 	private void setPitchMatrix() {
-		Matrix4fUtils.setPitchMatrix(pitchMatrix, pitch);
+		Matrix4fUtils.setPitchMatrix(pitchMatrix, -pitch);
 		viewMatrixDirty = true;
 	}
 
