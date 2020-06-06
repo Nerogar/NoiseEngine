@@ -15,7 +15,7 @@ import java.util.Map;
  * Utility class for easy program loading. Different preprocessor statements are defined:
  * <p>
  * <ul>
- * <li>{@code #include fileID}	(Includes the specified file at this position. fileID is a file id, specified in {@link FileUtil#decodeFilename(String, String, String)})
+ * <li>{@code #include fileID}	(Includes the specified file at this position. fileID is a file id, specified in {@link FileUtil#get(String)})
  * <li>{@code #parameter foo}	(takes "foo" as the key for looking up the parameter in the parameter list and replaces the line with the parameter.)
  * <li>{@code #pinclude foo}	(takes "foo" as the key for looking up the file path in the parameter list and includes the file specified by the file path.)
  * </ul>

@@ -98,6 +98,7 @@ public class Texture2D extends Texture {
 	private InterpolationType interpolationType;
 	private DataType          dataType;
 	private float             anisotropicFiltering;
+	private int               wrapMode;
 
 	private boolean initialized;
 
@@ -146,6 +147,7 @@ public class Texture2D extends Texture {
 		this.interpolationType = interpolationType;
 		this.dataType = dataType;
 		this.anisotropicFiltering = anisotropicFiltering;
+		this.wrapMode = GL_REPEAT;
 
 		id = glGenTextures();
 		createTexture(colorBuffer);
@@ -158,8 +160,9 @@ public class Texture2D extends Texture {
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolationType.openglConstantMin);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolationType.openglConstantMag);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+
 
 		glTexImage2D(GL_TEXTURE_2D, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer);
 
@@ -247,6 +250,23 @@ public class Texture2D extends Texture {
 
 	public float getAnisotropicFiltering() {
 		return anisotropicFiltering;
+	}
+
+	/**
+	 * Sets the texture wrap mode. This action is effective immediately.
+	 * The texture is bound to slot 0 in the process.
+	 *
+	 * @param wrapMode the OpenGL wrap mode.
+	 */
+	public void setWrapMode(int wrapMode) {
+		this.wrapMode = wrapMode;
+		bind(0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+	}
+
+	public int getWrapMode() {
+		return wrapMode;
 	}
 
 	@Override
