@@ -2,9 +2,6 @@ apply plugin: 'java-library'
 
 import org.gradle.internal.os.OperatingSystem
 
-def generatedJavaSourceDir = 'src-gen/main/java'
-def generatedDistDir = 'src-gen/main/dist'
-
 repositories {
     jcenter()
     mavenCentral()
@@ -58,37 +55,4 @@ dependencies {
     // openVR
     compile "org.lwjgl:lwjgl-openvr:${lwjglVersion}"
     runtime "org.lwjgl:lwjgl-openvr:${lwjglVersion}:${lwjglNatives}"
-
-    // TODO this should only be included as an annotationProcessor
-    // it looks like IntelliJ does not support this yet and will randomly not find the processor
-    // see https://youtrack.jetbrains.com/issue/IDEA-187868
-    if (findProject(':annotationProcessor')) {
-        //compile project(':annotationProcessor')
-        annotationProcessor project(':annotationProcessor')
-    }
-    if (findProject(':annotations')) {
-        compile project(':annotations')
-    }
-
-    testImplementation 'junit:junit:4.12'
 }
-
-// generated resources
-compileJava {
-    // IntelliJ does not auto detect this
-    // see https://youtrack.jetbrains.com/issue/IDEA-182577
-    options.annotationProcessorGeneratedSourcesDirectory = file(generatedJavaSourceDir)
-}
-
-processResources {
-    from(generatedDistDir) {
-        into 'noiseEngine/'
-    }
-}
-
-/*
-task copyResGen(type: Copy) {
-    from 'src-gen/main/dist'
-    into 'src/main/resources/noiseEngine'
-}
-*/

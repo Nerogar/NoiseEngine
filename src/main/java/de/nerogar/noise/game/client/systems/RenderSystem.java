@@ -6,7 +6,7 @@ import de.nerogar.noise.game.LogicSystem;
 import de.nerogar.noise.game.client.event.RenderEvent;
 import de.nerogar.noise.game.client.event.WindowSizeChangeEvent;
 import de.nerogar.noise.render.camera.PerspectiveCamera;
-import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
+import de.nerogar.noise.render.oldDeferredRenderer.DeferredRenderer;
 import de.nerogar.noise.game.client.event.ActiveMapChangeEvent;
 
 public class RenderSystem extends LogicSystem {
