@@ -35,7 +35,13 @@ public class JarResourceDescriptor implements ResourceDescriptor {
 	public ResourceDescriptor getRelative(String id) {
 		if (id.startsWith("<") || id.startsWith("(")) return FileUtil.get(id, subFolder);
 
-		return new JarResourceDescriptor(new File(filename).getParent() + "/" + id, subFolder);
+		String parent = new File(filename).getParent();
+		while (id.startsWith("../")) {
+			id = id.substring("../".length());
+			parent = new File(parent).getParent();
+		}
+
+		return new JarResourceDescriptor(parent + "/" + id, subFolder);
 	}
 
 	@Override

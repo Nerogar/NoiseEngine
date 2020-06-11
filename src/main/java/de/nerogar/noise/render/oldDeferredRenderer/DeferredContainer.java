@@ -269,7 +269,7 @@ public class DeferredContainer {
 			surfaceShaderParameters.put("useUniforms", "#define UNIFORM_MATRICES 0");
 		}
 
-		Shader shader = ShaderLoader.loadShader("<deferredRenderer/gBufferSurface.vert>", "<deferredRenderer/gBufferSurface.frag>", surfaceShaderParameters);
+		Shader shader = ShaderLoader.loadShader("<oldDeferredRenderer/gBufferSurface.vert>", "<oldDeferredRenderer/gBufferSurface.frag>", surfaceShaderParameters);
 		shader.activate();
 		shader.setUniform1i("textureColor_N", 0);
 		shader.setUniform1i("textureNormal_N", 1);

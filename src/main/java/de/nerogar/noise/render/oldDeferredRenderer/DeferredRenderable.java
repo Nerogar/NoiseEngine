@@ -1,6 +1,5 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
-import de.nerogar.noise.render.IRenderable;
 import de.nerogar.noise.render.RenderProperties;
 import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.util.BoundingSphere;
@@ -13,7 +12,7 @@ import java.util.function.Consumer;
 /**
  * an object that can be added to the {@link DeferredRenderable DeferredRenderer}
  */
-public class DeferredRenderable implements IRenderable {
+public class DeferredRenderable {
 
 	private DeferredContainer  container;
 	private RenderProperties3f renderProperties;
