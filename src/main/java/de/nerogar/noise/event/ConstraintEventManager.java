@@ -8,7 +8,7 @@ import java.util.List;
  * @param <E> the event type
  * @param <C> the constraint to optimize for
  */
-public interface ConstraintEventManager<E extends Event, C extends EventListenerConstraint> {
+public interface ConstraintEventManager<E extends IEvent, C extends EventListenerConstraint> {
 
 	public void register(EventListener<E> listener, C constraint);
 

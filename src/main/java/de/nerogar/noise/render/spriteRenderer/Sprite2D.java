@@ -4,7 +4,7 @@ import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Vector2f;
 import de.nerogar.noise.util.Vector3f;
 
-public class Sprite2D implements IRenderable {
+public class Sprite2D {
 
 	protected Vector3f[] pos;
 	protected Vector2f[] uv;

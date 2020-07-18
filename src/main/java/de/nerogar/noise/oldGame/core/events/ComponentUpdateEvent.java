@@ -1,9 +1,9 @@
 package de.nerogar.noise.oldGame.core.events;
 
-import de.nerogar.noise.event.Event;
+import de.nerogar.noise.event.IEvent;
 import de.nerogar.noise.oldGame.core.components.SynchronizedComponent;
 
-public class ComponentUpdateEvent implements Event {
+public class ComponentUpdateEvent implements IEvent {
 
 	private SynchronizedComponent component;
 

@@ -39,7 +39,7 @@ void main() {
 	// falloff computed by the inverted distace ^ 4
 	// good tradeoff between performance and quality
 	float distanceGradient = max(0.0, ((u_radius - distance) / u_radius));
-	distanceGradient = distanceGradient * distanceGradient;
+	//distanceGradient = distanceGradient * distanceGradient;
     float strength = distanceGradient * distanceGradient * u_strength;
 
     vec3 direction = normalize(position - u_position);

@@ -1,12 +1,12 @@
 package de.nerogar.noise.oldGame.core.events;
 
-import de.nerogar.noise.event.Event;
+import de.nerogar.noise.event.IEvent;
 import de.nerogar.noise.oldGame.Component;
 import de.nerogar.noise.oldGame.Entity;
 
 import java.util.Map;
 
-public class EntityDespawnEvent implements Event {
+public class EntityDespawnEvent implements IEvent {
 
 	private Entity                                     entity;
 	private Map<Class<? extends Component>, Component> components;

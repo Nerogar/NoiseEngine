@@ -1,6 +1,7 @@
 package de.nerogar.noise.game;
 
 import de.nerogar.noiseInterface.game.IComponent;
+import de.nerogar.noiseInterface.game.IEntity;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +22,8 @@ public class EntityContainer {
 		return entityId;
 	}
 
-	public IComponent[] getEntity(int entityId) {
-		return entities.get(entityId);
+	public IEntity getEntity(int entityId) {
+		return new Entity(entityId, this);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -52,6 +53,10 @@ public class EntityContainer {
 				components.add((T) component);
 			}
 		}
+	}
+
+	public IComponent[] getComponents(int entityId) {
+		return entities.get(entityId);
 	}
 
 	public void getComponents(Class<? extends IComponent> componentClass, List<IComponent> components) {

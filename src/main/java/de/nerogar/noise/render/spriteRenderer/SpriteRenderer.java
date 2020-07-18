@@ -13,7 +13,7 @@ import de.nerogar.noise.util.*;
  * <p>
  * A new VertexBufferObject is created for every texture used. Try to keep texture count low.
  */
-public class SpriteRenderer implements IRenderer<Sprite2D> {
+public class SpriteRenderer {
 
 	private class VboContainer {
 		public List<Sprite2D> spriteList;
@@ -49,7 +49,6 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 		shader = ShaderLoader.loadShader("<spriteRenderer/sprite.vert>", "<spriteRenderer/sprite.frag>");
 	}
 
-	@Override
 	public void addObject(Sprite2D object) {
 		VboContainer container = vboMap.get(object.texture);
 
@@ -68,7 +67,6 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 		//rebuildVBO(object.texture, container.spriteList);
 	}
 
-	@Override
 	public void removeObject(Sprite2D object) {
 		VboContainer container = vboMap.get(object.texture);
 
@@ -133,19 +131,16 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 		container.dirty = false;
 	}
 
-	@Override
 	public void setFrameBufferResolution(int width, int height) {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
 	public void rebuild() {
 		for (VboContainer container : vboMap.values()) {
 			rebuildVBO(container);
 		}
 	}
 
-	@Override
 	public void render(Matrix4f viewMtrix) {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
@@ -179,7 +174,6 @@ public class SpriteRenderer implements IRenderer<Sprite2D> {
 		}
 	}
 
-	@Override
 	public FrameBufferObject getRenderTarget() {
 		// TODO implement getRenderTarget
 		return null;

@@ -14,13 +14,13 @@ public class EventManager {
 
 	private List<EventManager> children;
 
-	private Map<Class<? extends Event>, DefaultEventManager<? extends Event>>                                       defaultListenerMap;
-	private Map<Class<? extends Event>, DefaultEventManager<? extends Event>>                                       defaultConstraintListenerMap;
-	private Map<Class<? extends Event>, ConstraintEventManager<? extends Event, ? extends EventListenerConstraint>> constraintListenerMap;
+	private Map<Class<? extends IEvent>, DefaultEventManager<? extends IEvent>>                                       defaultListenerMap;
+	private Map<Class<? extends IEvent>, DefaultEventManager<? extends IEvent>>                                       defaultConstraintListenerMap;
+	private Map<Class<? extends IEvent>, ConstraintEventManager<? extends IEvent, ? extends EventListenerConstraint>> constraintListenerMap;
 
 	private Map<EventListener<?>, Boolean> isImmediateMap;
 
-	private Queue<Event> eventQueue;
+	private Queue<IEvent> eventQueue;
 	boolean triggered;
 
 	public EventManager(String name) {
@@ -38,34 +38,34 @@ public class EventManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends Event> DefaultEventManager<T> getDefaultEventManager(Class<? extends Event> eventClass) {
+	private <T extends IEvent> DefaultEventManager<T> getDefaultEventManager(Class<? extends IEvent> eventClass) {
 		return (DefaultEventManager<T>) defaultListenerMap.computeIfAbsent(eventClass, ec -> new DefaultEventManager<T>());
 	}
 
-	public <T extends Event> void register(Class<T> eventClass, EventListener<T> eventListener) {
+	public <T extends IEvent> void register(Class<T> eventClass, EventListener<T> eventListener) {
 		register(eventClass, eventListener, false);
 	}
 
-	public <T extends Event> void registerImmediate(Class<T> eventClass, EventListener<T> eventListener) {
+	public <T extends IEvent> void registerImmediate(Class<T> eventClass, EventListener<T> eventListener) {
 		register(eventClass, eventListener, true);
 	}
 
-	public <T extends Event> void register(Class<T> eventClass, EventListener<T> eventListener, EventListenerConstraint... eventListenerConstraints) {
+	public <T extends IEvent> void register(Class<T> eventClass, EventListener<T> eventListener, EventListenerConstraint... eventListenerConstraints) {
 		register(eventClass, eventListener, false, eventListenerConstraints);
 	}
 
-	public <T extends Event> void registerImmediate(Class<T> eventClass, EventListener<T> eventListener, EventListenerConstraint... eventListenerConstraints) {
+	public <T extends IEvent> void registerImmediate(Class<T> eventClass, EventListener<T> eventListener, EventListenerConstraint... eventListenerConstraints) {
 		register(eventClass, eventListener, true, eventListenerConstraints);
 	}
 
-	private <T extends Event> void register(Class<T> eventClass, EventListener<T> eventListener, boolean isImmediate) {
+	private <T extends IEvent> void register(Class<T> eventClass, EventListener<T> eventListener, boolean isImmediate) {
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 		defaultEventManager.register(eventListener);
 		isImmediateMap.put(eventListener, isImmediate);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends Event> void register(Class<T> eventClass, EventListener<T> eventListener, boolean isImmediate, EventListenerConstraint... eventListenerConstraints) {
+	private <T extends IEvent> void register(Class<T> eventClass, EventListener<T> eventListener, boolean isImmediate, EventListenerConstraint... eventListenerConstraints) {
 
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 		ConstraintEventManager constraintEventManager = constraintListenerMap.get(eventClass);
@@ -97,7 +97,7 @@ public class EventManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends Event> void unregister(Class<T> eventClass, EventListener<T> eventListener) {
+	public <T extends IEvent> void unregister(Class<T> eventClass, EventListener<T> eventListener) {
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 		ConstraintEventManager constraintEventManager = constraintListenerMap.get(eventClass);
 		DefaultEventManager<T> defaultConstraintEventManager = (DefaultEventManager<T>) defaultConstraintListenerMap.get(eventClass);
@@ -113,7 +113,7 @@ public class EventManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends Event> void updateConstraints(Class<T> eventClass, EventListener<T> eventListener, EventListenerConstraint... eventListenerConstraints) {
+	public <T extends IEvent> void updateConstraints(Class<T> eventClass, EventListener<T> eventListener, EventListenerConstraint... eventListenerConstraints) {
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 		ConstraintEventManager constraintEventManager = constraintListenerMap.get(eventClass);
 		DefaultEventManager<T> defaultConstraintEventManager = (DefaultEventManager<T>) defaultConstraintListenerMap.get(eventClass);
@@ -151,7 +151,7 @@ public class EventManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends Event> void trigger(T event) {
+	public <T extends IEvent> void trigger(T event) {
 		for (int i = 0; i < children.size(); i++) {
 			children.get(i).trigger(event);
 		}
@@ -166,7 +166,7 @@ public class EventManager {
 			triggered = true;
 
 			while (!eventQueue.isEmpty()) {
-				Event singleEvent = eventQueue.poll();
+				IEvent singleEvent = eventQueue.poll();
 				triggerSingle(singleEvent.getClass(), singleEvent, false);
 			}
 
@@ -176,7 +176,7 @@ public class EventManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends Event> void triggerSingle(Class<? extends Event> eventClass, T event, boolean isImmediate) {
+	private <T extends IEvent> void triggerSingle(Class<? extends IEvent> eventClass, T event, boolean isImmediate) {
 
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 
@@ -249,10 +249,10 @@ public class EventManager {
 
 		// trigger for all super types
 		Class<?> superClass = eventClass.getSuperclass();
-		if (superClass != null && Event.class.isAssignableFrom(superClass)) triggerSingle((Class<? extends Event>) superClass, event, isImmediate);
+		if (superClass != null && IEvent.class.isAssignableFrom(superClass)) triggerSingle((Class<? extends IEvent>) superClass, event, isImmediate);
 
 		for (Class<?> superInterface : eventClass.getInterfaces()) {
-			if (Event.class.isAssignableFrom(superInterface)) triggerSingle((Class<? extends Event>) superInterface, event, isImmediate);
+			if (IEvent.class.isAssignableFrom(superInterface)) triggerSingle((Class<? extends IEvent>) superInterface, event, isImmediate);
 		}
 
 	}

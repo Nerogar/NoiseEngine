@@ -10,7 +10,7 @@ public interface EventListenerConstraint<T extends EventConstraint> {
 
 	public Class<T> getEventConstraintClass();
 
-	public default boolean isValid(Event event) {
+	public default boolean isValid(IEvent event) {
 		Class<T> eventConstraintClass = getEventConstraintClass();
 		if (eventConstraintClass.isAssignableFrom(event.getClass())) {
 			return isValidGeneric(eventConstraintClass.cast(event));

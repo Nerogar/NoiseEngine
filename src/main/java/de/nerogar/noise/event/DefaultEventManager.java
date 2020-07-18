@@ -2,7 +2,7 @@ package de.nerogar.noise.event;
 
 import java.util.*;
 
-public class DefaultEventManager<E extends Event> {
+public class DefaultEventManager<E extends IEvent> {
 
 	protected Map<EventListener<E>, List<EventListenerConstraint>> listenerMap;
 

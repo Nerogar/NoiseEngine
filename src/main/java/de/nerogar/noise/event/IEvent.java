@@ -1,6 +1,6 @@
 package de.nerogar.noise.event;
 
-public interface Event {
+public interface IEvent {
 
 	public default Class<? extends EventConstraint> getSpecialConstraintClass() {
 		return null;

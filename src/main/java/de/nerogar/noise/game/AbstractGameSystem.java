@@ -17,6 +17,10 @@ public class AbstractGameSystem implements IGameSystem {
 		this.gameSystemContainer = gameSystemContainer;
 	}
 
+	public EventManager getEventManager() {
+		return eventManager;
+	}
+
 	protected GameSystemContainer getGameSystemContainer() {
 		return gameSystemContainer;
 	}

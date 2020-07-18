@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PositionEventManager<E extends Event & EventPositionConstraint> implements ConstraintEventManager<E, EventListenerPositionConstraint> {
+public class PositionEventManager<E extends IEvent & EventPositionConstraint> implements ConstraintEventManager<E, EventListenerPositionConstraint> {
 
 	private SpaceOctree<EventConstraintContainer<EventListenerPositionConstraint>>           octree;
 	private Map<EventListener<E>, EventConstraintContainer<EventListenerPositionConstraint>> listenerMap;

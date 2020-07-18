@@ -1,8 +1,8 @@
 package de.nerogar.noise.oldGame.client.event;
 
-import de.nerogar.noise.event.Event;
+import de.nerogar.noise.event.IEvent;
 
-public class WindowSizeChangeEvent implements Event {
+public class WindowSizeChangeEvent implements IEvent {
 
 	private final int width;
 	private final int height;

@@ -22,14 +22,12 @@ public class PointLight implements ILight {
 	private final Matrix4f    viewProjectionMatrix;
 
 	private RenderProperties3f renderProperties;
-	private Vector3f           position;
 	private Color              color;
 	private float              radius;
 	private float              strength;
 
 	public PointLight(Vector3f position, Color color, float radius, float strength) {
-		this.renderProperties = new RenderProperties3f();
-		this.position = new Vector3f();
+		this.renderProperties = new RenderProperties3f(0, 0, 0, position.getX(), position.getY(), position.getZ());
 		this.viewProjectionMatrix = new Matrix4f();
 		setPosition(position.clone());
 		setColor(color);
@@ -50,9 +48,9 @@ public class PointLight implements ILight {
 		renderProperties.setParent(parentRenderProperties);
 	}
 
-	public void setPosition(Vector3f position)         { this.position.set(position); renderProperties.setXYZ(position); }
+	public void setPosition(Vector3f position)         { renderProperties.setXYZ(position); }
 
-	public void setPosition(float x, float y, float z) { this.position.set(x, y, z); renderProperties.setXYZ(x, y, z); }
+	public void setPosition(float x, float y, float z) { renderProperties.setXYZ(x, y, z); }
 
 	public void setColor(Color color)                  { this.color = color; }
 
@@ -61,7 +59,7 @@ public class PointLight implements ILight {
 	public void setStrength(float strength)            { this.strength = strength; }
 
 	private static void renderLight(PointLight light) {
-		shader.setUniform3f("u_position", light.position.getX(), light.position.getY(), light.position.getZ());
+		shader.setUniform3f("u_position", light.renderProperties.getX(), light.renderProperties.getY(), light.renderProperties.getZ());
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_radius", light.radius);
 		shader.setUniform1f("u_strength", light.strength);

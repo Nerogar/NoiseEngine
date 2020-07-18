@@ -1,6 +1,6 @@
 package de.nerogar.noise.oldGame.client.event;
 
-import de.nerogar.noise.event.Event;
+import de.nerogar.noise.event.IEvent;
 
-public class RenderEvent implements Event {
+public class RenderEvent implements IEvent {
 }

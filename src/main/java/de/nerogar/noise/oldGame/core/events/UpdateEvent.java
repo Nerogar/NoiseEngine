@@ -1,8 +1,8 @@
 package de.nerogar.noise.oldGame.core.events;
 
-import de.nerogar.noise.event.Event;
+import de.nerogar.noise.event.IEvent;
 
-public class UpdateEvent implements Event {
+public class UpdateEvent implements IEvent {
 
 	private float delta;
 

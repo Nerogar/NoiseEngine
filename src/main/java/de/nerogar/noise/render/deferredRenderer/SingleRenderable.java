@@ -8,32 +8,45 @@ public class SingleRenderable implements IRenderable {
 
 	private final int[] COMPONENT_COUNTS = { 3, 3, 3, 3, 2 };
 
-	private RenderProperties3f renderProperties;
+	private static Shader shader;
 
-	private        VertexBufferObject vbo;
-	private        Texture2D          albedo;
-	private        Texture2D          normal;
-	private        Texture2D          material;
-	private static Shader             shader;
+	private boolean            isInitialized = false;
+	private RenderProperties3f renderProperties;
+	private VertexBufferObject vbo;
+	private Texture2D          albedo;
+	private Texture2D          normal;
+	private Texture2D          material;
+	private Mesh               mesh;
 
 	public SingleRenderable(Mesh mesh, Texture2D albedo, Texture2D normal) {
-		renderProperties = new RenderProperties3f();
+		this.renderProperties = new RenderProperties3f();
 
-		vbo = new VertexBufferObjectIndexed(
-				COMPONENT_COUNTS,
-				mesh.getIndexCount(),
-				mesh.getVertexCount(),
-				mesh.getIndexArray(),
-				mesh.getPositionArray(),
-				mesh.getNormalArray(),
-				mesh.getTangentArray(),
-				mesh.getBitangentArray(),
-				mesh.getUVArray()
-		);
-
+		this.mesh = mesh;
 		this.albedo = albedo;
 		this.normal = normal;
 		this.material = albedo;
+	}
+
+	private void tryInitialize() {
+		if (shader == null) {
+			shader = ShaderLoader.loadShader("<deferredRenderer/geometry/singleRenderable.vert>", "<deferredRenderer/geometry/singleRenderable.frag>");
+		}
+
+		if (!isInitialized) {
+			vbo = new VertexBufferObjectIndexed(
+					COMPONENT_COUNTS,
+					mesh.getIndexCount(),
+					mesh.getVertexCount(),
+					mesh.getIndexArray(),
+					mesh.getPositionArray(),
+					mesh.getNormalArray(),
+					mesh.getTangentArray(),
+					mesh.getBitangentArray(),
+					mesh.getUVArray()
+			);
+			this.mesh = null;
+			isInitialized = true;
+		}
 	}
 
 	@Override
@@ -48,6 +61,8 @@ public class SingleRenderable implements IRenderable {
 
 	@Override
 	public void renderGeometry(IRenderContext renderContext) {
+		tryInitialize();
+
 		shader.activate();
 		shader.setUniformMat4f("u_mMat", renderProperties.getModelMatrix().asBuffer());
 		shader.setUniformMat4f("u_nMat", renderProperties.getNormalMatrix().asBuffer());
@@ -64,10 +79,6 @@ public class SingleRenderable implements IRenderable {
 		vbo.render();
 
 		shader.deactivate();
-	}
-
-	static {
-		shader = ShaderLoader.loadShader("<deferredRenderer/geometry/singleRenderable.vert>", "<deferredRenderer/geometry/singleRenderable.frag>");
 	}
 
 }

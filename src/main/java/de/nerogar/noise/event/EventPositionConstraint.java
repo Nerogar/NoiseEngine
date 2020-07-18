@@ -2,7 +2,7 @@ package de.nerogar.noise.event;
 
 import de.nerogar.noise.util.Bounding;
 
-public interface EventPositionConstraint<E extends Event & EventPositionConstraint> extends EventConstraint<PositionEventManager> {
+public interface EventPositionConstraint<E extends IEvent & EventPositionConstraint> extends EventConstraint<PositionEventManager> {
 
 	@Override
 	public default PositionEventManager getNewConstraintEventManager() {
