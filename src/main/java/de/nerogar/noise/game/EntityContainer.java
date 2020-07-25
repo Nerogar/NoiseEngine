@@ -18,6 +18,9 @@ public class EntityContainer {
 
 	public int addEntity(IComponent[] components) {
 		int entityId = maxId++;
+		for (int i = 0; i < components.length; i++) {
+			components[i].setEntityId(entityId);
+		}
 		entities.put(entityId, components);
 		return entityId;
 	}
@@ -59,11 +62,11 @@ public class EntityContainer {
 		return entities.get(entityId);
 	}
 
-	public void getComponents(Class<? extends IComponent> componentClass, List<IComponent> components) {
+	public <T extends IComponent>  void getComponents(Class<T> componentClass, List<T> components) {
 		for (IComponent[] allComponents : entities.values()) {
 			for (IComponent component : allComponents) {
 				if (component.getClass() == componentClass) {
-					components.add(component);
+					components.add((T) component);
 				}
 			}
 		}

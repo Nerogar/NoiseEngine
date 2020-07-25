@@ -13,7 +13,7 @@ public class AbstractGameSystem implements IGameSystem {
 	}
 
 	@Override
-	public void setData(GameSystemContainer gameSystemContainer) {
+	public void setSystemContainer(GameSystemContainer gameSystemContainer) {
 		this.gameSystemContainer = gameSystemContainer;
 	}
 

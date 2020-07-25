@@ -1,19 +1,20 @@
 package de.nerogar.noise.game;
 
 import de.nerogar.noiseInterface.game.IComponent;
-import de.nerogar.noiseInterface.game.IEntity;
 
 public class AbstractComponent implements IComponent {
 
-	private IEntity entity;
+	private int             entityId;
+	private EntityContainer entityContainer;
 
 	@Override
-	public void setEntity(IEntity entity) {
-		this.entity = entity;
+	public void setEntityId(int entityId) {
+		this.entityId = entityId;
 	}
 
 	@Override
-	public IEntity getEntity() {
-		return entity;
+	public int getEntityId() {
+		return entityId;
 	}
+
 }

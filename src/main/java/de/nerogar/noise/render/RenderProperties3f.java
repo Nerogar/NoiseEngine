@@ -463,6 +463,10 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		}
 	}
 
+	public int getModCount(){
+		return modCount;
+	}
+
 	@Override
 	public String toString() {
 		return "RenderProperties3f{" +

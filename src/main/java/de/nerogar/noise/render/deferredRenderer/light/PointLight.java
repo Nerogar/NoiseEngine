@@ -59,7 +59,12 @@ public class PointLight implements ILight {
 	public void setStrength(float strength)            { this.strength = strength; }
 
 	private static void renderLight(PointLight light) {
-		shader.setUniform3f("u_position", light.renderProperties.getX(), light.renderProperties.getY(), light.renderProperties.getZ());
+		shader.setUniform3f(
+				"u_position",
+				light.renderProperties.getModelMatrix().get(0, 3),
+				light.renderProperties.getModelMatrix().get(1, 3),
+				light.renderProperties.getModelMatrix().get(2, 3)
+		                   );
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_radius", light.radius);
 		shader.setUniform1f("u_strength", light.strength);

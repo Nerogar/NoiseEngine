@@ -1,19 +1,20 @@
 package de.nerogar.noise.game.components;
 
 import de.nerogar.noise.game.AbstractComponent;
+import de.nerogar.noise.render.RenderProperties3f;
 
 public class TransformationComponent extends AbstractComponent {
 
-	private float x, y, z;
-	private float yaw, pitch, roll;
+	private RenderProperties3f transformation;
+
+	private int transformModCount;
 
 	public TransformationComponent(float x, float y, float z, float yaw, float pitch, float roll) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.yaw = yaw;
-		this.pitch = pitch;
-		this.roll = roll;
+		this.transformation = new RenderProperties3f(
+				yaw, pitch, roll,
+				x, y, z,
+				1, 1, 1
+		);
 	}
 
 	public TransformationComponent(float x, float y, float z) {
@@ -24,27 +25,35 @@ public class TransformationComponent extends AbstractComponent {
 		this(0, 0, 0, 0, 0, 0);
 	}
 
-	public float getX()               { return x; }
+	@Override
+	public boolean hasChanged() { return transformModCount != transformation.getModCount(); }
 
-	public void setX(float x)         { this.x = x; }
+	@Override
+	public void resetChangedState() { transformModCount = transformation.getModCount(); }
 
-	public float getY()               { return y; }
+	public RenderProperties3f getTransformation() { return transformation; }
 
-	public void setY(float y)         { this.y = y; }
+	public float getX()                           { return transformation.getX(); }
 
-	public float getZ()               { return z; }
+	public void setX(float x)                     { transformation.setX(x); }
 
-	public void setZ(float z)         { this.z = z; }
+	public float getY()                           { return transformation.getY(); }
 
-	public float getYaw()             { return yaw; }
+	public void setY(float y)                     { transformation.setY(y); }
 
-	public void setYaw(float yaw)     { this.yaw = yaw; }
+	public float getZ()                           { return transformation.getZ(); }
 
-	public float getPitch()           { return pitch; }
+	public void setZ(float z)                     { transformation.setZ(z); }
 
-	public void setPitch(float pitch) { this.pitch = pitch; }
+	public float getYaw()                         { return transformation.getYaw(); }
 
-	public float getRoll()            { return roll; }
+	public void setYaw(float yaw)                 { transformation.setYaw(yaw); }
 
-	public void setRoll(float roll)   { this.roll = roll; }
+	public float getPitch()                       { return transformation.getPitch(); }
+
+	public void setPitch(float pitch)             { transformation.setPitch(pitch); }
+
+	public float getRoll()                        { return transformation.getRoll(); }
+
+	public void setRoll(float roll)               { transformation.setRoll(roll); }
 }

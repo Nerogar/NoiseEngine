@@ -4,6 +4,6 @@ import de.nerogar.noise.game.GameSystemContainer;
 
 public interface IGameSystem {
 
-	void setData(GameSystemContainer gameSystemContainer);
+	void setSystemContainer(GameSystemContainer gameSystemContainer);
 
 }

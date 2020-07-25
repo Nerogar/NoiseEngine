@@ -1,20 +1,22 @@
 package de.nerogar.noiseInterface.game;
 
+import de.nerogar.noise.game.EntityContainer;
+
 public interface IComponent {
 
 	/**
-	 * Sets the entity of this component.
+	 * Sets the entity id of this component.
 	 *
-	 * @param entity the entity
+	 * @param entityId the entity id
 	 */
-	void setEntity(IEntity entity);
+	void setEntityId(int entityId);
 
 	/**
-	 * Gets the entity of this component.
+	 * Gets the entity id of this component.
 	 *
-	 * @return the entity for this component
+	 * @return the entity id for this component
 	 */
-	IEntity getEntity();
+	int getEntityId();
 
 	/**
 	 * Returns true, if the state of this component has changed since the last call to {@code resetChangedState}
