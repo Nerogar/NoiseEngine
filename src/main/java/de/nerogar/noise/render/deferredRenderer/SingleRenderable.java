@@ -81,4 +81,26 @@ public class SingleRenderable implements IRenderable {
 		shader.deactivate();
 	}
 
+	public void cleanupVbo() {
+		if (vbo != null) {
+			vbo.cleanup();
+			vbo = null;
+		}
+	}
+
+	public void cleanupTextures() {
+		if (albedo != null) {
+			albedo.cleanup();
+			albedo = null;
+		}
+		if (normal != null) {
+			normal.cleanup();
+			normal = null;
+		}
+		if (material != null) {
+			material.cleanup();
+			material = null;
+		}
+	}
+
 }
