@@ -265,4 +265,15 @@ public class MathHelper {
 		}
 	}
 
+	/**
+	 * Mixes the values x and y with the factor a. If a is 0 x is returned. If a is 1 y is returned.
+	 * @param x the first value
+	 * @param y the second value
+	 * @param a the mix factor
+	 * @return a mix between x and y
+	 */
+	public static float mix(float x, float y, float a) {
+		return x * (1.0f - a) + y * a;
+	}
+
 }

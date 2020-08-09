@@ -1,8 +1,12 @@
 package de.nerogar.noise.util;
 
+import de.nerogar.noiseInterface.util.INoiseGenerator;
+
 import java.util.Random;
 
-public class ValueNoiseGenerator {
+import static de.nerogar.noise.util.MathHelper.mix;
+
+public class ValueNoiseGenerator implements INoiseGenerator {
 
 	private long seed;
 
@@ -11,7 +15,7 @@ public class ValueNoiseGenerator {
 	private int seedZ;
 	private int seedW;
 
-	private int randData[];
+	private int[] randData;
 
 	public ValueNoiseGenerator(long seed) {
 		setSeed(seed);
@@ -40,18 +44,15 @@ public class ValueNoiseGenerator {
 		return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
 	}
 
-	private float mix(float x, float y, float a) {
-		return x * (1.0f - a) + y * a;
-	}
-
 	private float intToFloat(int i) {
-		return (float) ((double) i / Integer.MAX_VALUE);
+		return (float) ((double) (Math.abs(i) & 0x7fffffff) / 0x7fffffff);
 	}
 
 	private int getRandomData(int i) {
 		return randData[(i & 0xffff)] ^ randData[(i >> 16) & 0xffff];
 	}
 
+	@Override
 	public float getValue(float x, float y) {
 		int x0 = (int) Math.floor(x);
 		int y0 = (int) Math.floor(y);
@@ -76,6 +77,7 @@ public class ValueNoiseGenerator {
 		return mix(m0, m1, x);
 	}
 
+	@Override
 	public float getValue(float x, float y, float z) {
 		int x0 = (int) Math.floor(x);
 		int y0 = (int) Math.floor(y);
@@ -113,6 +115,7 @@ public class ValueNoiseGenerator {
 		return mix(m0, m1, x);
 	}
 
+	@Override
 	public float getValue(float x, float y, float z, float w) {
 
 		int x0 = (int) Math.floor(x);
@@ -179,13 +182,40 @@ public class ValueNoiseGenerator {
 		return mix(m0, m1, x);
 	}
 
-	public float getWithOctaves(float x, float y, int octaves) {
+	@Override
+	public float getValueWithOctaves(float x, float y, int octaves) {
 		int octaves2 = (1 << (octaves - 1));
 		float amplitude = (float) octaves2 / (octaves2 + octaves2 - 1);
 		float result = 0;
 		for (int i = 0; i < octaves; i++) {
 			float size = 1 << i;
 			result += getValue(x * size, y * size) * amplitude;
+			amplitude /= 2;
+		}
+		return result;
+	}
+
+	@Override
+	public float getValueWithOctaves(float x, float y, float z, int octaves) {
+		int octaves2 = (1 << (octaves - 1));
+		float amplitude = (float) octaves2 / (octaves2 + octaves2 - 1);
+		float result = 0;
+		for (int i = 0; i < octaves; i++) {
+			float size = 1 << i;
+			result += getValue(x * size, y * size, z * size) * amplitude;
+			amplitude /= 2;
+		}
+		return result;
+	}
+
+	@Override
+	public float getValueWithOctaves(float x, float y, float z, float w, int octaves) {
+		int octaves2 = (1 << (octaves - 1));
+		float amplitude = (float) octaves2 / (octaves2 + octaves2 - 1);
+		float result = 0;
+		for (int i = 0; i < octaves; i++) {
+			float size = 1 << i;
+			result += getValue(x * size, y * size, z * size, w * size) * amplitude;
 			amplitude /= 2;
 		}
 		return result;
