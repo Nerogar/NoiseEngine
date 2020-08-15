@@ -8,27 +8,27 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 
 	private static final float PI = (float) Math.PI;
 
-	private float yaw, pitch, roll;
-	private float x, y, z;
-	private float scaleX, scaleY, scaleZ, maxScaleComponent;
-	private RenderProperties3f parent;
+	protected float yaw, pitch, roll;
+	protected float x, y, z;
+	protected float scaleX, scaleY, scaleZ, maxScaleComponent;
+	protected RenderProperties3f parent;
 
-	private boolean  positionMatrixDirty = true;
-	private Matrix4f positionMatrix;
-	private boolean  scaleMatrixDirty    = true;
-	private Matrix4f scaleMatrix;
-	private boolean  yawMatrixDirty      = true;
-	private Matrix4f yawMatrix;
-	private boolean  pitchMatrixDirty    = true;
-	private Matrix4f pitchMatrix;
-	private boolean  rollMatrixDirty     = true;
-	private Matrix4f rollMatrix;
-	private int      modCount;
-	private int      parentModCount;
+	protected boolean  positionMatrixDirty = true;
+	protected Matrix4f positionMatrix;
+	protected boolean  scaleMatrixDirty    = true;
+	protected Matrix4f scaleMatrix;
+	protected boolean  yawMatrixDirty      = true;
+	protected Matrix4f yawMatrix;
+	protected boolean  pitchMatrixDirty    = true;
+	protected Matrix4f pitchMatrix;
+	protected boolean  rollMatrixDirty     = true;
+	protected Matrix4f rollMatrix;
+	protected int      modCount;
+	protected int      parentModCount;
 
-	private boolean  modelMatrixDirty = true;
-	private Matrix4f modelMatrix;
-	private Matrix4f normalMatrix;
+	protected boolean  modelMatrixDirty = true;
+	protected Matrix4f modelMatrix;
+	protected Matrix4f normalMatrix;
 
 	private Matrix4f tempMatrix;
 
@@ -157,32 +157,32 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		return normalMatrix;
 	}
 
-	private void setPositionMatrix() {
+	protected void setPositionMatrix() {
 		Matrix4fUtils.setPositionMatrix(positionMatrix, x, y, z);
 		positionMatrixDirty = false;
 	}
 
-	private void setScaleMatrix() {
+	protected void setScaleMatrix() {
 		Matrix4fUtils.setScaleMatrix(scaleMatrix, scaleX, scaleY, scaleZ);
 		scaleMatrixDirty = false;
 	}
 
-	private void setYawMatrix() {
+	protected void setYawMatrix() {
 		Matrix4fUtils.setYawMatrix(yawMatrix, yaw);
 		yawMatrixDirty = false;
 	}
 
-	private void setPitchMatrix() {
+	protected void setPitchMatrix() {
 		Matrix4fUtils.setPitchMatrix(pitchMatrix, pitch);
 		pitchMatrixDirty = false;
 	}
 
-	private void setRollMatrix() {
+	protected void setRollMatrix() {
 		Matrix4fUtils.setRollMatrix(rollMatrix, roll);
 		rollMatrixDirty = false;
 	}
 
-	private void setModelMatrix() {
+	protected void setModelMatrix() {
 		if (positionMatrixDirty) setPositionMatrix();
 		if (scaleMatrixDirty) setScaleMatrix();
 		if (yawMatrixDirty) setYawMatrix();

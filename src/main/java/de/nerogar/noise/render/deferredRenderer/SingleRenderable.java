@@ -6,7 +6,7 @@ import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
 
 public class SingleRenderable implements IRenderable {
 
-	private final int[] COMPONENT_COUNTS = { 3, 3, 3, 3, 2 };
+	private static final int[] COMPONENT_COUNTS = { 3, 3, 3, 3, 2 };
 
 	private static Shader shader;
 
@@ -18,6 +18,16 @@ public class SingleRenderable implements IRenderable {
 	private Texture2D          material;
 	private Mesh               mesh;
 
+	public SingleRenderable(VertexBufferObject vbo, Texture2D albedo, Texture2D normal) {
+		this.renderProperties = new RenderProperties3f();
+
+		this.vbo = vbo;
+		this.isInitialized = true;
+		this.albedo = albedo;
+		this.normal = normal;
+		this.material = albedo;
+	}
+
 	public SingleRenderable(Mesh mesh, Texture2D albedo, Texture2D normal) {
 		this.renderProperties = new RenderProperties3f();
 
@@ -27,23 +37,27 @@ public class SingleRenderable implements IRenderable {
 		this.material = albedo;
 	}
 
+	public static VertexBufferObject createVbo(Mesh mesh) {
+		return new VertexBufferObjectIndexed(
+				COMPONENT_COUNTS,
+				mesh.getIndexCount(),
+				mesh.getVertexCount(),
+				mesh.getIndexArray(),
+				mesh.getPositionArray(),
+				mesh.getNormalArray(),
+				mesh.getTangentArray(),
+				mesh.getBitangentArray(),
+				mesh.getUVArray()
+		);
+	}
+
 	private void tryInitialize() {
 		if (shader == null) {
 			shader = ShaderLoader.loadShader("<deferredRenderer/geometry/singleRenderable.vert>", "<deferredRenderer/geometry/singleRenderable.frag>");
 		}
 
 		if (!isInitialized) {
-			vbo = new VertexBufferObjectIndexed(
-					COMPONENT_COUNTS,
-					mesh.getIndexCount(),
-					mesh.getVertexCount(),
-					mesh.getIndexArray(),
-					mesh.getPositionArray(),
-					mesh.getNormalArray(),
-					mesh.getTangentArray(),
-					mesh.getBitangentArray(),
-					mesh.getUVArray()
-			);
+			vbo = createVbo(mesh);
 			this.mesh = null;
 			isInitialized = true;
 		}
