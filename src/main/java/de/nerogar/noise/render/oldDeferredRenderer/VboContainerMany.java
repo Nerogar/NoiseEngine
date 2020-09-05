@@ -1,13 +1,15 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
+import de.nerogar.noise.math.BoundingAll;
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.render.Shader;
 import de.nerogar.noise.render.VertexBufferObjectInstanced;
 import de.nerogar.noise.render.camera.IReadOnlyCamera;
-import de.nerogar.noise.util.Bounding;
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noiseInterface.math.IBounding;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 import de.nerogar.noise.util.SpaceOctree;
-import de.nerogar.noise.util.Vector3f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -26,9 +28,9 @@ class VboContainerMany implements VboContainer {
 	private VertexBufferObjectInstanced vbo;
 	private Shader                      gBufferShader;
 
-	private ArrayList<Matrix4f> instanceModelMatrices;
-	private ArrayList<Matrix4f> instanceNormalMatrices;
-	private float[]             modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
+	private ArrayList<IMatrix4f> instanceModelMatrices;
+	private ArrayList<IMatrix4f> instanceNormalMatrices;
+	private float[]              modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
 	private float[] normalMatrix1, normalMatrix2, normalMatrix3;
 
 	private final int[] instanceComponentCounts = new int[] { 4, 4, 4, 4, 3, 3, 3 };
@@ -88,17 +90,19 @@ class VboContainerMany implements VboContainer {
 		updatedRenderables.clear();
 
 		// filter renderables
-		Bounding viewRegion = frustum.getBounding();
+		//IBounding viewRegion = frustum.getBounding();
+		// TODO: remove the temp code and add back the actual frustum bounding
+		IBounding boundingAll = new BoundingAll();
 		Collection<DeferredRenderable> filteredRenderables;
 		if (renderables.size() >= OCTREE_FILTER_THRESHOLD) {
-			filteredRenderables = renderables.getFiltered(this.filteredRenderables, viewRegion);
+			filteredRenderables = renderables.getFiltered(this.filteredRenderables, boundingAll);
 		} else {
 			filteredRenderables = renderables;
 		}
 
 		profiler.addValue(DeferredRendererProfiler.OBJECT_TEST_COUNT, filteredRenderables.size());
 
-		Vector3f point = new Vector3f();
+		IVector3f point = new Vector3f();
 		for (DeferredRenderable renderable : filteredRenderables) {
 			if (!renderable.getRenderProperties().isVisible()) continue;
 
@@ -126,8 +130,8 @@ class VboContainerMany implements VboContainer {
 		}
 
 		for (int i = 0; i < instanceModelMatrices.size(); i++) {
-			Matrix4f modelMat = instanceModelMatrices.get(i);
-			Matrix4f normalMat = instanceNormalMatrices.get(i);
+			IMatrix4f modelMat = instanceModelMatrices.get(i);
+			IMatrix4f normalMat = instanceNormalMatrices.get(i);
 
 			modelMatrix1[i * 4 + 0] = modelMat.get(0, 0);
 			modelMatrix1[i * 4 + 1] = modelMat.get(1, 0);

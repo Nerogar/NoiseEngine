@@ -4,7 +4,7 @@ import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.MouseButtonEvent;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
@@ -38,7 +38,7 @@ public class GImage extends GElementContainer {
 	}
 
 	@Override
-	public void render(Matrix4f projectionMatrix) {
+	public void render(IMatrix4f projectionMatrix) {
 
 		texture.bind(0);
 

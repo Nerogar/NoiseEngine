@@ -1,10 +1,11 @@
 package de.nerogar.noise.oldGame.client.gui;
 
 import de.nerogar.noise.input.InputHandler;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.render.FrameBufferObject;
 import de.nerogar.noise.render.Texture2D;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,7 +18,7 @@ public class GuiContainer {
 	private int               width;
 	private int               height;
 	private FrameBufferObject fbo;
-	private Matrix4f          projectionMatrix;
+	private IMatrix4f         projectionMatrix;
 
 	private Set<Gui> blendOutGuis;
 	private Gui      activeGui;
@@ -35,7 +36,7 @@ public class GuiContainer {
 	}
 
 	public void setActiveGui(Gui activeGui) {
-		if (this.activeGui != null){
+		if (this.activeGui != null) {
 			blendOutGuis.add(this.activeGui);
 			this.activeGui.startBlendOut();
 		}
@@ -64,7 +65,7 @@ public class GuiContainer {
 	public void render() {
 		fbo.bind();
 
-		glClearColor(0.0f, 0.0f, 0.0f,  0.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		activeGui.render(projectionMatrix);
@@ -82,7 +83,7 @@ public class GuiContainer {
 		}
 	}
 
-	public Matrix4f getProjectionMatrix() {
+	public IMatrix4f getProjectionMatrix() {
 		return projectionMatrix;
 	}
 

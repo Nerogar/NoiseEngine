@@ -1,8 +1,7 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.render.camera.Camera;
-import de.nerogar.noise.util.Bounding;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 public class ViewRegionAll implements IViewRegion {
 
@@ -13,13 +12,8 @@ public class ViewRegionAll implements IViewRegion {
 	public void setPlanes(Camera cam) {
 	}
 
-	public float getPointDistance(Vector3f point) {
+	public float getPointDistance(IVector3f point) {
 		return -1;
-	}
-
-	@Override
-	public Bounding getBounding() {
-		return null;
 	}
 
 }

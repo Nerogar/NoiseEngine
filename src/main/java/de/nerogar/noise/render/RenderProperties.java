@@ -1,6 +1,6 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 public abstract class RenderProperties<T extends RenderProperties<T>> {
 
@@ -13,7 +13,7 @@ public abstract class RenderProperties<T extends RenderProperties<T>> {
 
 	protected RenderPropertiesListener<T> listener;
 
-	public abstract Matrix4f getModelMatrix();
+	public abstract IMatrix4f getModelMatrix();
 
 	public boolean isVisible() {
 		return isVisible;

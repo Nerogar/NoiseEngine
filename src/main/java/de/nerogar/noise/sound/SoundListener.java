@@ -1,6 +1,7 @@
 package de.nerogar.noise.sound;
 
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.math.Vector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL11;
 
@@ -10,10 +11,10 @@ import static org.lwjgl.openal.AL10.*;
 
 public class SoundListener {
 
-	private Vector3f position;
+	private IVector3f position;
 
-	private Vector3f directionAt;
-	private Vector3f directionUp;
+	private IVector3f   directionAt;
+	private IVector3f   directionUp;
 	private FloatBuffer directionBuffer;
 
 	public SoundListener() {
@@ -33,7 +34,7 @@ public class SoundListener {
 		alListener3f(AL_POSITION, x, y, z);
 	}
 
-	public void setPosition(Vector3f position) {
+	public void setPosition(IVector3f position) {
 		this.position.set(position);
 		alListener3f(AL_POSITION, position.getX(), position.getY(), position.getZ());
 	}
@@ -45,7 +46,7 @@ public class SoundListener {
 		setDirection();
 	}
 
-	public void setDirection(Vector3f directionAt, Vector3f directionUp) {
+	public void setDirection(IVector3f directionAt, IVector3f directionUp) {
 		this.directionAt.set(directionAt);
 		this.directionUp.set(directionUp);
 

@@ -1,11 +1,12 @@
 package de.nerogar.noise.render.deferredRenderer.light;
 
+import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.deferredRenderer.SingleWireframeRenderable;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
@@ -19,14 +20,14 @@ public class PointLight implements ILight {
 	private static WireframeMesh      debugMesh;
 
 	private       IRenderable debugRenderable;
-	private final Matrix4f    viewProjectionMatrix;
+	private final IMatrix4f   viewProjectionMatrix;
 
 	private RenderProperties3f renderProperties;
 	private Color              color;
 	private float              radius;
 	private float              strength;
 
-	public PointLight(Vector3f position, Color color, float radius, float strength) {
+	public PointLight(IVector3f position, Color color, float radius, float strength) {
 		this.renderProperties = new RenderProperties3f(0, 0, 0, position.getX(), position.getY(), position.getZ());
 		this.viewProjectionMatrix = new Matrix4f();
 		setPosition(position.clone());
@@ -48,7 +49,7 @@ public class PointLight implements ILight {
 		renderProperties.setParent(parentRenderProperties);
 	}
 
-	public void setPosition(Vector3f position)         { renderProperties.setXYZ(position); }
+	public void setPosition(IVector3f position)        { renderProperties.setXYZ(position); }
 
 	public void setPosition(float x, float y, float z) { renderProperties.setXYZ(x, y, z); }
 
@@ -81,7 +82,7 @@ public class PointLight implements ILight {
 		unitRayTop.getStart().subtract(unitRayCenter.getStart());
 		unitRayTop.getDir().subtract(unitRayCenter.getDir());
 
-		Matrix4f projectionMatrix = renderContext.getCamera().getProjectionMatrix();
+		IMatrix4f projectionMatrix = renderContext.getCamera().getProjectionMatrix();
 		viewProjectionMatrix.set(renderContext.getCamera().getViewMatrix());
 		viewProjectionMatrix.multiplyLeft(projectionMatrix);
 

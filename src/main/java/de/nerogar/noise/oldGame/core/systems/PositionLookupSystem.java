@@ -1,13 +1,14 @@
 package de.nerogar.noise.oldGame.core.systems;
 
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.oldGame.Entity;
 import de.nerogar.noise.oldGame.LogicSystem;
 import de.nerogar.noise.oldGame.core.components.BoundingComponent;
 import de.nerogar.noise.oldGame.core.components.PositionComponent;
-import de.nerogar.noise.util.Bounding;
-import de.nerogar.noise.util.BoundingSphere;
+import de.nerogar.noise.math.BoundingSphere;
 import de.nerogar.noise.util.SpaceOctree;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.IBounding;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,11 +48,11 @@ public class PositionLookupSystem extends LogicSystem {
 		}
 	}
 
-	public Collection<BoundingComponent> getBoundings(Bounding bounding) {
+	public Collection<BoundingComponent> getBoundings(IBounding bounding) {
 		return components.getFilteredExact(new ArrayList<>(), bounding);
 	}
 
-	public Collection<BoundingComponent> getBoundingsAround(Vector3f center, float radius) {
+	public Collection<BoundingComponent> getBoundingsAround(IVector3f center, float radius) {
 		sphereInstance.setCenter(center);
 		sphereInstance.setRadius(radius);
 

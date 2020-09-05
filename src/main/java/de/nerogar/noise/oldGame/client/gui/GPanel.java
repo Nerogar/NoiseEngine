@@ -7,7 +7,7 @@ import de.nerogar.noise.render.ShaderLoader;
 import de.nerogar.noise.render.VertexBufferObject;
 import de.nerogar.noise.render.VertexBufferObjectStandard;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_ONE;
@@ -47,7 +47,7 @@ public class GPanel extends GElementContainer {
 	}
 
 	@Override
-	public void render(Matrix4f projectionMatrix) {
+	public void render(IMatrix4f projectionMatrix) {
 		shader.activate();
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
 		shader.setUniform2f("position", posX, posY);

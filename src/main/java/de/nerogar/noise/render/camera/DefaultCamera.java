@@ -1,10 +1,12 @@
 package de.nerogar.noise.render.camera;
 
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.IViewRegion;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 public abstract class DefaultCamera extends Camera {
 
@@ -13,20 +15,20 @@ public abstract class DefaultCamera extends Camera {
 	protected float yaw, pitch, roll;
 	protected float x, y, z;
 
-	protected Matrix4f positionMatrix;
-	protected Matrix4f yawMatrix;
-	protected Matrix4f pitchMatrix;
-	protected Matrix4f rollMatrix;
+	protected IMatrix4f positionMatrix;
+	protected IMatrix4f yawMatrix;
+	protected IMatrix4f pitchMatrix;
+	protected IMatrix4f rollMatrix;
 
-	protected boolean  viewMatrixDirty = true;
-	protected Matrix4f viewMatrix;
+	protected boolean   viewMatrixDirty = true;
+	protected IMatrix4f viewMatrix;
 
-	protected boolean  projectionMatrixDirty = true;
-	protected Matrix4f projectionMatrix;
+	protected boolean   projectionMatrixDirty = true;
+	protected IMatrix4f projectionMatrix;
 
-	protected Vector3f directionRight;
-	protected Vector3f directionUp;
-	protected Vector3f directionAt;
+	protected IVector3f directionRight;
+	protected IVector3f directionUp;
+	protected IVector3f directionAt;
 
 	protected Ray   unitRayRight;
 	protected Ray   unitRayTop;
@@ -121,7 +123,7 @@ public abstract class DefaultCamera extends Camera {
 		setUnitRays();
 	}
 
-	public Matrix4f getViewMatrix() {
+	public IMatrix4f getViewMatrix() {
 		if (viewMatrixDirty) setViewMatrix();
 
 		return viewMatrix;
@@ -129,7 +131,7 @@ public abstract class DefaultCamera extends Camera {
 
 	protected abstract void setProjectionMatrix();
 
-	public Matrix4f getProjectionMatrix() {
+	public IMatrix4f getProjectionMatrix() {
 		if (projectionMatrixDirty) setProjectionMatrix();
 
 		return projectionMatrix;
@@ -255,7 +257,7 @@ public abstract class DefaultCamera extends Camera {
 	 *
 	 * @param point the point to transform
 	 */
-	public void pointToViewSpace(Vector3f point) {
+	public void pointToViewSpace(IVector3f point) {
 		float newX, newY, newZ;
 
 		newX = point.getX() * getViewMatrix().get(0, 0);
@@ -284,7 +286,7 @@ public abstract class DefaultCamera extends Camera {
 	 *
 	 * @param direction the direction to transform
 	 */
-	public void directionToViewSpace(Vector3f direction) {
+	public void directionToViewSpace(IVector3f direction) {
 		float newX, newY, newZ;
 
 		newX = direction.getX() * getViewMatrix().get(0, 0);
@@ -309,7 +311,7 @@ public abstract class DefaultCamera extends Camera {
 	 *
 	 * @param point the point to transform
 	 */
-	public void pointToWorldSpace(Vector3f point) {
+	public void pointToWorldSpace(IVector3f point) {
 		float newX, newY, newZ;
 
 		point.addX(-getViewMatrix().get(0, 3));
@@ -338,7 +340,7 @@ public abstract class DefaultCamera extends Camera {
 	 *
 	 * @param direction the direction to transform
 	 */
-	public void directionToWorldSpace(Vector3f direction) {
+	public void directionToWorldSpace(IVector3f direction) {
 		float newX, newY, newZ;
 
 		newX = direction.getX() * getViewMatrix().get(0, 0);
@@ -373,13 +375,13 @@ public abstract class DefaultCamera extends Camera {
 	 * @return the ray in world space
 	 */
 	public Ray unproject(float x, float y) {
-		Vector3f start = new Vector3f(
+		IVector3f start = new Vector3f(
 				unitRayCenter.getStart().getX() + unitRayRight.getStart().getX() * x + unitRayTop.getStart().getX() * y,
 				unitRayCenter.getStart().getY() + unitRayRight.getStart().getY() * x + unitRayTop.getStart().getY() * y,
 				unitRayCenter.getStart().getZ() + unitRayRight.getStart().getZ() * x + unitRayTop.getStart().getZ() * y
 		);
 
-		Vector3f dir = new Vector3f(
+		IVector3f dir = new Vector3f(
 				unitRayCenter.getDir().getX() + unitRayRight.getDir().getX() * x + unitRayTop.getDir().getX() * y,
 				unitRayCenter.getDir().getY() + unitRayRight.getDir().getY() * x + unitRayTop.getDir().getY() * y,
 				unitRayCenter.getDir().getZ() + unitRayRight.getDir().getZ() * x + unitRayTop.getDir().getZ() * y
@@ -397,19 +399,19 @@ public abstract class DefaultCamera extends Camera {
 		return unitSize;
 	}
 
-	public Vector3f getDirectionRight() {
+	public IVector3f getDirectionRight() {
 		if (viewMatrixDirty) setViewMatrix();
 
 		return directionRight;
 	}
 
-	public Vector3f getDirectionUp() {
+	public IVector3f getDirectionUp() {
 		if (viewMatrixDirty) setViewMatrix();
 
 		return directionUp;
 	}
 
-	public Vector3f getDirectionAt() {
+	public IVector3f getDirectionAt() {
 		if (viewMatrixDirty) setViewMatrix();
 
 		return directionAt;

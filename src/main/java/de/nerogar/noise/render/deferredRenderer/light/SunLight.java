@@ -2,7 +2,7 @@ package de.nerogar.noise.render.deferredRenderer.light;
 
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
 import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 
@@ -13,11 +13,11 @@ public class SunLight implements ILight {
 	private static VertexBufferObject fullscreenQuad;
 	private static Shader             shader;
 
-	private Vector3f direction;
+	private IVector3f direction;
 	private Color    color;
 	private float    strength;
 
-	public SunLight(Vector3f direction, Color color, float strength) {
+	public SunLight(IVector3f direction, Color color, float strength) {
 		this.direction = direction.normalized();
 		this.color = color;
 		this.strength = strength;
@@ -31,7 +31,7 @@ public class SunLight implements ILight {
 	@Override
 	public void setParentRenderProperties(RenderProperties3f parentRenderProperties) { }
 
-	public void setDirection(Vector3f direction) {
+	public void setDirection(IVector3f direction) {
 		this.direction.set(direction).normalize();
 	}
 

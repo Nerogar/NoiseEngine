@@ -1,11 +1,11 @@
 package de.nerogar.noise.oldGame.client.gui;
 
 import de.nerogar.noise.input.InputHandler;
+import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.render.fontRenderer.Font;
 import de.nerogar.noise.render.fontRenderer.FontRenderableString;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 public class GLabel extends GElement {
 
@@ -67,7 +67,7 @@ public class GLabel extends GElement {
 	}
 
 	@Override
-	public void render(Matrix4f projectionMatrix) {
+	public void render(IMatrix4f projectionMatrix) {
 		renderableString.setRenderDimensions(projectionMatrix, 1, 1);
 		renderableString.render(posX, posY);
 	}

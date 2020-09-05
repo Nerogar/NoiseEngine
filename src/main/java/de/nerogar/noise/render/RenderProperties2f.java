@@ -1,8 +1,9 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
-import de.nerogar.noise.util.Vector2f;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector2f;
 
 public class RenderProperties2f extends RenderProperties<RenderProperties2f> {
 
@@ -10,12 +11,12 @@ public class RenderProperties2f extends RenderProperties<RenderProperties2f> {
 	private float x, y;
 	private float scaleX, scaleY;
 
-	private Matrix4f positionMatrix;
-	private Matrix4f scaleMatrix;
-	private Matrix4f rollMatrix;
+	private IMatrix4f positionMatrix;
+	private IMatrix4f scaleMatrix;
+	private IMatrix4f rollMatrix;
 
-	private boolean finalMatrixDirty = true;
-	private Matrix4f finalMatrix;
+	private boolean   finalMatrixDirty = true;
+	private IMatrix4f finalMatrix;
 
 	public RenderProperties2f() {
 		this(0, 0, 0);
@@ -40,7 +41,7 @@ public class RenderProperties2f extends RenderProperties<RenderProperties2f> {
 	}
 
 	@Override
-	public Matrix4f getModelMatrix() {
+	public IMatrix4f getModelMatrix() {
 		if (finalMatrixDirty) setFinalMatrix();
 		return finalMatrix;
 	}
@@ -125,7 +126,7 @@ public class RenderProperties2f extends RenderProperties<RenderProperties2f> {
 	/**
 	 * sets the x, y properties
 	 */
-	public void setXYZ(Vector2f v) {
+	public void setXYZ(IVector2f v) {
 		if (this.x == v.getX() && this.y == v.getY()) return;
 		this.x = v.getX();
 		this.y = v.getY();

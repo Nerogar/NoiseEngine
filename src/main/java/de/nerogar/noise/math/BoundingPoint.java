@@ -1,10 +1,13 @@
-package de.nerogar.noise.util;
+package de.nerogar.noise.math;
 
-public class BoundingPoint implements Bounding {
+import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.IBounding;
 
-	private Vector3f position;
+public class BoundingPoint implements IBounding {
 
-	public BoundingPoint(Vector3f position) {
+	private IVector3f position;
+
+	public BoundingPoint(IVector3f position) {
 		this.position = position;
 	}
 
@@ -13,7 +16,7 @@ public class BoundingPoint implements Bounding {
 	 *
 	 * @return the point
 	 */
-	public Vector3f getPosition() {
+	public IVector3f getPosition() {
 		return position;
 	}
 
@@ -22,12 +25,12 @@ public class BoundingPoint implements Bounding {
 	 *
 	 * @param position the point
 	 */
-	public void setPosition(Vector3f position) {
+	public void setPosition(IVector3f position) {
 		this.position.set(position);
 	}
 
 	@Override
-	public Vector3f point() {
+	public IVector3f point() {
 		return position;
 	}
 
@@ -58,15 +61,6 @@ public class BoundingPoint implements Bounding {
 	}
 
 	@Override
-	public boolean overlaps(float centerX, float centerY, float centerZ, float otherRadius) {
-		float xd = position.getX() - centerX;
-		float yd = position.getY() - centerY;
-		float zd = position.getZ() - centerZ;
-
-		return (xd * xd + yd * yd + zd * zd) < (otherRadius * otherRadius);
-	}
-
-	@Override
 	public boolean intersectsXPlane(float xValue) {
 		return position.getX() == xValue;
 	}
@@ -82,22 +76,12 @@ public class BoundingPoint implements Bounding {
 	}
 
 	@Override
-	public boolean overlapsHexahedron(BoundingHexahedron bounding) {
-		return bounding.hasPoint(position.getX(), position.getY(), position.getZ());
-	}
-
-	@Override
-	public boolean overlapsBounding(Bounding bounding) {
-		return bounding.hasPoint(position.getX(), position.getY(), position.getZ());
-	}
-
-	@Override
 	public String toString() {
 		return "point{pos=" + position + "}";
 	}
 
 	@Override
-	public Bounding clone() {
+	public IBounding clone() {
 		return new BoundingPoint(position.clone());
 	}
 

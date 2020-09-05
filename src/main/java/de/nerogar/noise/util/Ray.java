@@ -1,22 +1,24 @@
 package de.nerogar.noise.util;
 
+import de.nerogar.noiseInterface.math.IVector3f;
+
 public class Ray implements Cloneable {
 
-	private Vector3f start;
-	private Vector3f dir;
+	private IVector3f start;
+	private IVector3f dir;
 
-	public Ray(Vector3f start, Vector3f dir) {
+	public Ray(IVector3f start, IVector3f dir) {
 		this.start = start;
 		this.dir = dir;
 	}
 
-	public Vector3f getStart()           { return start; }
+	public IVector3f getStart()           { return start; }
 
-	public void setStart(Vector3f start) { this.start = start; }
+	public void setStart(IVector3f start) { this.start = start; }
 
-	public Vector3f getDir()             { return dir; }
+	public IVector3f getDir()             { return dir; }
 
-	public void setDir(Vector3f dir)     { this.dir = dir; }
+	public void setDir(IVector3f dir)     { this.dir = dir; }
 
 	@Override
 	public Ray clone() {

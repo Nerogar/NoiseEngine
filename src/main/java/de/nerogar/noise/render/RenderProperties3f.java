@@ -1,8 +1,9 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 
@@ -13,24 +14,24 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 	protected float scaleX, scaleY, scaleZ, maxScaleComponent;
 	protected RenderProperties3f parent;
 
-	protected boolean  positionMatrixDirty = true;
-	protected Matrix4f positionMatrix;
-	protected boolean  scaleMatrixDirty    = true;
-	protected Matrix4f scaleMatrix;
-	protected boolean  yawMatrixDirty      = true;
-	protected Matrix4f yawMatrix;
-	protected boolean  pitchMatrixDirty    = true;
-	protected Matrix4f pitchMatrix;
-	protected boolean  rollMatrixDirty     = true;
-	protected Matrix4f rollMatrix;
-	protected int      modCount;
-	protected int      parentModCount;
+	protected boolean   positionMatrixDirty = true;
+	protected IMatrix4f positionMatrix;
+	protected boolean   scaleMatrixDirty    = true;
+	protected IMatrix4f scaleMatrix;
+	protected boolean   yawMatrixDirty      = true;
+	protected IMatrix4f yawMatrix;
+	protected boolean   pitchMatrixDirty    = true;
+	protected IMatrix4f pitchMatrix;
+	protected boolean   rollMatrixDirty     = true;
+	protected IMatrix4f rollMatrix;
+	protected int       modCount;
+	protected int       parentModCount;
 
-	protected boolean  modelMatrixDirty = true;
-	protected Matrix4f modelMatrix;
-	protected Matrix4f normalMatrix;
+	protected boolean   modelMatrixDirty = true;
+	protected IMatrix4f modelMatrix;
+	protected IMatrix4f normalMatrix;
 
-	private Matrix4f tempMatrix;
+	private IMatrix4f tempMatrix;
 
 	public RenderProperties3f() {
 		this(0, 0, 0, 0, 0, 0);
@@ -54,7 +55,7 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		init();
 	}
 
-	public RenderProperties3f(Matrix4f modelMatrix) {
+	public RenderProperties3f(IMatrix4f modelMatrix) {
 		float x0 = modelMatrix.get(0, 0);
 		float x1 = modelMatrix.get(1, 0);
 		float x2 = modelMatrix.get(2, 0);
@@ -147,12 +148,12 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 	}
 
 	@Override
-	public Matrix4f getModelMatrix() {
+	public IMatrix4f getModelMatrix() {
 		if (modelMatrixDirty || hasParentChanged()) setModelMatrix();
 		return modelMatrix;
 	}
 
-	public Matrix4f getNormalMatrix() {
+	public IMatrix4f getNormalMatrix() {
 		if (modelMatrixDirty || hasParentChanged()) setModelMatrix();
 		return normalMatrix;
 	}
@@ -410,7 +411,7 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 	/**
 	 * sets the x, y and z properties
 	 */
-	public void setXYZ(Vector3f v) {
+	public void setXYZ(IVector3f v) {
 		if (this.x == v.getX() && this.y == v.getY() && this.z == v.getZ()) return;
 		this.x = v.getX();
 		this.y = v.getY();
@@ -463,7 +464,7 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		}
 	}
 
-	public int getModCount(){
+	public int getModCount() {
 		return modCount;
 	}
 

@@ -1,11 +1,13 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.render.Shader;
 import de.nerogar.noise.render.VertexBufferObjectIndexed;
 import de.nerogar.noise.render.camera.IReadOnlyCamera;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 import java.util.function.Consumer;
 
@@ -20,10 +22,10 @@ class VboContainerOne implements VboContainer {
 	private VertexBufferObjectIndexed vbo;
 	private Shader                    gBufferShader;
 
-	private Matrix4f modelMatrix;
-	private Matrix4f normalMatrix;
+	private IMatrix4f modelMatrix;
+	private IMatrix4f normalMatrix;
 
-	private Vector3f point;
+	private IVector3f point;
 
 	public VboContainerOne(DeferredRendererProfiler profiler, DeferredContainer container, Shader gBufferShader) {
 		this.profiler = profiler;

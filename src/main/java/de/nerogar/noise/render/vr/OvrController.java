@@ -2,7 +2,9 @@ package de.nerogar.noise.render.vr;
 
 import de.nerogar.noise.input.Joystick;
 import de.nerogar.noise.input.JoystickEvent;
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.render.vr.IOvrTrackedDevice;
 import org.lwjgl.openvr.VREventData;
 
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
@@ -10,12 +12,12 @@ import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 import static org.lwjgl.openvr.VR.EVREventType_VREvent_ButtonPress;
 import static org.lwjgl.openvr.VR.EVREventType_VREvent_ButtonUnpress;
 
-public class OvrController extends Joystick implements OvrTrackedDevice {
+public class OvrController extends Joystick implements IOvrTrackedDevice {
 
 	private final OvrContext ovrContext;
 
-	private final Matrix4f gamePose;
-	private final Matrix4f renderPose;
+	private final IMatrix4f gamePose;
+	private final IMatrix4f renderPose;
 
 	public OvrController(OvrContext ovrContext) {
 		super("generic OvrController", 0, 0);
@@ -30,12 +32,12 @@ public class OvrController extends Joystick implements OvrTrackedDevice {
 	}
 
 	@Override
-	public Matrix4f getGamePose() {
+	public IMatrix4f getGamePose() {
 		return gamePose;
 	}
 
 	@Override
-	public Matrix4f getRenderPose() {
+	public IMatrix4f getRenderPose() {
 		return renderPose;
 	}
 

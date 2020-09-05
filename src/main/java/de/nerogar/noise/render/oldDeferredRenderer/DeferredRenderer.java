@@ -1,10 +1,15 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.camera.IMultiCamera;
 import de.nerogar.noise.render.camera.IReadOnlyCamera;
-import de.nerogar.noise.util.*;
+import de.nerogar.noise.util.Color;
+import de.nerogar.noise.util.Ray;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -76,7 +81,7 @@ public class DeferredRenderer {
 
 	private TextureCubeMap reflectionTexture;
 	private Color          sunLightColor;
-	private Vector3f       sunLightDirection;
+	private IVector3f      sunLightDirection;
 	private float          sunLightBrightness;
 
 	private float minAmbientBrightness;
@@ -441,7 +446,7 @@ public class DeferredRenderer {
 	/**
 	 * @param sunLightDirection the direction of the sun light
 	 */
-	public void setSunLightDirection(Vector3f sunLightDirection) {
+	public void setSunLightDirection(IVector3f sunLightDirection) {
 		this.sunLightDirection = sunLightDirection.normalized();
 	}
 
@@ -478,7 +483,7 @@ public class DeferredRenderer {
 		this.antiAliasingEnabled = antiAliasingEnabled;
 	}
 
-	private void setPositionReconstructionUniforms(Shader shader, Ray unitRayCenter, Ray unitRayRight, Ray unitRayTop, Matrix4f projectionMatrix) {
+	private void setPositionReconstructionUniforms(Shader shader, Ray unitRayCenter, Ray unitRayRight, Ray unitRayTop, IMatrix4f projectionMatrix) {
 		shader.setUniform3f("unitRayCenterStart", unitRayCenter.getStart().getX(), unitRayCenter.getStart().getY(), unitRayCenter.getStart().getZ());
 		shader.setUniform3f("unitRayCenterDir", unitRayCenter.getDir().getX(), unitRayCenter.getDir().getY(), unitRayCenter.getDir().getZ());
 		shader.setUniform3f("unitRayRightStart", unitRayRight.getStart().getX(), unitRayRight.getStart().getY(), unitRayRight.getStart().getZ());
@@ -601,7 +606,7 @@ public class DeferredRenderer {
 		glDepthFunc(GL_LEQUAL);
 		glDepthMask(false);
 
-		Vector3f point = new Vector3f();
+		IVector3f point = new Vector3f();
 		for (Effect effect : effectContainer) {
 			if (!effect.getRenderProperties().isVisible()) continue;
 

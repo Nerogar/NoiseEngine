@@ -1,11 +1,12 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.render.Shader;
 import de.nerogar.noise.render.VertexBufferObjectInstanced;
 import de.nerogar.noise.render.camera.IReadOnlyCamera;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,9 +24,9 @@ class VboContainerFew implements VboContainer {
 	private VertexBufferObjectInstanced vbo;
 	private Shader                      gBufferShader;
 
-	private ArrayList<Matrix4f> instanceModelMatrices;
-	private ArrayList<Matrix4f> instanceNormalMatrices;
-	private float[]             modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
+	private ArrayList<IMatrix4f> instanceModelMatrices;
+	private ArrayList<IMatrix4f> instanceNormalMatrices;
+	private float[]              modelMatrix1, modelMatrix2, modelMatrix3, modelMatrix4;
 	private float[] normalMatrix1, normalMatrix2, normalMatrix3;
 
 	private final int[] instanceComponentCounts = new int[] { 4, 4, 4, 4, 3, 3, 3 };
@@ -83,7 +84,7 @@ class VboContainerFew implements VboContainer {
 
 		profiler.addValue(DeferredRendererProfiler.OBJECT_TEST_COUNT, renderables.size());
 
-		Vector3f point = new Vector3f();
+		IVector3f point = new Vector3f();
 		for (DeferredRenderable renderable : renderables) {
 			if (!renderable.getRenderProperties().isVisible()) continue;
 
@@ -111,8 +112,8 @@ class VboContainerFew implements VboContainer {
 		}
 
 		for (int i = 0; i < instanceModelMatrices.size(); i++) {
-			Matrix4f modelMat = instanceModelMatrices.get(i);
-			Matrix4f normalMat = instanceNormalMatrices.get(i);
+			IMatrix4f modelMat = instanceModelMatrices.get(i);
+			IMatrix4f normalMat = instanceNormalMatrices.get(i);
 
 			modelMatrix1[i * 4 + 0] = modelMat.get(0, 0);
 			modelMatrix1[i * 4 + 1] = modelMat.get(1, 0);

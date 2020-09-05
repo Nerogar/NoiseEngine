@@ -1,8 +1,9 @@
 package de.nerogar.noise.oldGame.client.gui;
 
 import de.nerogar.noise.input.InputHandler;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 public abstract class GElement {
 
@@ -20,8 +21,8 @@ public abstract class GElement {
 	protected int distanceX;
 	protected int distanceY;
 
-	protected Matrix4f modelMatrix;
-	protected int      posX, posY, width, height;
+	protected IMatrix4f modelMatrix;
+	protected int       posX, posY, width, height;
 
 	public GElement() {
 		modelMatrix = new Matrix4f();
@@ -81,7 +82,7 @@ public abstract class GElement {
 
 	public abstract void processInput(InputHandler inputHandler, float timeDelta);
 
-	public abstract void render(Matrix4f projectionMatrix);
+	public abstract void render(IMatrix4f projectionMatrix);
 
 	public abstract void cleanup();
 

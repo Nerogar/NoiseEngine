@@ -1,22 +1,25 @@
-package de.nerogar.noise.util;
+package de.nerogar.noise.math;
 
-public class Vector3f implements Vectorf<Vector3f> {
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IReadonlyVector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
+
+public class Vector3f implements IVector3f {
 
 	private static final float SQRT_3 = (float) Math.sqrt(3.0);
 
-	private float x;
+	private float   x;
+	private float   y;
+	private float   z;
+	private float   length;
+	private boolean isLengthDirty = true;
 
-	private float y;
-	private float z;
-	private float value;
-	private boolean isValueDirty = true;
-
-	//constructors
+	// constructors
 	public Vector3f(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		isValueDirty = true;
+		isLengthDirty = true;
 	}
 
 	public Vector3f(float xyz) {
@@ -26,13 +29,13 @@ public class Vector3f implements Vectorf<Vector3f> {
 	public Vector3f() {
 	}
 
-	//constructor for cloning
-	private Vector3f(float x, float y, float z, float value, boolean isValueDirty) {
+	// copy constructor
+	private Vector3f(float x, float y, float z, float length, boolean isLengthDirty) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		this.value = value;
-		this.isValueDirty = isValueDirty;
+		this.length = length;
+		this.isLengthDirty = isLengthDirty;
 	}
 
 	@Override
@@ -45,7 +48,7 @@ public class Vector3f implements Vectorf<Vector3f> {
 		return 3;
 	}
 
-	//get
+	// get
 	@Override
 	public float get(int component) {
 		switch (component) {
@@ -60,19 +63,22 @@ public class Vector3f implements Vectorf<Vector3f> {
 		}
 	}
 
+	@Override
 	public float getX() {
 		return x;
 	}
 
+	@Override
 	public float getY() {
 		return y;
 	}
 
+	@Override
 	public float getZ() {
 		return z;
 	}
 
-	//set
+	// set
 	@Override
 	public Vector3f set(int component, float f) {
 		switch (component) {
@@ -86,33 +92,37 @@ public class Vector3f implements Vectorf<Vector3f> {
 				z = f;
 				break;
 		}
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
+	@Override
 	public Vector3f set(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
+	@Override
 	public Vector3f setX(float x) {
 		this.x = x;
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
+	@Override
 	public Vector3f setY(float y) {
 		this.y = y;
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
+	@Override
 	public Vector3f setZ(float z) {
 		this.z = z;
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
@@ -126,15 +136,15 @@ public class Vector3f implements Vectorf<Vector3f> {
 	}
 
 	@Override
-	public Vector3f set(Vectorf<?> v) {
-		x = v.get(0);
-		y = v.get(1);
-		z = v.get(2);
-		isValueDirty = true;
+	public Vector3f set(IReadonlyVector3f v) {
+		x = v.getX();
+		y = v.getY();
+		z = v.getZ();
+		isLengthDirty = true;
 		return this;
 	}
 
-	//add
+	// add
 	@Override
 	public Vector3f add(int component, float f) {
 		switch (component) {
@@ -148,61 +158,64 @@ public class Vector3f implements Vectorf<Vector3f> {
 				z += f;
 				break;
 		}
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
+	@Override
 	public Vector3f addX(float x) {
 		this.x += x;
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
+	@Override
 	public Vector3f addY(float y) {
 		this.y += y;
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
+	@Override
 	public Vector3f addZ(float z) {
 		this.z += z;
-		isValueDirty = true;
+		isLengthDirty = true;
 		return this;
 	}
 
 	@Override
-	public Vector3f add(Vectorf<?> v) {
-		x += v.get(0);
-		y += v.get(1);
-		z += v.get(2);
-		isValueDirty = true;
+	public Vector3f add(IReadonlyVector3f v) {
+		x += v.getX();
+		y += v.getY();
+		z += v.getZ();
+		isLengthDirty = true;
 		return this;
 	}
 
 	@Override
-	public Vector3f added(Vectorf<?> v) {
+	public Vector3f added(IReadonlyVector3f v) {
 		return clone().add(v);
 	}
 
-	//subtract
+	// subtract
 	@Override
-	public Vector3f subtract(Vectorf<?> v) {
-		x -= v.get(0);
-		y -= v.get(1);
-		z -= v.get(2);
-		isValueDirty = true;
+	public Vector3f subtract(IReadonlyVector3f v) {
+		x -= v.getX();
+		y -= v.getY();
+		z -= v.getZ();
+		isLengthDirty = true;
 		return this;
 	}
 
 	@Override
-	public Vector3f subtracted(Vectorf<?> v) {
+	public Vector3f subtracted(IReadonlyVector3f v) {
 		return clone().subtract(v);
 	}
 
-	//multiply
+	// multiply
 	@Override
 	public Vector3f multiply(float f) {
-		value *= f;
+		length *= f;
 		x *= f;
 		y *= f;
 		z *= f;
@@ -214,13 +227,14 @@ public class Vector3f implements Vectorf<Vector3f> {
 		return clone().multiply(f);
 	}
 
-	//tools
+	// tools
 	@Override
-	public float dot(Vectorf<?> v) {
-		return x * v.get(0) + y * v.get(1) + z * v.get(2);
+	public float dot(IReadonlyVector3f v) {
+		return x * v.getX() + y * v.getY() + z * v.getZ();
 	}
 
-	public Vector3f cross(Vector3f v) {
+	@Override
+	public Vector3f cross(IReadonlyVector3f v) {
 		set(
 				y * v.getZ() - z * v.getY(),
 				z * v.getX() - x * v.getZ(),
@@ -231,19 +245,28 @@ public class Vector3f implements Vectorf<Vector3f> {
 	}
 
 	@Override
-	public void reflect(Vectorf<?> v) {
+	public Vector3f crossed(IReadonlyVector3f v) {
+		return new Vector3f(
+				y * v.getZ() - z * v.getY(),
+				z * v.getX() - x * v.getZ(),
+				x * v.getY() - y * v.getX()
+		);
+	}
+
+	@Override
+	public void reflect(IReadonlyVector3f v) {
 		float dot = 2.0f * dot(v);
 
 		set(
-				getX() - dot * v.get(0),
-				getY() - dot * v.get(1),
-				getZ() - dot * v.get(2)
+				getX() - dot * v.getX(),
+				getY() - dot * v.getY(),
+				getZ() - dot * v.getZ()
 		   );
 	}
 
 	@Override
 	public Vector3f normalize() {
-		return setValue(1f);
+		return setLength(1f);
 	}
 
 	@Override
@@ -252,25 +275,26 @@ public class Vector3f implements Vectorf<Vector3f> {
 	}
 
 	@Override
-	public float getValue() {
-		if (isValueDirty) recalculateValue();
-		return value;
+	public float getLength() {
+		if (isLengthDirty) recalculateValue();
+		return length;
 	}
 
 	@Override
-	public float getSquaredValue() {
+	public float getSquaredLength() {
 		return x * x + y * y + z * z;
 	}
 
 	@Override
-	public Vector3f setValue(float value) {
-		multiply(value / getValue());
-		this.value = value;
-		isValueDirty = false;
+	public Vector3f setLength(float length) {
+		multiply(length / getLength());
+		this.length = length;
+		isLengthDirty = false;
 		return this;
 	}
 
-	public Vector3f transform(Matrix4f m) {
+	@Override
+	public Vector3f transform(IMatrix4f m) {
 		float x = this.x;
 		float y = this.y;
 		float z = this.z;
@@ -283,15 +307,8 @@ public class Vector3f implements Vectorf<Vector3f> {
 
 	}
 
-	public Vector3f transformed(Matrix4f m, float w) {
-		return clone().transform(m, w);
-	}
-
-	public Vector3f transformed(Matrix4f m) {
-		return clone().transform(m);
-	}
-
-	public Vector3f transform(Matrix4f m, float w) {
+	@Override
+	public Vector3f transform(IMatrix4f m, float w) {
 		float x = this.x;
 		float y = this.y;
 		float z = this.z;
@@ -304,18 +321,28 @@ public class Vector3f implements Vectorf<Vector3f> {
 
 	}
 
+	@Override
+	public Vector3f transformed(IMatrix4f m) {
+		return clone().transform(m);
+	}
+
+	@Override
+	public Vector3f transformed(IMatrix4f m, float w) {
+		return clone().transform(m, w);
+	}
+
 	private void recalculateValue() {
-		setValueCache((float) Math.sqrt(getSquaredValue()));
+		setValueCache((float) Math.sqrt(getSquaredLength()));
 	}
 
 	private void setValueCache(float value) {
-		this.value = value;
-		isValueDirty = false;
+		this.length = value;
+		isLengthDirty = false;
 	}
 
 	@Override
 	public Vector3f clone() {
-		return new Vector3f(x, y, z, value, isValueDirty);
+		return new Vector3f(x, y, z, length, isLengthDirty);
 	}
 
 	@Override

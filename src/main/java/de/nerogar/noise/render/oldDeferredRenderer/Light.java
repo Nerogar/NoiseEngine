@@ -1,7 +1,8 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 /**
  * a light used in the {@link DeferredRenderer DeferredRenderer}
@@ -9,7 +10,7 @@ import de.nerogar.noise.util.Vector3f;
 public class Light {
 
 	/**position of the light*/
-	public Vector3f position;
+	public IVector3f position;
 
 	/**color of the light*/
 	public Color color;

@@ -1,0 +1,312 @@
+package de.nerogar.noise.math;
+
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IReadonlyVector2f;
+import de.nerogar.noiseInterface.math.IVector2f;
+
+public class Vector2f implements IVector2f {
+
+	private static final float SQRT_2 = (float) Math.sqrt(2.0);
+
+	private float   x;
+	private float   y;
+	private float   length;
+	private boolean isLengthDirty = true;
+
+	// constructors
+	public Vector2f(float x, float y) {
+		this.x = x;
+		this.y = y;
+		isLengthDirty = true;
+	}
+
+	public Vector2f(float xy) {
+		set(xy);
+	}
+
+	public Vector2f() {
+	}
+
+	// copy constructor
+	private Vector2f(float x, float y, float length, boolean isLengthDirty) {
+		this.x = x;
+		this.y = y;
+		this.length = length;
+		this.isLengthDirty = isLengthDirty;
+	}
+
+	@Override
+	public Vector2f newInstance() {
+		return new Vector2f();
+	}
+
+	@Override
+	public int getComponentCount() {
+		return 2;
+	}
+
+	// get
+	@Override
+	public float get(int component) {
+		switch (component) {
+			case 0:
+				return x;
+			case 1:
+				return y;
+			default:
+				return 0f;
+		}
+	}
+
+	@Override
+	public float getX() {
+		return x;
+	}
+
+	@Override
+	public float getY() {
+		return y;
+	}
+
+	// set
+	@Override
+	public Vector2f set(int component, float f) {
+		switch (component) {
+			case 0:
+				x = f;
+				break;
+			case 1:
+				y = f;
+				break;
+		}
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f set(float x, float y) {
+		this.x = x;
+		this.y = y;
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f setX(float x) {
+		this.x = x;
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f setY(float y) {
+		this.y = y;
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f set(float xy) {
+		x = xy;
+		y = xy;
+		setValueCache(Math.abs(xy) * SQRT_2);
+		return this;
+	}
+
+	@Override
+	public Vector2f set(IReadonlyVector2f v) {
+		x = v.getX();
+		y = v.getY();
+		isLengthDirty = true;
+		return this;
+	}
+
+	// add
+	@Override
+	public Vector2f add(int component, float f) {
+		switch (component) {
+			case 0:
+				x += f;
+				break;
+			case 1:
+				y += f;
+				break;
+		}
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f addX(float x) {
+		this.x += x;
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f addY(float y) {
+		this.y += y;
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f add(IReadonlyVector2f v) {
+		x += v.getX();
+		y += v.getY();
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f added(IReadonlyVector2f v) {
+		return clone().add(v);
+	}
+
+	// subtract
+	@Override
+	public Vector2f subtract(IReadonlyVector2f v) {
+		x -= v.getX();
+		y -= v.getY();
+		isLengthDirty = true;
+		return this;
+	}
+
+	@Override
+	public Vector2f subtracted(IReadonlyVector2f v) {
+		return clone().subtract(v);
+	}
+
+	// multiply
+	@Override
+	public Vector2f multiply(float f) {
+		length *= f;
+		x *= f;
+		y *= f;
+		return this;
+	}
+
+	@Override
+	public Vector2f multiplied(float f) {
+		return clone().multiply(f);
+	}
+
+	// tools
+	@Override
+	public float dot(IReadonlyVector2f v) {
+		return x * v.getX() + y * v.getY();
+	}
+
+	@Override
+	public void reflect(IReadonlyVector2f v) {
+		float dot = 2.0f * dot(v);
+
+		set(
+				getX() - dot * v.getX(),
+				getY() - dot * v.getY()
+		   );
+	}
+
+	@Override
+	public Vector2f normalize() {
+		return setLength(1f);
+	}
+
+	@Override
+	public Vector2f normalized() {
+		return clone().normalize();
+	}
+
+	@Override
+	public float getLength() {
+		if (isLengthDirty) recalculateValue();
+		return length;
+	}
+
+	@Override
+	public float getSquaredLength() {
+		return x * x + y * y;
+	}
+
+	@Override
+	public Vector2f setLength(float length) {
+		multiply(length / getLength());
+		this.length = length;
+		isLengthDirty = false;
+		return this;
+	}
+
+	@Override
+	public Vector2f transform(IMatrix4f m) {
+		float x = this.x;
+		float y = this.y;
+
+		return set(
+				x * m.get(0, 0) + y * m.get(0, 1),
+				x * m.get(1, 0) + y * m.get(1, 1)
+		          );
+
+	}
+
+	@Override
+	public Vector2f transform(IMatrix4f m, float z, float w) {
+		float x = this.x;
+		float y = this.y;
+
+		return set(
+				x * m.get(0, 0) + y * m.get(0, 1) + z * m.get(0, 2) + w * m.get(0, 3),
+				x * m.get(1, 0) + y * m.get(1, 1) + z * m.get(1, 2) + w * m.get(1, 3)
+		          );
+
+	}
+
+	@Override
+	public Vector2f transformed(IMatrix4f m) {
+		return clone().transform(m);
+	}
+
+	@Override
+	public Vector2f transformed(IMatrix4f m, float z, float w) {
+		return clone().transform(m, z, w);
+	}
+
+	private void recalculateValue() {
+		setValueCache((float) Math.sqrt(getSquaredLength()));
+	}
+
+	private void setValueCache(float value) {
+		this.length = value;
+		isLengthDirty = false;
+	}
+
+	@Override
+	public Vector2f clone() {
+		return new Vector2f(x, y, length, isLengthDirty);
+	}
+
+	@Override
+	public String toString() {
+		return "(" + x + "|" + y + ")";
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// generated by IntelliJ IDEA
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Vector2f vector3f = (Vector2f) o;
+
+		if (Float.compare(vector3f.x, x) != 0) return false;
+		return Float.compare(vector3f.y, y) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		// generated by IntelliJ IDEA
+		int result = (x != +0.0f ? Float.floatToIntBits(x) : 0);
+		result = 31 * result + (y != +0.0f ? Float.floatToIntBits(y) : 0);
+		return result;
+	}
+
+}

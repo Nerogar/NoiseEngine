@@ -1,11 +1,13 @@
 package de.nerogar.noise.render.deferredRenderer.light;
 
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.deferredRenderer.SingleWireframeRenderable;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
@@ -19,11 +21,11 @@ public class ConeLight implements ILight {
 	private static WireframeMesh      debugMesh;
 
 	private       IRenderable debugRenderable;
-	private final Matrix4f    viewProjectionMatrix;
+	private final IMatrix4f   viewProjectionMatrix;
 
 	private RenderProperties3f renderProperties;
-	private Vector3f           position;
-	private Vector3f           direction;
+	private IVector3f          position;
+	private IVector3f          direction;
 	private Color              color;
 	private float              radius;
 	private float              strength;
@@ -31,7 +33,7 @@ public class ConeLight implements ILight {
 	private float              cosAngle;
 	private float              invertedCosAngle;
 
-	public ConeLight(Vector3f position, Vector3f direction, Color color, float radius, float strength, float angle) {
+	public ConeLight(IVector3f position, IVector3f direction, Color color, float radius, float strength, float angle) {
 		this.renderProperties = new RenderProperties3f();
 		this.position = new Vector3f();
 		this.direction = new Vector3f();
@@ -57,11 +59,11 @@ public class ConeLight implements ILight {
 		renderProperties.setParent(renderProperties);
 	}
 
-	public void setPosition(Vector3f position)         { this.position.set(position); renderProperties.setXYZ(position); }
+	public void setPosition(IVector3f position)        { this.position.set(position); renderProperties.setXYZ(position); }
 
 	public void setPosition(float x, float y, float z) { this.position.set(x, y, z); renderProperties.setXYZ(x, y, z); }
 
-	public void setDirection(Vector3f direction) {
+	public void setDirection(IVector3f direction) {
 		this.direction.set(direction).normalize();
 		renderProperties.setLookDirection(direction.getX(), direction.getY(), direction.getZ());
 	}
@@ -99,7 +101,7 @@ public class ConeLight implements ILight {
 		unitRayTop.getStart().subtract(unitRayCenter.getStart());
 		unitRayTop.getDir().subtract(unitRayCenter.getDir());
 
-		Matrix4f projectionMatrix = renderContext.getCamera().getProjectionMatrix();
+		IMatrix4f projectionMatrix = renderContext.getCamera().getProjectionMatrix();
 		viewProjectionMatrix.set(renderContext.getCamera().getViewMatrix());
 		viewProjectionMatrix.multiplyLeft(projectionMatrix);
 

@@ -1,4 +1,7 @@
-package de.nerogar.noise.util;
+package de.nerogar.noiseInterface.math;
+
+import de.nerogar.noise.math.Vector3f;
+import de.nerogar.noise.util.Ray;
 
 public class MathHelper {
 
@@ -51,7 +54,7 @@ public class MathHelper {
 
 		float t0 = ray.getDir().dot(new Vector3f(pointDistX, pointDistY, pointDistZ));
 		if (t0 < 0) {
-			return point.subtracted(ray.getStart()).getValue();
+			return point.subtracted(ray.getStart()).getLength();
 		} else {
 			float dx = point.getX() - (ray.getStart().getX() + t0 * ray.getDir().getX());
 			float dy = point.getY() - (ray.getStart().getY() + t0 * ray.getDir().getY());
@@ -267,6 +270,7 @@ public class MathHelper {
 
 	/**
 	 * Mixes the values x and y with the factor a. If a is 0 x is returned. If a is 1 y is returned.
+	 *
 	 * @param x the first value
 	 * @param y the second value
 	 * @param a the mix factor

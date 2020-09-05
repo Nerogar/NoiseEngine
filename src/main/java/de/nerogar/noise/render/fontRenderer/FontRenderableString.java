@@ -2,7 +2,7 @@ package de.nerogar.noise.render.fontRenderer;
 
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 import java.util.HashMap;
 
@@ -26,9 +26,9 @@ public class FontRenderableString {
 	private VertexList         vertexList;
 	private VertexBufferObject vbo;
 
-	private Matrix4f projectionMatrix;
-	private float    pointSizeX;
-	private float    pointSizeY;
+	private IMatrix4f projectionMatrix;
+	private float     pointSizeX;
+	private float     pointSizeY;
 
 	private int width, height;
 
@@ -49,7 +49,7 @@ public class FontRenderableString {
 	 * @param pointSizeX       the size of a point
 	 * @param pointSizeY       the size of a point
 	 */
-	public FontRenderableString(Font font, String text, Color color, Matrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
+	public FontRenderableString(Font font, String text, Color color, IMatrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
 		this.font = font;
 		this.color = color;
 
@@ -124,7 +124,7 @@ public class FontRenderableString {
 	/**
 	 * updates the color set at creation time
 	 *
-	 * @param color the noew color
+	 * @param color the new color
 	 */
 	public void setColor(Color color) {
 		this.color = color;
@@ -133,11 +133,11 @@ public class FontRenderableString {
 	/**
 	 * updates the projection settings set at creation time
 	 *
-	 * @param projectionMatrix the new projectinoMatrix
+	 * @param projectionMatrix the new projectionMatrix
 	 * @param pointSizeX       the new pointSizeX
 	 * @param pointSizeY       the new pointSizeY
 	 */
-	public void setRenderDimensions(Matrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
+	public void setRenderDimensions(IMatrix4f projectionMatrix, float pointSizeX, float pointSizeY) {
 		this.projectionMatrix = projectionMatrix;
 		this.pointSizeX = pointSizeX;
 		this.pointSizeY = pointSizeY;

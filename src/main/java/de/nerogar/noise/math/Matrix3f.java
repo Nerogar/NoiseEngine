@@ -1,11 +1,15 @@
-package de.nerogar.noise.util;
+package de.nerogar.noise.math;
 
+import de.nerogar.noiseInterface.math.IMatrix3f;
+import de.nerogar.noiseInterface.math.IReadonlyMatrix3f;
+import de.nerogar.noiseInterface.math.IReadonlyVector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-public class Matrix3f implements Matrixf<Matrix3f> {
+public class Matrix3f implements IMatrix3f {
 
 	private float[] components;
 
@@ -57,30 +61,37 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public float get(int lineIndex, int collumnIndex) {
-		return components[lineIndex * 3 + collumnIndex];
+	public float get(int lineIndex, int columnIndex) {
+		return components[lineIndex * 3 + columnIndex];
 	}
 
 	@Override
-	public Matrix3f set(int lineIndex, int collumnIndex, float f) {
-		components[lineIndex * 3 + collumnIndex] = f;
+	public Matrix3f set(int lineIndex, int columnIndex, float f) {
+		components[lineIndex * 3 + columnIndex] = f;
 		isBufferDirty = true;
 		return this;
 	}
 
 	@Override
 	public Matrix3f set(float allComponents) {
-		for (int i = 0; i < components.length; i++) {
-			components[i] = allComponents;
-		}
+		Arrays.fill(components, allComponents);
 		isBufferDirty = true;
 
 		return this;
 	}
 
 	@Override
-	public Matrix3f set(Matrix3f m) {
-		System.arraycopy(m.components, 0, components, 0, components.length);
+	public Matrix3f set(IReadonlyMatrix3f m) {
+		if (m instanceof Matrix3f) {
+			System.arraycopy(((Matrix3f) m).components, 0, components, 0, components.length);
+		} else {
+			set(
+					m.get(0, 0), m.get(0, 1), m.get(0, 2),
+					m.get(1, 0), m.get(1, 1), m.get(1, 2),
+					m.get(2, 0), m.get(2, 1), m.get(2, 2)
+			   );
+		}
+
 		isBufferDirty = true;
 
 		return this;
@@ -94,6 +105,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		return this;
 	}
 
+	@Override
 	public Matrix3f set(float c0, float c1, float c2, float c3, float c4, float c5, float c6, float c7, float c8) {
 
 		components[0] = c0;
@@ -114,7 +126,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public Matrix3f add(Matrix3f m) {
+	public Matrix3f add(IReadonlyMatrix3f m) {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				set(j, i, get(j, i) + m.get(j, i));
@@ -126,12 +138,12 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public Matrix3f added(Matrix3f m) {
+	public Matrix3f added(IReadonlyMatrix3f m) {
 		return clone().add(m);
 	}
 
 	@Override
-	public Matrix3f subtract(Matrix3f m) {
+	public Matrix3f subtract(IReadonlyMatrix3f m) {
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
 				set(j, i, get(j, i) - m.get(j, i));
@@ -143,7 +155,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public Matrix3f subtracted(Matrix3f m) {
+	public Matrix3f subtracted(IReadonlyMatrix3f m) {
 		return clone().subtract(m);
 	}
 
@@ -168,7 +180,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public Matrix3f multiplyRight(Matrix3f m) {
+	public Matrix3f multiplyRight(IReadonlyMatrix3f m) {
 		for (int j = 0; j < 3; j++) {
 
 			float c0 = get(j, 0);
@@ -192,7 +204,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public Matrix3f multipliedRight(Matrix3f m) {
+	public Matrix3f multipliedRight(IReadonlyMatrix3f m) {
 		float[] newMatrix = new float[4 * 4];
 
 		for (int i = 0; i < 3; i++) {
@@ -211,7 +223,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public Matrix3f multiplyLeft(Matrix3f m) {
+	public Matrix3f multiplyLeft(IReadonlyMatrix3f m) {
 		for (int i = 0; i < 3; i++) {
 
 			float c0 = get(0, i);
@@ -235,7 +247,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 	}
 
 	@Override
-	public Matrix3f multipliedLeft(Matrix3f m) {
+	public Matrix3f multipliedLeft(IReadonlyMatrix3f m) {
 		float[] newMatrix = new float[4 * 4];
 
 		for (int i = 0; i < 3; i++) {
@@ -253,7 +265,8 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		return new Matrix3f(newMatrix);
 	}
 
-	public Vector3f multiply(Vector3f v) {
+	@Override
+	public IVector3f multiply(IVector3f v) {
 		float x = v.getX();
 		float y = v.getY();
 		float z = v.getZ();
@@ -267,7 +280,8 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		return v;
 	}
 
-	public Vector3f multiplied(Vector3f v) {
+	@Override
+	public Vector3f multiplied(IReadonlyVector3f v) {
 		float x = v.getX();
 		float y = v.getY();
 		float z = v.getZ();
@@ -279,6 +293,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		return new Vector3f(newX, newY, newZ);
 	}
 
+	@Override
 	public FloatBuffer asBuffer() {
 		if (buffer == null) buffer = BufferUtils.createFloatBuffer(3 * 3);
 		if (isBufferDirty) updateBuffer();
@@ -294,6 +309,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		isBufferDirty = false;
 	}
 
+	@Override
 	public Matrix3f invert() {
 
 		// explicitly write elements in registers
@@ -330,6 +346,7 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		return this;
 	}
 
+	@Override
 	public Matrix3f inverted() {
 
 		// explicitly write elements in registers
@@ -380,7 +397,6 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		});
 	}
 
-	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("[");
 
@@ -396,12 +412,10 @@ public class Matrix3f implements Matrixf<Matrix3f> {
 		return sb.toString();
 	}
 
-	@Override
 	public Matrix3f clone() {
 		return new Matrix3f(Arrays.copyOf(components, components.length));
 	}
 
-	@Override
 	public boolean equals(Object o) {
 		// generated by IntelliJ IDEA
 		if (this == o) return true;

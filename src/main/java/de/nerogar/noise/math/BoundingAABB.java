@@ -1,8 +1,11 @@
-package de.nerogar.noise.util;
+package de.nerogar.noise.math;
 
-public class BoundingAABB implements Bounding {
+import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.IBounding;
 
-	private Vector3f position, size;
+public class BoundingAABB implements IBounding {
+
+	private IVector3f position, size;
 
 	/**
 	 * create an axis aligned bounding box, saved as two vectors,
@@ -18,7 +21,7 @@ public class BoundingAABB implements Bounding {
 	 * @param position the small corner of the AABB
 	 * @param size     teh size of the AABB
 	 */
-	public BoundingAABB(Vector3f position, Vector3f size) {
+	public BoundingAABB(IVector3f position, IVector3f size) {
 		this.position = position;
 		this.size = size;
 	}
@@ -28,7 +31,7 @@ public class BoundingAABB implements Bounding {
 	 *
 	 * @return the small corner
 	 */
-	public Vector3f getPosition() {
+	public IVector3f getPosition() {
 		return position;
 	}
 
@@ -48,7 +51,7 @@ public class BoundingAABB implements Bounding {
 	 *
 	 * @param position the small corner
 	 */
-	public void setPosition(Vector3f position) {
+	public void setPosition(IVector3f position) {
 		this.position.set(position);
 	}
 
@@ -57,7 +60,7 @@ public class BoundingAABB implements Bounding {
 	 *
 	 * @return the size
 	 */
-	public Vector3f getSize() {
+	public IVector3f getSize() {
 		return size;
 	}
 
@@ -66,12 +69,12 @@ public class BoundingAABB implements Bounding {
 	 *
 	 * @param size the size
 	 */
-	public void setSize(Vector3f size) {
+	public void setSize(IVector3f size) {
 		this.size.set(size);
 	}
 
 	@Override
-	public Vector3f point() {
+	public IVector3f point() {
 		return position;
 	}
 
@@ -104,23 +107,6 @@ public class BoundingAABB implements Bounding {
 	}
 
 	@Override
-	public boolean overlaps(float centerX, float centerY, float centerZ, float otherRadius) {
-		float halfSizeX = (size.getX()) * 0.5f;
-		float halfSizeY = (size.getY()) * 0.5f;
-		float halfSizeZ = (size.getZ()) * 0.5f;
-
-		float midX = position.getX() + halfSizeX;
-		float midY = position.getY() + halfSizeY;
-		float midZ = position.getZ() + halfSizeZ;
-
-		float dX = Math.max(Math.abs(centerX - midX) - halfSizeX, 0.0f);
-		float dY = Math.max(Math.abs(centerY - midY) - halfSizeY, 0.0f);
-		float dZ = Math.max(Math.abs(centerZ - midZ) - halfSizeZ, 0.0f);
-
-		return (dX * dX + dY * dY + dZ * dZ < otherRadius * otherRadius);
-	}
-
-	@Override
 	public boolean intersectsXPlane(float xValue) {
 		return position.getX() <= xValue && position.getX() + size.getX() >= xValue;
 	}
@@ -136,17 +122,12 @@ public class BoundingAABB implements Bounding {
 	}
 
 	@Override
-	public boolean overlapsHexahedron(BoundingHexahedron bounding) {
-		return bounding.overlapsAABB(this);
-	}
-
-	@Override
 	public String toString() {
 		return "AABB{pos=" + position + ", size=" + size + "}";
 	}
 
 	@Override
-	public Bounding clone() {
+	public IBounding clone() {
 		return new BoundingAABB(position.clone(), size.clone());
 	}
 

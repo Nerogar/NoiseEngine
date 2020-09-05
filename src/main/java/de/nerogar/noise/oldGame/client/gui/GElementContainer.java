@@ -1,7 +1,8 @@
 package de.nerogar.noise.oldGame.client.gui;
 
 import de.nerogar.noise.input.InputHandler;
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +96,7 @@ public abstract class GElementContainer extends GElement {
 		removedElements.clear();
 	}
 
-	public void render(Matrix4f projectionMatrix) {
+	public void render(IMatrix4f projectionMatrix) {
 		for (GElement element : elements) {
 			element.render(projectionMatrix);
 		}

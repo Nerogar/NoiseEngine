@@ -1,14 +1,14 @@
 package de.nerogar.noise.render.camera;
 
 import de.nerogar.noise.render.vr.OvrContext;
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 public class OvrCamera implements IVrCamera {
 
 	private OvrContext      ovrContext;
 	private ManagedCamera[] eyes;
 
-	private Matrix4f baseViewMatrix;
+	private IMatrix4f baseViewMatrix;
 
 	public OvrCamera(OvrContext ovrContext) {
 		this.ovrContext = ovrContext;
@@ -19,12 +19,12 @@ public class OvrCamera implements IVrCamera {
 		};
 	}
 
-	public Matrix4f getBaseViewMatrix() {
+	public IMatrix4f getBaseViewMatrix() {
 		return baseViewMatrix;
 	}
 
 	@Override
-	public void setBaseViewMatrix(Matrix4f baseViewMatrix) {
+	public void setBaseViewMatrix(IMatrix4f baseViewMatrix) {
 		this.baseViewMatrix = baseViewMatrix;
 	}
 

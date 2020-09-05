@@ -1,7 +1,12 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.math.Vector2f;
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.util.*;
+import de.nerogar.noiseInterface.math.IVector2f;
+import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.MathHelper;
 
 public class Mesh {
 
@@ -121,8 +126,8 @@ public class Mesh {
 	private void calcNormals() {
 		normalArray = new float[vertexCount * 3];
 
-		Vector3f direction1 = new Vector3f();
-		Vector3f direction2 = new Vector3f();
+		IVector3f direction1 = new Vector3f();
+		IVector3f direction2 = new Vector3f();
 
 		// calculate normals
 		for (int i = 0; i < indexCount; i += 3) {
@@ -162,15 +167,15 @@ public class Mesh {
 		tangentArray = new float[vertexCount * 3];
 		bitangentArray = new float[vertexCount * 3];
 
-		Vector2f sRelative = new Vector2f();
-		Vector2f tRelative = new Vector2f();
+		IVector2f sRelative = new Vector2f();
+		IVector2f tRelative = new Vector2f();
 
-		Vector3f q1Relative = new Vector3f();
-		Vector3f q2Relative = new Vector3f();
+		IVector3f q1Relative = new Vector3f();
+		IVector3f q2Relative = new Vector3f();
 
-		Vector3f tangent = new Vector3f();
-		Vector3f bitangent = new Vector3f();
-		Vector3f normal = new Vector3f();
+		IVector3f tangent = new Vector3f();
+		IVector3f bitangent = new Vector3f();
+		IVector3f normal = new Vector3f();
 
 		for (int i = 0; i < indexCount; i += 3) {
 			// calculate tangents and bitangents

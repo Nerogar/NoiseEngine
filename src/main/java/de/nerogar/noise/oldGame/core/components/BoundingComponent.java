@@ -1,23 +1,24 @@
 package de.nerogar.noise.oldGame.core.components;
 
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.oldGame.Component;
 import de.nerogar.noise.oldGame.core.events.BoundingChangeEvent;
 import de.nerogar.noise.oldGame.core.systems.GameObjectsSystem;
 import de.nerogar.noise.oldGame.core.systems.PositionLookupSystem;
 import de.nerogar.noise.serialization.NDSNodeObject;
-import de.nerogar.noise.util.Bounding;
-import de.nerogar.noise.util.BoundingAABB;
-import de.nerogar.noise.util.BoundingSphere;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.IBounding;
+import de.nerogar.noise.math.BoundingAABB;
+import de.nerogar.noise.math.BoundingSphere;
 
 public class BoundingComponent extends Component<BoundingComponent> {
 
-	private Bounding bounding;
+	private IBounding bounding;
 
 	public BoundingComponent() {
 	}
 
-	public BoundingComponent(Bounding bounding) {
+	public BoundingComponent(IBounding bounding) {
 		this.bounding = bounding;
 	}
 
@@ -34,7 +35,7 @@ public class BoundingComponent extends Component<BoundingComponent> {
 		if (type.equals("sphere")) {
 			bounding = new BoundingSphere(new Vector3f(), data.getFloat("radius"));
 		} else if (type.equals("aabb")) {
-			Vector3f size = new Vector3f(data.getFloat("sizeX"), data.getFloat("sizeY"), data.getFloat("sizeZ"));
+			IVector3f size = new Vector3f(data.getFloat("sizeX"), data.getFloat("sizeY"), data.getFloat("sizeZ"));
 			bounding = new BoundingAABB(new Vector3f(), size);
 		}
 	}
@@ -50,7 +51,7 @@ public class BoundingComponent extends Component<BoundingComponent> {
 		getEntity().getMap().getEventManager().trigger(new BoundingChangeEvent(this));
 	}
 
-	public Bounding getBounding() {
+	public IBounding getBounding() {
 		return bounding;
 	}
 

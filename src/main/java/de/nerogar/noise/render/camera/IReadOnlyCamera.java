@@ -1,68 +1,68 @@
 package de.nerogar.noise.render.camera;
 
 import de.nerogar.noise.render.IViewRegion;
-import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 public interface IReadOnlyCamera extends IMultiCamera {
 
-	public abstract float getAspect();
+	float getAspect();
 
-	public Matrix4f getViewMatrix();
+	IMatrix4f getViewMatrix();
 
-	public Matrix4f getProjectionMatrix();
+	IMatrix4f getProjectionMatrix();
 
-	public IViewRegion getViewRegion();
+	IViewRegion getViewRegion();
 
 	/**
 	 * @return The camera yaw in radiants
 	 */
-	public float getYaw();
+	float getYaw();
 
 	/**
 	 * @return The camera pitch in radiants
 	 */
-	public float getPitch();
+	float getPitch();
 
 	/**
 	 * @return The camera roll in radiants
 	 */
-	public float getRoll();
+	float getRoll();
 
-	public float getX();
+	float getX();
 
-	public float getY();
+	float getY();
 
-	public float getZ();
+	float getZ();
 
 	/**
 	 * Transform a point in world space to view space.
 	 *
 	 * @param point the point to transform
 	 */
-	public void pointToViewSpace(Vector3f point);
+	void pointToViewSpace(IVector3f point);
 
 	/**
 	 * Transform a direction in world space to view space.
 	 *
 	 * @param direction the direction to transform
 	 */
-	public void directionToViewSpace(Vector3f direction);
+	void directionToViewSpace(IVector3f direction);
 
 	/**
 	 * Transform a point in view space to world space.
 	 *
 	 * @param point the point to transform
 	 */
-	public void pointToWorldSpace(Vector3f point);
+	void pointToWorldSpace(IVector3f point);
 
 	/**
 	 * Transform a direction in world space to view space.
 	 *
 	 * @param direction the direction to transform
 	 */
-	public void directionToWorldSpace(Vector3f direction);
+	void directionToWorldSpace(IVector3f direction);
 
 	/**
 	 * <p>
@@ -78,40 +78,40 @@ public interface IReadOnlyCamera extends IMultiCamera {
 	 * @param y the y component of the pixel
 	 * @return the ray in world space
 	 */
-	public Ray unproject(float x, float y);
+	Ray unproject(float x, float y);
 
 	/**
 	 * Calculate the length a line from (0, 0, -1) to (0, 1, -1) in view space would have in screen space
 	 *
 	 * @return the unit zize
 	 */
-	public float getUnitSize();
+	float getUnitSize();
 
-	public Vector3f getDirectionRight();
+	IVector3f getDirectionRight();
 
-	public Vector3f getDirectionUp();
+	IVector3f getDirectionUp();
 
-	public Vector3f getDirectionAt();
+	IVector3f getDirectionAt();
 
 	/**
 	 * returns the equivalent of "unproject(1, 0)-unproject(0, 0)"
 	 *
 	 * @return the ray
 	 */
-	public Ray getUnitRayRight();
+	Ray getUnitRayRight();
 
 	/**
 	 * returns the equivalent of "unproject(0, 1)-unproject(0, 0)"
 	 *
 	 * @return the ray
 	 */
-	public Ray getUnitRayTop();
+	Ray getUnitRayTop();
 
 	/**
 	 * returns the same as unproject(0, 0)
 	 *
 	 * @return the ray
 	 */
-	public Ray getUnitRayCenter();
+	Ray getUnitRayCenter();
 
 }

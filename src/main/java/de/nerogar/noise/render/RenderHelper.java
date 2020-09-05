@@ -1,7 +1,7 @@
 package de.nerogar.noise.render;
 
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 
 import java.util.HashMap;
 
@@ -10,7 +10,7 @@ import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
 
 public class RenderHelper {
 
-	private static Matrix4f projectionMatrix;
+	private static IMatrix4f projectionMatrix;
 
 	// do this for an instance of RenderHelper per context later
 	private static HashMap<Long, VertexBufferObject> glContextVboMap;

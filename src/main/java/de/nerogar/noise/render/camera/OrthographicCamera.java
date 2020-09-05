@@ -1,7 +1,7 @@
 package de.nerogar.noise.render.camera;
 
 import de.nerogar.noise.render.ViewBox;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noise.math.Matrix4fUtils;
 
 import java.util.Locale;
 

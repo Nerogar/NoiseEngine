@@ -1,9 +1,12 @@
-package de.nerogar.noise.util;
+package de.nerogar.noise.math;
 
-public class BoundingSphere implements Bounding {
+import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.IBounding;
 
-	private Vector3f center;
-	private float    radius;
+public class BoundingSphere implements IBounding {
+
+	private IVector3f center;
+	private float     radius;
 
 	/**
 	 * create a new bounding in the shape of a sphere
@@ -11,7 +14,7 @@ public class BoundingSphere implements Bounding {
 	 * @param center the center of the sphere
 	 * @param radius the radius of the sphere
 	 */
-	public BoundingSphere(Vector3f center, float radius) {
+	public BoundingSphere(IVector3f center, float radius) {
 		this.center = center;
 		this.radius = radius;
 	}
@@ -21,7 +24,7 @@ public class BoundingSphere implements Bounding {
 	 *
 	 * @return the center
 	 */
-	public Vector3f getCenter() {
+	public IVector3f getCenter() {
 		return center;
 	}
 
@@ -30,7 +33,7 @@ public class BoundingSphere implements Bounding {
 	 *
 	 * @param center the new center of the sphere
 	 */
-	public void setCenter(Vector3f center) {
+	public void setCenter(IVector3f center) {
 		this.center.set(center);
 	}
 
@@ -64,7 +67,7 @@ public class BoundingSphere implements Bounding {
 	}
 
 	@Override
-	public Vector3f point() {
+	public IVector3f point() {
 		return center;
 	}
 
@@ -126,16 +129,6 @@ public class BoundingSphere implements Bounding {
 	}
 
 	@Override
-	public boolean overlaps(float centerX, float centerY, float centerZ, float otherRadius) {
-		float xd = center.getX() - centerX;
-		float yd = center.getY() - centerY;
-		float zd = center.getZ() - centerZ;
-		float rd = radius + otherRadius;
-
-		return (xd * xd + yd * yd + zd * zd) < (rd * rd);
-	}
-
-	@Override
 	public boolean intersectsXPlane(float xValue) {
 		return Math.abs(center.getX() - xValue) <= radius;
 	}
@@ -151,17 +144,12 @@ public class BoundingSphere implements Bounding {
 	}
 
 	@Override
-	public boolean overlapsHexahedron(BoundingHexahedron bounding) {
-		return bounding.overlapsSphere(this);
-	}
-
-	@Override
 	public String toString() {
 		return "sphere{center=" + center + ", radius=" + radius + "}";
 	}
 
 	@Override
-	public Bounding clone() {
+	public IBounding clone() {
 		return new BoundingSphere(center.clone(), radius);
 	}
 

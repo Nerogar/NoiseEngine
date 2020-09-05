@@ -1,11 +1,13 @@
-package de.nerogar.noise.util;
+package de.nerogar.noise.math;
 
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IReadonlyMatrix4f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-public class Matrix4f implements Matrixf<Matrix4f> {
+public class Matrix4f implements IMatrix4f {
 
 	private float[] components;
 
@@ -70,30 +72,38 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public float get(int lineIndex, int collumnIndex) {
-		return components[lineIndex * 4 + collumnIndex];
+	public float get(int lineIndex, int columnIndex) {
+		return components[lineIndex * 4 + columnIndex];
 	}
 
 	@Override
-	public Matrix4f set(int lineIndex, int collumnIndex, float f) {
-		components[lineIndex * 4 + collumnIndex] = f;
+	public Matrix4f set(int lineIndex, int columnIndex, float f) {
+		components[lineIndex * 4 + columnIndex] = f;
 		isBufferDirty = true;
 		return this;
 	}
 
 	@Override
 	public Matrix4f set(float allComponents) {
-		for (int i = 0; i < components.length; i++) {
-			components[i] = allComponents;
-		}
+		Arrays.fill(components, allComponents);
 		isBufferDirty = true;
 
 		return this;
 	}
 
 	@Override
-	public Matrix4f set(Matrix4f m) {
-		System.arraycopy(m.components, 0, components, 0, components.length);
+	public Matrix4f set(IReadonlyMatrix4f m) {
+		if (m instanceof Matrix4f) {
+			System.arraycopy(((Matrix4f) m).components, 0, components, 0, components.length);
+		} else {
+			set(
+					m.get(0, 0), m.get(0, 1), m.get(0, 2), m.get(0, 3),
+					m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
+					m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
+					m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3)
+			   );
+		}
+
 		isBufferDirty = true;
 
 		return this;
@@ -107,6 +117,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 		return this;
 	}
 
+	@Override
 	public Matrix4f set(float c0, float c1, float c2, float c3, float c4, float c5, float c6, float c7, float c8, float c9, float c10, float c11, float c12, float c13, float c14, float c15) {
 
 		components[0] = c0;
@@ -135,7 +146,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f add(Matrix4f m) {
+	public Matrix4f add(IReadonlyMatrix4f m) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				set(j, i, get(j, i) + m.get(j, i));
@@ -147,12 +158,12 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f added(Matrix4f m) {
+	public Matrix4f added(IReadonlyMatrix4f m) {
 		return clone().add(m);
 	}
 
 	@Override
-	public Matrix4f subtract(Matrix4f m) {
+	public Matrix4f subtract(IReadonlyMatrix4f m) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				set(j, i, get(j, i) - m.get(j, i));
@@ -164,7 +175,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f subtracted(Matrix4f m) {
+	public Matrix4f subtracted(IReadonlyMatrix4f m) {
 		return clone().subtract(m);
 	}
 
@@ -189,7 +200,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multiplyRight(Matrix4f m) {
+	public Matrix4f multiplyRight(IReadonlyMatrix4f m) {
 		for (int j = 0; j < 4; j++) {
 
 			float c0 = get(j, 0);
@@ -215,7 +226,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multipliedRight(Matrix4f m) {
+	public Matrix4f multipliedRight(IReadonlyMatrix4f m) {
 		float[] newMatrix = new float[4 * 4];
 
 		for (int i = 0; i < 4; i++) {
@@ -234,7 +245,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multiplyLeft(Matrix4f m) {
+	public Matrix4f multiplyLeft(IReadonlyMatrix4f m) {
 		for (int i = 0; i < 4; i++) {
 
 			float c0 = get(0, i);
@@ -260,7 +271,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 	}
 
 	@Override
-	public Matrix4f multipliedLeft(Matrix4f m) {
+	public Matrix4f multipliedLeft(IReadonlyMatrix4f m) {
 		float[] newMatrix = new float[4 * 4];
 
 		for (int i = 0; i < 4; i++) {
@@ -278,6 +289,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 		return new Matrix4f(newMatrix);
 	}
 
+	@Override
 	public FloatBuffer asBuffer() {
 		if (buffer == null) buffer = BufferUtils.createFloatBuffer(4 * 4);
 		if (isBufferDirty) updateBuffer();
@@ -380,7 +392,7 @@ public class Matrix4f implements Matrixf<Matrix4f> {
 
 		for (int line = 0; line < 4; line++) {
 			for (int i = 0; i < 4; i++) {
-				sb.append(String.valueOf(components[line * 4 + i])).append("|");
+				sb.append(components[line * 4 + i]).append("|");
 			}
 
 			sb.append("| ");

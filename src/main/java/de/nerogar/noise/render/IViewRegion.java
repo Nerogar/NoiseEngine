@@ -1,15 +1,12 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.render.camera.Camera;
-import de.nerogar.noise.util.Bounding;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 public interface IViewRegion {
 
-	public void setPlanes(Camera camera);
+	void setPlanes(Camera camera);
 
-	public float getPointDistance(Vector3f point);
-
-	public Bounding getBounding();
+	float getPointDistance(IVector3f point);
 
 }

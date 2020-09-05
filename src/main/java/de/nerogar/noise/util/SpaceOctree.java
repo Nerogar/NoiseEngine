@@ -1,5 +1,9 @@
 package de.nerogar.noise.util;
 
+import de.nerogar.noiseInterface.math.IReadonlyVector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.IBounding;
+
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
@@ -92,8 +96,8 @@ public class SpaceOctree<T> implements Set<T> {
 			this.isLeaf = false;
 		}
 
-		public boolean add(T element, Bounding bounding) {
-			Vector3f point = bounding.point();
+		public boolean add(T element, IBounding bounding) {
+			IReadonlyVector3f point = bounding.point();
 			Node child = getChildAt(point.getX(), point.getY(), point.getZ());
 
 			if (!bounding.isInside(minX, minY, minZ, minX + size, minY + size, minZ + size)) {
@@ -120,7 +124,7 @@ public class SpaceOctree<T> implements Set<T> {
 
 		}
 
-		private void add(T element, Bounding bounding, List<Node> containingNodes, boolean allowSplitX, boolean allowSplitY, boolean allowSplitZ,
+		private void add(T element, IBounding bounding, List<Node> containingNodes, boolean allowSplitX, boolean allowSplitY, boolean allowSplitZ,
 				boolean allowOverlapXP, boolean allowOverlapXN, boolean allowOverlapYP, boolean allowOverlapYN, boolean allowOverlapZP, boolean allowOverlapZN) {
 
 			boolean splitX = bounding.intersectsXPlane(minX + halfSize);
@@ -181,7 +185,7 @@ public class SpaceOctree<T> implements Set<T> {
 					elements.add(element);
 					containingNodes.add(this);
 				} else {
-					Vector3f point = bounding.point();
+					IReadonlyVector3f point = bounding.point();
 					Node child = getChildAt(point.getX(), point.getY(), point.getZ());
 
 					//if (allowOverlapXN && allowOverlapYN && allowOverlapZN) child = childNNN;
@@ -222,7 +226,7 @@ public class SpaceOctree<T> implements Set<T> {
 			cleanup();
 		}
 
-		public void collectElements(List<T> collectedElements, Bounding bounding, boolean force) {
+		public void collectElements(List<T> collectedElements, IBounding bounding, boolean force) {
 			if (force || bounding.overlaps(minX, minY, minZ, minX + size, minY + size, minZ + size)) {
 				// 3 versions of the same loop with different runtime overhead.
 				// A simple for loop seems to be the only version that does not
@@ -516,16 +520,16 @@ public class SpaceOctree<T> implements Set<T> {
 		}
 	}
 
-	private Node                  root;
-	private Function<T, Bounding> boundingGetter;
+	private Node                   root;
+	private Function<T, IBounding> boundingGetter;
 
 	private Map<T, LookupEntry> lookup;
 
-	public SpaceOctree(Function<T, Bounding> boundingGetter) {
+	public SpaceOctree(Function<T, IBounding> boundingGetter) {
 		this(boundingGetter, 64, 0.1f);
 	}
 
-	public SpaceOctree(Function<T, Bounding> boundingGetter, int maxLeafElements, float minNodeSize) {
+	public SpaceOctree(Function<T, IBounding> boundingGetter, int maxLeafElements, float minNodeSize) {
 		lookup = new HashMap<>();
 		this.boundingGetter = boundingGetter;
 
@@ -561,7 +565,7 @@ public class SpaceOctree<T> implements Set<T> {
 	 * @param bounding          the bounding for filtering
 	 * @return a list containing all elements intersecting with the bounding
 	 */
-	public List<T> getFiltered(List<T> collectedElements, Bounding bounding) {
+	public List<T> getFiltered(List<T> collectedElements, IBounding bounding) {
 		collectedElements.clear();
 
 		root.collectElements(collectedElements, bounding, false);
@@ -577,13 +581,14 @@ public class SpaceOctree<T> implements Set<T> {
 	 * @param bounding          the bounding for filtering
 	 * @return a list containing all elements intersecting with the bounding
 	 */
-	public List<T> getFilteredExact(List<T> collectedElements, Bounding bounding) {
+	public List<T> getFilteredExact(List<T> collectedElements, IBounding bounding) {
 		collectedElements.clear();
 
 		root.collectElements(collectedElements, bounding, false);
 		collectedElements.forEach(e -> lookup.get(e).visitedFlag = false);
 
-		collectedElements.removeIf(b -> !boundingGetter.apply(b).overlapsBounding(bounding));
+		// TODO: implement a collision detection and use that here
+		//collectedElements.removeIf(b -> !boundingGetter.apply(b).overlapsBounding(bounding));
 
 		return collectedElements;
 	}

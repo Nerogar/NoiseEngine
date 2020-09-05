@@ -1,9 +1,9 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.RenderProperties;
 import de.nerogar.noise.render.RenderProperties3f;
-import de.nerogar.noise.util.BoundingSphere;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.math.BoundingSphere;
 
 import java.util.HashSet;
 import java.util.Set;

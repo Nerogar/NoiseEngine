@@ -1,14 +1,16 @@
 package de.nerogar.noise.render.vr;
 
-import de.nerogar.noise.util.Matrix4f;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.render.vr.IOvrTrackedDevice;
 import org.lwjgl.openvr.VREventData;
 
-public class OvrGenericTracker implements OvrTrackedDevice {
+public class OvrGenericTracker implements IOvrTrackedDevice {
 
 	private final OvrContext ovrContext;
 
-	private final Matrix4f gamePose;
-	private final Matrix4f renderPose;
+	private final IMatrix4f gamePose;
+	private final IMatrix4f renderPose;
 
 	public OvrGenericTracker(OvrContext ovrContext) {
 		this.ovrContext = ovrContext;
@@ -22,12 +24,12 @@ public class OvrGenericTracker implements OvrTrackedDevice {
 	}
 
 	@Override
-	public Matrix4f getGamePose() {
+	public IMatrix4f getGamePose() {
 		return gamePose;
 	}
 
 	@Override
-	public Matrix4f getRenderPose() {
+	public IMatrix4f getRenderPose() {
 		return renderPose;
 	}
 

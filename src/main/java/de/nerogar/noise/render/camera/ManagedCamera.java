@@ -1,18 +1,20 @@
 package de.nerogar.noise.render.camera;
 
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.render.ViewRegionAll;
-import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 public class ManagedCamera implements IReadOnlyCamera {
 
-	private Matrix4f viewMatrix;
-	private Matrix4f projectionMatrix;
+	private IMatrix4f viewMatrix;
+	private IMatrix4f projectionMatrix;
 
-	private Matrix4f inverseViewMatrix;
-	private Matrix4f inverseProjectionMatrix;
+	private IMatrix4f inverseViewMatrix;
+	private IMatrix4f inverseProjectionMatrix;
 
 	private final IReadOnlyCamera[] cameraAsArray;
 	private       ViewRegionAll     viewRegionAll;
@@ -28,7 +30,7 @@ public class ManagedCamera implements IReadOnlyCamera {
 		inverseProjectionMatrix = new Matrix4f();
 	}
 
-	public void manage(Matrix4f viewMatrix, Matrix4f projectionMatrix) {
+	public void manage(IMatrix4f viewMatrix, IMatrix4f projectionMatrix) {
 		this.viewMatrix.set(viewMatrix);
 		this.projectionMatrix.set(projectionMatrix);
 
@@ -45,12 +47,12 @@ public class ManagedCamera implements IReadOnlyCamera {
 	}
 
 	@Override
-	public Matrix4f getViewMatrix() {
+	public IMatrix4f getViewMatrix() {
 		return viewMatrix;
 	}
 
 	@Override
-	public Matrix4f getProjectionMatrix() {
+	public IMatrix4f getProjectionMatrix() {
 		return projectionMatrix;
 	}
 
@@ -90,22 +92,22 @@ public class ManagedCamera implements IReadOnlyCamera {
 	}
 
 	@Override
-	public void pointToViewSpace(Vector3f point) {
+	public void pointToViewSpace(IVector3f point) {
 
 	}
 
 	@Override
-	public void directionToViewSpace(Vector3f direction) {
+	public void directionToViewSpace(IVector3f direction) {
 
 	}
 
 	@Override
-	public void pointToWorldSpace(Vector3f point) {
+	public void pointToWorldSpace(IVector3f point) {
 
 	}
 
 	@Override
-	public void directionToWorldSpace(Vector3f direction) {
+	public void directionToWorldSpace(IVector3f direction) {
 
 	}
 
@@ -136,7 +138,7 @@ public class ManagedCamera implements IReadOnlyCamera {
 	}
 
 	@Override
-	public Vector3f getDirectionAt() {
+	public IVector3f getDirectionAt() {
 		return null;
 	}
 

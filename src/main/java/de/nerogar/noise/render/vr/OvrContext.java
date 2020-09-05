@@ -1,14 +1,15 @@
 package de.nerogar.noise.render.vr;
 
 import de.nerogar.noise.input.Joystick;
+import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.render.GLWindow;
 import de.nerogar.noise.render.Texture2D;
 import de.nerogar.noise.render.camera.IVrCamera;
 import de.nerogar.noise.render.camera.OvrCamera;
-import de.nerogar.noise.render.vr.OvrTrackedDevice.OvrTrackedDeviceType;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noiseInterface.render.vr.IOvrTrackedDevice;
+import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.util.NoiseResource;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openvr.*;
 import org.lwjgl.system.MemoryStack;
@@ -16,7 +17,7 @@ import org.lwjgl.system.MemoryStack;
 import java.lang.reflect.Array;
 import java.nio.IntBuffer;
 
-import static de.nerogar.noise.render.vr.OvrTrackedDevice.OvrTrackedDeviceType.HMD;
+import static de.nerogar.noise.render.vr.OvrTrackedDeviceType.HMD;
 import static org.lwjgl.openvr.VR.*;
 import static org.lwjgl.openvr.VRSystem.*;
 
@@ -37,8 +38,8 @@ public class OvrContext extends NoiseResource {
 
 	private TrackedDevicePose.Buffer trackedRenderPose;
 	private TrackedDevicePose.Buffer trackedGamePose;
-	private OvrTrackedDevice[]       trackedDevices;
-	private OvrTrackedDevice[][]     trackedDevicesByType;
+	private IOvrTrackedDevice[]      trackedDevices;
+	private IOvrTrackedDevice[][]    trackedDevicesByType;
 	private VREvent                  vrEvent;
 
 	public OvrContext(GLWindow window) {
@@ -84,10 +85,10 @@ public class OvrContext extends NoiseResource {
 	public IVrCamera getCamera() { return camera; }
 
 	private void initTrackedDevices() {
-		trackedDevices = new OvrTrackedDevice[k_unMaxTrackedDeviceCount];
+		trackedDevices = new IOvrTrackedDevice[k_unMaxTrackedDeviceCount];
 
 		for (int i = 0; i < trackedDevices.length; i++) {
-			trackedDevices[i] = OvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(i), this);
+			trackedDevices[i] = IOvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(i), this);
 		}
 
 		sortTrackedDevices();
@@ -98,19 +99,19 @@ public class OvrContext extends NoiseResource {
 	}
 
 	private void sortTrackedDevices() {
-		trackedDevicesByType = new OvrTrackedDevice[OvrTrackedDeviceType.values().length][];
+		trackedDevicesByType = new IOvrTrackedDevice[OvrTrackedDeviceType.values().length][];
 		for (int typeIndex = 0; typeIndex < trackedDevicesByType.length; typeIndex++) {
 			int count = 0;
-			for (OvrTrackedDevice trackedDevice : trackedDevices) {
+			for (IOvrTrackedDevice trackedDevice : trackedDevices) {
 				if (trackedDevice.getType() == OvrTrackedDeviceType.values()[typeIndex]) {
 					count++;
 				}
 			}
 
-			trackedDevicesByType[typeIndex] = (OvrTrackedDevice[]) Array.newInstance(OvrTrackedDeviceType.values()[typeIndex].deviceClass, count);
+			trackedDevicesByType[typeIndex] = (IOvrTrackedDevice[]) Array.newInstance(OvrTrackedDeviceType.values()[typeIndex].deviceClass, count);
 
 			int index = 0;
-			for (OvrTrackedDevice trackedDevice : trackedDevices) {
+			for (IOvrTrackedDevice trackedDevice : trackedDevices) {
 				if (trackedDevice.getType() == OvrTrackedDeviceType.values()[typeIndex]) {
 					trackedDevicesByType[typeIndex][index] = trackedDevice;
 					index++;
@@ -127,7 +128,7 @@ public class OvrContext extends NoiseResource {
 	}
 
 	private void pollEvents() {
-		for (OvrTrackedDevice trackedDevice : trackedDevices) {
+		for (IOvrTrackedDevice trackedDevice : trackedDevices) {
 			trackedDevice.resetEvents();
 		}
 
@@ -137,14 +138,14 @@ public class OvrContext extends NoiseResource {
 
 			switch (eventType) {
 				case EVREventType_VREvent_TrackedDeviceActivated:
-					trackedDevices[trackedDeviceIndex] = OvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(trackedDeviceIndex), this);
+					trackedDevices[trackedDeviceIndex] = IOvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(trackedDeviceIndex), this);
 					sortTrackedDevices();
 					if (trackedDevices[trackedDeviceIndex] instanceof Joystick) {
 						window.getInputHandler().addJoystick((Joystick) trackedDevices[trackedDeviceIndex]);
 					}
 					break;
 				case EVREventType_VREvent_TrackedDeviceDeactivated:
-					trackedDevices[trackedDeviceIndex] = OvrTrackedDevice.newDevice(ETrackedDeviceClass_TrackedDeviceClass_Invalid, this);
+					trackedDevices[trackedDeviceIndex] = IOvrTrackedDevice.newDevice(ETrackedDeviceClass_TrackedDeviceClass_Invalid, this);
 					sortTrackedDevices();
 					if (trackedDevices[trackedDeviceIndex] instanceof Joystick) {
 						window.getInputHandler().removeJoystick((Joystick) trackedDevices[trackedDeviceIndex]);
@@ -185,31 +186,31 @@ public class OvrContext extends NoiseResource {
 
 		OvrHmd[] trackedDevices = getTrackedDevices(HMD);
 		if (trackedDevices.length > 0) {
-			Matrix4f viewMatrix = trackedDevices[0].getRenderPose().clone().invert();
+			IMatrix4f viewMatrix = trackedDevices[0].getRenderPose().clone().invert();
 
 			if (camera.getBaseViewMatrix() != null) {
 				viewMatrix.multiplyRight(camera.getBaseViewMatrix().inverted());
 			}
 
-			Matrix4f leftViewMatrix = viewMatrix.multipliedLeft(Matrix4fUtils.getPositionMatrix(0.04f, 0, 0));
-			Matrix4f rightViewMatrix = viewMatrix.multipliedLeft(Matrix4fUtils.getPositionMatrix(-0.04f, 0, 0));
+			IMatrix4f leftViewMatrix = viewMatrix.multipliedLeft(Matrix4fUtils.getPositionMatrix(0.04f, 0, 0));
+			IMatrix4f rightViewMatrix = viewMatrix.multipliedLeft(Matrix4fUtils.getPositionMatrix(-0.04f, 0, 0));
 
-			Matrix4f[] projectionMatrices = createProjectionMatrices();
+			IMatrix4f[] projectionMatrices = createProjectionMatrices();
 
 			camera.getEyes()[0].manage(leftViewMatrix, projectionMatrices[0]);
 			camera.getEyes()[1].manage(rightViewMatrix, projectionMatrices[1]);
 		}
 	}
 
-	public OvrTrackedDevice[] getTrackedDevices() {
+	public IOvrTrackedDevice[] getTrackedDevices() {
 		return trackedDevices;
 	}
 
-	public <T extends OvrTrackedDevice> T[] getTrackedDevices(OvrTrackedDeviceType<T> ovrTrackedDeviceType) {
+	public <T extends IOvrTrackedDevice> T[] getTrackedDevices(OvrTrackedDeviceType<T> ovrTrackedDeviceType) {
 		return (T[]) trackedDevicesByType[ovrTrackedDeviceType.ovrConstant];
 	}
 
-	private Matrix4f[] createProjectionMatrices() {
+	private IMatrix4f[] createProjectionMatrices() {
 
 		VRSystem_GetProjectionMatrix(0, 0.1f, 1000, leftProjection);
 		VRSystem_GetProjectionMatrix(1, 0.1f, 1000, rightProjection);

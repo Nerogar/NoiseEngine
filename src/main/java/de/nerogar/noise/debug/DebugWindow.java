@@ -2,13 +2,14 @@ package de.nerogar.noise.debug;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.input.KeyboardKeyEvent;
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.fontRenderer.Font;
 import de.nerogar.noise.render.fontRenderer.FontRenderableString;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noise.util.MathHelper;
-import de.nerogar.noise.util.Matrix4f;
-import de.nerogar.noise.util.Matrix4fUtils;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -29,7 +30,7 @@ public class DebugWindow {
 	private List<Profiler> profilerList;
 	private int            activeProfiler;
 
-	private Matrix4f   projectionMatrix;
+	private IMatrix4f  projectionMatrix;
 	private Shader     shader;
 	private VertexList vertexList;
 

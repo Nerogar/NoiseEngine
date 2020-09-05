@@ -1,11 +1,17 @@
 package de.nerogar.noise.render.spriteRenderer;
 
-import static org.lwjgl.opengl.GL11.*;
-
-import java.util.*;
-
+import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.render.*;
-import de.nerogar.noise.util.*;
+import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IVector2f;
+import de.nerogar.noiseInterface.math.IVector3f;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * A renderer that renders simple 2D sprites with a single texture.
@@ -16,9 +22,10 @@ import de.nerogar.noise.util.*;
 public class SpriteRenderer {
 
 	private class VboContainer {
-		public List<Sprite2D> spriteList;
+
+		public List<Sprite2D>            spriteList;
 		public VertexBufferObjectIndexed vbo;
-		public boolean dirty;
+		public boolean                   dirty;
 
 		public VboContainer() {
 			this.spriteList = new ArrayList<Sprite2D>();
@@ -26,18 +33,18 @@ public class SpriteRenderer {
 	}
 
 	private HashMap<Texture2D, VboContainer> vboMap;
-	private Shader shader;
+	private Shader                           shader;
 
-	private Matrix4f projectionMatrix;
-	private boolean projectionMatrixUpdated;
+	private IMatrix4f projectionMatrix;
+	private boolean   projectionMatrixUpdated;
 
 	/**
 	 * Creates a SpriteRenderer. the camera can see everything between (0, 0, 0) and (width, height, depth).
 	 * Higher z values are near to the camera.
-	 * 
-	 * @param width the initial width
+	 *
+	 * @param width  the initial width
 	 * @param height the initial height
-	 * @param depth the initial depth
+	 * @param depth  the initial depth
 	 */
 	public SpriteRenderer(float width, float height, float depth) {
 		vboMap = new HashMap<Texture2D, SpriteRenderer.VboContainer>();
@@ -87,8 +94,8 @@ public class SpriteRenderer {
 		float[] pos = new float[container.spriteList.size() * 4 * 3];
 		float[] uv = new float[container.spriteList.size() * 4 * 2];
 
-		Vector3f[] spritePos;
-		Vector2f[] spriteUV;
+		IVector3f[] spritePos;
+		IVector2f[] spriteUV;
 
 		for (int i = 0; i < container.spriteList.size(); i++) {
 			spritePos = container.spriteList.get(i).pos;
@@ -141,13 +148,13 @@ public class SpriteRenderer {
 		}
 	}
 
-	public void render(Matrix4f viewMtrix) {
+	public void render(IMatrix4f viewMatrix) {
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
 		shader.activate();
 		shader.setUniform1i("textureColor", 0);
-		shader.setUniformMat4f("viewMatrix", viewMtrix.asBuffer());
+		shader.setUniformMat4f("viewMatrix", viewMatrix.asBuffer());
 		if (projectionMatrixUpdated) shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
 
 		for (Texture2D texture : vboMap.keySet()) {
