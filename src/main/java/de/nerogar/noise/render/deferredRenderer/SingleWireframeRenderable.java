@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.deferredRenderer;
 
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
@@ -10,7 +11,7 @@ public class SingleWireframeRenderable implements IRenderable {
 	private final  int[]  COMPONENT_COUNTS = { 3 };
 	private static Shader shader;
 
-	private RenderProperties3f renderProperties;
+	private Transformation renderProperties;
 
 	private VertexBufferObject vbo;
 	private Color              color;
@@ -18,7 +19,7 @@ public class SingleWireframeRenderable implements IRenderable {
 	private boolean            shadeless;
 
 	public SingleWireframeRenderable(WireframeMesh wireframeMesh, Color color, float emission, boolean shadeless) {
-		renderProperties = new RenderProperties3f();
+		renderProperties = new Transformation();
 
 		vbo = new VertexBufferObjectIndexed(
 				VertexBufferObject.LINES,
@@ -41,12 +42,12 @@ public class SingleWireframeRenderable implements IRenderable {
 	public void setShadeless(boolean shadeless) { this.shadeless = shadeless; }
 
 	@Override
-	public RenderProperties3f getRenderProperties() {
+	public Transformation getRenderProperties() {
 		return renderProperties;
 	}
 
 	@Override
-	public void setParentRenderProperties(RenderProperties3f parentRenderProperties) {
+	public void setParentRenderProperties(Transformation parentRenderProperties) {
 		renderProperties.setParent(parentRenderProperties);
 	}
 

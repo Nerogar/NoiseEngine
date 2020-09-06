@@ -2,6 +2,7 @@ package de.nerogar.noise.render.oldDeferredRenderer;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.camera.IMultiCamera;
@@ -204,7 +205,7 @@ public class DeferredRenderer {
 				Texture2DLoader.loadTexture("<oldDeferredRenderer/originAxis/light.png>")
 		);
 
-		originAxis = new DeferredRenderable(axisContainer, new RenderProperties3f());
+		originAxis = new DeferredRenderable(axisContainer, new Transformation());
 	}
 
 	/**
@@ -608,8 +609,6 @@ public class DeferredRenderer {
 
 		IVector3f point = new Vector3f();
 		for (Effect effect : effectContainer) {
-			if (!effect.getRenderProperties().isVisible()) continue;
-
 			point.setX(effect.getRenderProperties().getX());
 			point.setY(effect.getRenderProperties().getY());
 			point.setZ(effect.getRenderProperties().getZ());

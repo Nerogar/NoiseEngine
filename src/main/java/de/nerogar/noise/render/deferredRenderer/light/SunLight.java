@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.deferredRenderer.light;
 
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noiseInterface.math.IVector3f;
@@ -24,12 +25,12 @@ public class SunLight implements ILight {
 	}
 
 	@Override
-	public RenderProperties3f getRenderProperties() {
+	public Transformation getRenderProperties() {
 		return null;
 	}
 
 	@Override
-	public void setParentRenderProperties(RenderProperties3f parentRenderProperties) { }
+	public void setParentRenderProperties(Transformation parentRenderProperties) { }
 
 	public void setDirection(IVector3f direction) {
 		this.direction.set(direction).normalize();

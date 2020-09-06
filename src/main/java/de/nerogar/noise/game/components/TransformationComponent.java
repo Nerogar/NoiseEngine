@@ -1,16 +1,16 @@
 package de.nerogar.noise.game.components;
 
 import de.nerogar.noise.game.AbstractComponent;
-import de.nerogar.noise.render.RenderProperties3f;
+import de.nerogar.noise.math.Transformation;
 
 public class TransformationComponent extends AbstractComponent {
 
-	private RenderProperties3f transformation;
+	private Transformation transformation;
 
 	private int transformModCount;
 
 	public TransformationComponent(float x, float y, float z, float yaw, float pitch, float roll) {
-		this.transformation = new RenderProperties3f(
+		this.transformation = new Transformation(
 				yaw, pitch, roll,
 				x, y, z,
 				1, 1, 1
@@ -31,17 +31,17 @@ public class TransformationComponent extends AbstractComponent {
 	@Override
 	public void resetChangedState() { transformModCount = transformation.getModCount(); }
 
-	public RenderProperties3f getTransformation() { return transformation; }
+	public Transformation getTransformation() { return transformation; }
 
-	public float getX()                           { return transformation.getX(); }
+	public float getX()                       { return transformation.getX(); }
 
-	public void setX(float x)                     { transformation.setX(x); }
+	public void setX(float x)                 { transformation.setX(x); }
 
-	public float getY()                           { return transformation.getY(); }
+	public float getY()                       { return transformation.getY(); }
 
-	public void setY(float y)                     { transformation.setY(y); }
+	public void setY(float y)                 { transformation.setY(y); }
 
-	public float getZ()                           { return transformation.getZ(); }
+	public float getZ()                       { return transformation.getZ(); }
 
 	public void setZ(float z)                     { transformation.setZ(z); }
 

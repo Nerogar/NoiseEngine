@@ -86,8 +86,6 @@ class VboContainerFew implements VboContainer {
 
 		IVector3f point = new Vector3f();
 		for (DeferredRenderable renderable : renderables) {
-			if (!renderable.getRenderProperties().isVisible()) continue;
-
 			point.setX(renderable.getRenderProperties().getX());
 			point.setY(renderable.getRenderProperties().getY());
 			point.setZ(renderable.getRenderProperties().getZ());

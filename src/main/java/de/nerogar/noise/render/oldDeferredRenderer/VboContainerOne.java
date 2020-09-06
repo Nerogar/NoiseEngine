@@ -82,7 +82,6 @@ class VboContainerOne implements VboContainer {
 	public boolean prepareRender(IViewRegion frustum) {
 
 		if (renderable == null) return false;
-		if (!renderable.getRenderProperties().isVisible()) return false;
 
 		// call update on updated renderables
 		if (updatedRenderable) {

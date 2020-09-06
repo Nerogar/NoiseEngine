@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.deferredRenderer;
 
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
@@ -11,7 +12,7 @@ public class SingleRenderable implements IRenderable {
 	private static Shader shader;
 
 	private boolean            isInitialized = false;
-	private RenderProperties3f renderProperties;
+	private Transformation     renderProperties;
 	private VertexBufferObject vbo;
 	private Texture2D          albedo;
 	private Texture2D          normal;
@@ -19,7 +20,7 @@ public class SingleRenderable implements IRenderable {
 	private Mesh               mesh;
 
 	public SingleRenderable(VertexBufferObject vbo, Texture2D albedo, Texture2D normal) {
-		this.renderProperties = new RenderProperties3f();
+		this.renderProperties = new Transformation();
 
 		this.vbo = vbo;
 		this.isInitialized = true;
@@ -29,7 +30,7 @@ public class SingleRenderable implements IRenderable {
 	}
 
 	public SingleRenderable(Mesh mesh, Texture2D albedo, Texture2D normal) {
-		this.renderProperties = new RenderProperties3f();
+		this.renderProperties = new Transformation();
 
 		this.mesh = mesh;
 		this.albedo = albedo;
@@ -64,12 +65,12 @@ public class SingleRenderable implements IRenderable {
 	}
 
 	@Override
-	public RenderProperties3f getRenderProperties() {
+	public Transformation getRenderProperties() {
 		return renderProperties;
 	}
 
 	@Override
-	public void setParentRenderProperties(RenderProperties3f parentRenderProperties) {
+	public void setParentRenderProperties(Transformation parentRenderProperties) {
 		renderProperties.setParent(parentRenderProperties);
 	}
 

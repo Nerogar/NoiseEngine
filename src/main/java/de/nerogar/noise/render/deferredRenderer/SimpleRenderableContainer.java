@@ -1,6 +1,6 @@
 package de.nerogar.noise.render.deferredRenderer;
 
-import de.nerogar.noise.render.RenderProperties3f;
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
@@ -10,19 +10,19 @@ import java.util.List;
 
 public class SimpleRenderableContainer extends ArrayList<IRenderable> implements IRenderable {
 
-	private RenderProperties3f renderProperties;
+	private Transformation renderProperties;
 
 	public SimpleRenderableContainer() {
-		renderProperties = new RenderProperties3f();
+		renderProperties = new Transformation();
 	}
 
 	@Override
-	public RenderProperties3f getRenderProperties() {
+	public Transformation getRenderProperties() {
 		return renderProperties;
 	}
 
 	@Override
-	public void setParentRenderProperties(RenderProperties3f parentRenderProperties) {
+	public void setParentRenderProperties(Transformation parentRenderProperties) {
 		renderProperties.setParent(parentRenderProperties);
 	}
 

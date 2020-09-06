@@ -1,6 +1,7 @@
 package de.nerogar.noise.render.deferredRenderer.light;
 
 import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.deferredRenderer.SingleWireframeRenderable;
@@ -23,18 +24,18 @@ public class ConeLight implements ILight {
 	private       IRenderable debugRenderable;
 	private final IMatrix4f   viewProjectionMatrix;
 
-	private RenderProperties3f renderProperties;
-	private IVector3f          position;
-	private IVector3f          direction;
-	private Color              color;
-	private float              radius;
-	private float              strength;
-	private float              angle;
-	private float              cosAngle;
-	private float              invertedCosAngle;
+	private Transformation renderProperties;
+	private IVector3f      position;
+	private IVector3f      direction;
+	private Color          color;
+	private float          radius;
+	private float          strength;
+	private float          angle;
+	private float          cosAngle;
+	private float          invertedCosAngle;
 
 	public ConeLight(IVector3f position, IVector3f direction, Color color, float radius, float strength, float angle) {
-		this.renderProperties = new RenderProperties3f();
+		this.renderProperties = new Transformation();
 		this.position = new Vector3f();
 		this.direction = new Vector3f();
 		this.viewProjectionMatrix = new Matrix4f();
@@ -50,12 +51,12 @@ public class ConeLight implements ILight {
 	}
 
 	@Override
-	public RenderProperties3f getRenderProperties() {
+	public Transformation getRenderProperties() {
 		return renderProperties;
 	}
 
 	@Override
-	public void setParentRenderProperties(RenderProperties3f parentRenderProperties) {
+	public void setParentRenderProperties(Transformation parentRenderProperties) {
 		renderProperties.setParent(renderProperties);
 	}
 

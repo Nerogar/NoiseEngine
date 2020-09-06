@@ -1,6 +1,7 @@
 package de.nerogar.noise.render.deferredRenderer.light;
 
 import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.deferredRenderer.SingleWireframeRenderable;
 import de.nerogar.noise.util.Color;
@@ -22,13 +23,13 @@ public class PointLight implements ILight {
 	private       IRenderable debugRenderable;
 	private final IMatrix4f   viewProjectionMatrix;
 
-	private RenderProperties3f renderProperties;
-	private Color              color;
-	private float              radius;
-	private float              strength;
+	private Transformation renderProperties;
+	private Color          color;
+	private float          radius;
+	private float          strength;
 
 	public PointLight(IVector3f position, Color color, float radius, float strength) {
-		this.renderProperties = new RenderProperties3f(0, 0, 0, position.getX(), position.getY(), position.getZ());
+		this.renderProperties = new Transformation(0, 0, 0, position.getX(), position.getY(), position.getZ());
 		this.viewProjectionMatrix = new Matrix4f();
 		setPosition(position.clone());
 		setColor(color);
@@ -40,12 +41,12 @@ public class PointLight implements ILight {
 	}
 
 	@Override
-	public RenderProperties3f getRenderProperties() {
+	public Transformation getRenderProperties() {
 		return renderProperties;
 	}
 
 	@Override
-	public void setParentRenderProperties(RenderProperties3f parentRenderProperties) {
+	public void setParentRenderProperties(Transformation parentRenderProperties) {
 		renderProperties.setParent(parentRenderProperties);
 	}
 

@@ -1,6 +1,6 @@
 package de.nerogar.noiseInterface.render.deferredRenderer;
 
-import de.nerogar.noise.render.RenderProperties3f;
+import de.nerogar.noise.math.Transformation;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public interface IRenderable {
 	 *
 	 * @return the render properties of this renderable.
 	 */
-	public RenderProperties3f getRenderProperties();
+	public Transformation getRenderProperties();
 
 	/**
 	 * Sets the render properties of the parent.
@@ -19,7 +19,7 @@ public interface IRenderable {
 	 *
 	 * @param parentRenderProperties the render properties of the parent.
 	 */
-	public void setParentRenderProperties(RenderProperties3f parentRenderProperties);
+	public void setParentRenderProperties(Transformation parentRenderProperties);
 
 	/**
 	 * Renders the geometry of the scene to a gBuffer.

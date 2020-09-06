@@ -1,9 +1,8 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
-import de.nerogar.noise.math.Vector3f;
-import de.nerogar.noise.render.RenderProperties;
-import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.math.BoundingSphere;
+import de.nerogar.noise.math.Vector3f;
+import de.nerogar.noise.math.Transformation;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,18 +13,18 @@ import java.util.function.Consumer;
  */
 public class DeferredRenderable {
 
-	private DeferredContainer  container;
-	private RenderProperties3f renderProperties;
-	private BoundingSphere     boundingSphere;
+	private DeferredContainer container;
+	private Transformation    renderProperties;
+	private BoundingSphere    boundingSphere;
 
-	private   RenderProperties.RenderPropertiesListener<RenderProperties3f> renderPropertiesListener;
-	protected Set<Consumer<DeferredRenderable>>                             listeners;
+	private   Transformation.RenderPropertiesListener renderPropertiesListener;
+	protected Set<Consumer<DeferredRenderable>>       listeners;
 
 	/**
 	 * @param container        the {@link DeferredContainer DeferredContainer} describing the appearance
-	 * @param renderProperties the {@link RenderProperties3f RenderProperties3f} describing properties like position and rotation
+	 * @param renderProperties the {@link Transformation RenderProperties3f} describing properties like position and rotation
 	 */
-	public DeferredRenderable(DeferredContainer container, RenderProperties3f renderProperties) {
+	public DeferredRenderable(DeferredContainer container, Transformation renderProperties) {
 		this.container = container;
 		this.renderProperties = renderProperties;
 
@@ -49,9 +48,9 @@ public class DeferredRenderable {
 	}
 
 	/**
-	 * @return the {@link RenderProperties3f RenderProperties3f}
+	 * @return the {@link Transformation RenderProperties3f}
 	 */
-	public RenderProperties3f getRenderProperties() {
+	public Transformation getRenderProperties() {
 		return renderProperties;
 	}
 

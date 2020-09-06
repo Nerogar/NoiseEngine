@@ -1,18 +1,16 @@
-package de.nerogar.noise.render;
+package de.nerogar.noise.math;
 
-import de.nerogar.noise.math.Matrix4f;
-import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noiseInterface.math.IMatrix4f;
 import de.nerogar.noiseInterface.math.IVector3f;
 
-public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
+public class Transformation {
 
 	private static final float PI = (float) Math.PI;
 
 	protected float yaw, pitch, roll;
 	protected float x, y, z;
 	protected float scaleX, scaleY, scaleZ, maxScaleComponent;
-	protected RenderProperties3f parent;
+	protected Transformation parent;
 
 	protected boolean   positionMatrixDirty = true;
 	protected IMatrix4f positionMatrix;
@@ -33,15 +31,22 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 
 	private IMatrix4f tempMatrix;
 
-	public RenderProperties3f() {
+	protected RenderPropertiesListener listener;
+
+	public interface RenderPropertiesListener {
+
+		void update(Transformation transformation, boolean position, boolean rotation, boolean scale);
+	}
+
+	public Transformation() {
 		this(0, 0, 0, 0, 0, 0);
 	}
 
-	public RenderProperties3f(float yaw, float pitch, float roll, float x, float y, float z) {
+	public Transformation(float yaw, float pitch, float roll, float x, float y, float z) {
 		this(yaw, pitch, roll, x, y, z, 1, 1, 1);
 	}
 
-	public RenderProperties3f(float yaw, float pitch, float roll, float x, float y, float z, float scaleX, float scaleY, float scaleZ) {
+	public Transformation(float yaw, float pitch, float roll, float x, float y, float z, float scaleX, float scaleY, float scaleZ) {
 		this.yaw = yaw;
 		this.pitch = pitch;
 		this.roll = roll;
@@ -55,7 +60,7 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		init();
 	}
 
-	public RenderProperties3f(IMatrix4f modelMatrix) {
+	public Transformation(IMatrix4f modelMatrix) {
 		float x0 = modelMatrix.get(0, 0);
 		float x1 = modelMatrix.get(1, 0);
 		float x2 = modelMatrix.get(2, 0);
@@ -135,7 +140,7 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		setRollMatrix();
 	}
 
-	public void setParent(RenderProperties3f parent) {
+	public void setParent(Transformation parent) {
 		this.parent = parent;
 		modelMatrixDirty = true;
 		modCount++;
@@ -147,7 +152,6 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		return parent.modCount != parentModCount || parent.hasParentChanged();
 	}
 
-	@Override
 	public IMatrix4f getModelMatrix() {
 		if (modelMatrixDirty || hasParentChanged()) setModelMatrix();
 		return modelMatrix;
@@ -458,6 +462,17 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 		return maxScaleComponent;
 	}
 
+	/**
+	 * Set the listener for this renderProperties instance.
+	 * Only one listener can be attached.
+	 * Call {@code setListener(null)} to clear the listener
+	 *
+	 * @param listener the new listener
+	 */
+	public void setListener(RenderPropertiesListener listener) {
+		this.listener = listener;
+	}
+
 	private void updateListener(boolean position, boolean rotation, boolean scale) {
 		if (listener != null) {
 			listener.update(this, position, rotation, scale);
@@ -480,7 +495,6 @@ public class RenderProperties3f extends RenderProperties<RenderProperties3f> {
 				", scaleX=" + scaleX +
 				", scaleY=" + scaleY +
 				", scaleZ=" + scaleZ +
-				", visible=" + isVisible() +
 				'}';
 	}
 

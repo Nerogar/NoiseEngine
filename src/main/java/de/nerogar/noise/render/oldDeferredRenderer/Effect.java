@@ -1,6 +1,6 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
-import de.nerogar.noise.render.RenderProperties3f;
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noiseInterface.math.IMatrix4f;
 
 /**
@@ -13,7 +13,7 @@ public interface Effect {
 	 *
 	 * @return the renderProperties
 	 */
-	public RenderProperties3f getRenderProperties();
+	public Transformation getRenderProperties();
 
 	/**
 	 * The maximum radius of this effect. Used for frustum culling.
