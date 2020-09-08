@@ -12,4 +12,13 @@ public class SpawnEntityEvent implements IEvent {
 		this.entityId = entityId;
 		this.components = components;
 	}
+
+	public <T extends IComponent> T getComponent(Class<T> componentClass) {
+		for (int i = 0; i < components.length; i++) {
+			if (components[i].getClass().equals(componentClass)) {
+				return (T) components[i];
+			}
+		}
+		return null;
+	}
 }

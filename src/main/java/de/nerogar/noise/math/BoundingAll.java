@@ -5,13 +5,24 @@ import de.nerogar.noiseInterface.math.IReadonlyVector3f;
 
 public class BoundingAll implements IBounding {
 
-	private final Vector3f origin;
+	private final Vector3f       origin;
+	private       Transformation transformation;
 
 	/**
 	 * create a new bounding that collides with everything
 	 */
 	public BoundingAll() {
 		origin = new Vector3f();
+	}
+
+	@Override
+	public void setTransformation(Transformation transformation) {
+		this.transformation = transformation;
+	}
+
+	@Override
+	public Transformation getTransformation() {
+		return transformation;
 	}
 
 	@Override

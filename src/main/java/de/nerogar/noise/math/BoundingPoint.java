@@ -1,11 +1,13 @@
 package de.nerogar.noise.math;
 
-import de.nerogar.noiseInterface.math.IVector3f;
 import de.nerogar.noiseInterface.math.IBounding;
+import de.nerogar.noiseInterface.math.IReadonlyVector3f;
+import de.nerogar.noiseInterface.math.IVector3f;
 
 public class BoundingPoint implements IBounding {
 
-	private IVector3f position;
+	private IVector3f      position;
+	private Transformation transformation;
 
 	public BoundingPoint(IVector3f position) {
 		this.position = position;
@@ -30,7 +32,17 @@ public class BoundingPoint implements IBounding {
 	}
 
 	@Override
-	public IVector3f point() {
+	public void setTransformation(Transformation transformation) {
+		this.transformation = transformation;
+	}
+
+	@Override
+	public Transformation getTransformation() {
+		return transformation;
+	}
+
+	@Override
+	public IReadonlyVector3f point() {
 		return position;
 	}
 
