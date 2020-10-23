@@ -31,7 +31,13 @@ public class GameSystemContainer implements IGameSystemContainer {
 		injectionObjects.put(object.getClass(), object);
 	}
 
+	private void addDefaultInjectionObjects() {
+		addInjectionObject(this);
+	}
+
 	public void startInjection() {
+		addDefaultInjectionObjects();
+
 		for (IGameSystem gameSystem : gameSystems.values()) {
 			for (Method method : gameSystem.getClass().getDeclaredMethods()) {
 				if (method.isAnnotationPresent(InjectionMethod.class)) {
