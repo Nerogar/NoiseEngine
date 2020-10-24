@@ -13,7 +13,7 @@ sourceCompatibility = 1.11
 
 // lwjgl
 
-project.ext.lwjglVersion = "3.2.1"
+project.ext.lwjglVersion = "3.2.3"
 
 def osProp = System.getProperty("os")
 def os = osProp == null ? OperatingSystem.current() : OperatingSystem.forName(osProp)

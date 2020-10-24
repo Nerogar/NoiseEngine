@@ -5,6 +5,8 @@ import de.nerogar.noise.util.Ray;
 
 public class MathHelper {
 
+	public static final float PI = (float) Math.PI;
+
 	private static final float EPSILON = 0.000001f;
 
 	/*private static final int LOOKUP_TABLE_LENGTH = 4096;

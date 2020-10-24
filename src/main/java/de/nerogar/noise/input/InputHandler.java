@@ -139,8 +139,8 @@ public final class InputHandler {
 	//---[mouse]---
 	private void setCursorPosition(double xpos, double ypos) {
 		if (!ignoreMouseDelta) {
-			cursorDeltaX = xpos - cursorPosX;
-			cursorDeltaY = ypos - cursorPosY;
+			cursorDeltaX += xpos - cursorPosX;
+			cursorDeltaY += ypos - cursorPosY;
 		} else {
 			ignoreMouseDelta = false;
 		}
