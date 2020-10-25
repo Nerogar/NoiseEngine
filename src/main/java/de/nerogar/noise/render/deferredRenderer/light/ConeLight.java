@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.deferredRenderer.light;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.math.Vector3f;
@@ -157,7 +158,7 @@ public class ConeLight implements ILight {
 		shader.setUniform1i("u_materialBuffer", MATERIAL_BUFFER_SLOT);
 		shader.deactivate();
 
-		Mesh mesh = WavefrontLoader.loadObject("<cone.obj>");
+		Mesh mesh = WavefrontLoader.load(FileUtil.get("<cone.obj>", FileUtil.MESH_SUBFOLDER));
 
 		sphere = new VertexBufferObjectIndexed(
 				new int[] { 3 },

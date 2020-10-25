@@ -1,13 +1,13 @@
 package de.nerogar.noiseInterface.render.deferredRenderer;
 
-import de.nerogar.noise.render.camera.Camera;
+import de.nerogar.noise.render.camera.IReadOnlyCamera;
 
 public interface IRenderContext {
 
-	public Camera getCamera();
+	IReadOnlyCamera getCamera();
 
-	public int getgBufferWidth();
+	int getgBufferWidth();
 
-	public int getgBufferHeight();
+	int getgBufferHeight();
 
 }

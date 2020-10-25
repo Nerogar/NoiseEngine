@@ -1,22 +1,22 @@
 package de.nerogar.noise.render.deferredRenderer;
 
-import de.nerogar.noise.render.camera.Camera;
+import de.nerogar.noise.render.camera.IReadOnlyCamera;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 
 public class RenderContext implements IRenderContext {
 
-	private final Camera camera;
-	private final int    gBufferWidth;
-	private final int    gBufferHeight;
+	private final IReadOnlyCamera camera;
+	private final int             gBufferWidth;
+	private final int             gBufferHeight;
 
-	public RenderContext(Camera camera, int gBufferWidth, int gBufferHeight) {
+	public RenderContext(IReadOnlyCamera camera, int gBufferWidth, int gBufferHeight) {
 		this.camera = camera;
 		this.gBufferWidth = gBufferWidth;
 		this.gBufferHeight = gBufferHeight;
 	}
 
 	@Override
-	public Camera getCamera() {
+	public IReadOnlyCamera getCamera() {
 		return camera;
 	}
 

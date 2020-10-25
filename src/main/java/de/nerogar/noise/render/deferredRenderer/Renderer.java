@@ -1,7 +1,7 @@
 package de.nerogar.noise.render.deferredRenderer;
 
 import de.nerogar.noise.render.*;
-import de.nerogar.noise.render.camera.Camera;
+import de.nerogar.noise.render.camera.IReadOnlyCamera;
 import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
@@ -70,7 +70,7 @@ public class Renderer implements IRenderer {
 			for (int j = 0; j < downSampleEmissionBuffers[i].length; j++) {
 				downSampleEmissionBuffers[i][j] = new FrameBufferObject(
 						(int) Math.ceil((float) width / (2 << j)),
-						(int) Math.ceil((float) width / (2 << j)),
+						(int) Math.ceil((float) height / (2 << j)),
 						false
 				);
 				downSampleEmissionBuffers[i][j].attachTexture(0, new Texture2D(
@@ -96,6 +96,15 @@ public class Renderer implements IRenderer {
 	public void setResolution(int width, int height) {
 		gBuffer.setResolution(width, height);
 		lightBuffer.setResolution(width, height);
+
+		for (int i = 0; i < downSampleEmissionBuffers.length; i++) {
+			for (int j = 0; j < downSampleEmissionBuffers[i].length; j++) {
+				downSampleEmissionBuffers[i][j].setResolution(
+						(int) Math.ceil((float) width / (2 << j)),
+						(int) Math.ceil((float) height / (2 << j))
+				                                             );
+			}
+		}
 	}
 
 	private void renderLights(IRenderContext renderContext) {
@@ -193,7 +202,7 @@ public class Renderer implements IRenderer {
 	}
 
 	@Override
-	public void render(IRenderTarget renderTarget, Camera camera) {
+	public void render(IRenderTarget renderTarget, IReadOnlyCamera camera) {
 		IRenderContext renderContext = new RenderContext(camera, gBuffer.getWidth(), gBuffer.getHeight());
 
 		GL11.glEnable(GL_CULL_FACE);

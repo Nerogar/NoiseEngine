@@ -1,16 +1,22 @@
 package de.nerogar.noise.render;
 
-import java.io.*;
+import de.nerogar.noise.Noise;
+import de.nerogar.noise.file.ResourceDescriptor;
+import de.nerogar.noise.render.waveFront.WaveFrontObjectCollection;
+import de.nerogar.noise.util.Logger;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import de.nerogar.noise.Noise;
-import de.nerogar.noise.file.FileUtil;
-import de.nerogar.noise.util.Logger;
+import java.util.List;
+import java.util.Map;
 
 public class WavefrontLoader {
 
 	private static class VertexTuple {
+
 		public int vertex, normal, texCoord;
 		public boolean uvDirection;
 
@@ -47,20 +53,30 @@ public class WavefrontLoader {
 
 	}
 
-	public static Mesh loadObject(String filename) {
+	public static Mesh load(ResourceDescriptor file) {
+		return load(file, false, false).objects.values().iterator().next().mesh;
+	}
 
-		ArrayList<float[]> vertices = new ArrayList<float[]>();
-		ArrayList<float[]> normals = new ArrayList<float[]>();
-		ArrayList<float[]> texCoords = new ArrayList<float[]>();
+	public static WaveFrontObjectCollection load(ResourceDescriptor file, boolean separateObjects, boolean splitObjectsAtMaterials) {
 
-		ArrayList<VertexTuple> vertexTuples = new ArrayList<VertexTuple>();
-		HashMap<VertexTuple, Integer> vertexTupleMap = new HashMap<WavefrontLoader.VertexTuple, Integer>();
+		List<ResourceDescriptor> materialFiles = new ArrayList<>();
+		Map<String, WaveFrontObjectCollection.WaveFrontObject> objects = new HashMap<>();
 
-		ArrayList<int[]> faces = new ArrayList<int[]>();
+		ArrayList<float[]> vertices = new ArrayList<>();
+		ArrayList<float[]> normals = new ArrayList<>();
+		ArrayList<float[]> texCoords = new ArrayList<>();
+
+		ArrayList<VertexTuple> vertexTuples = new ArrayList<>();
+		HashMap<VertexTuple, Integer> vertexTupleMap = new HashMap<>();
+
+		ArrayList<int[]> faces = new ArrayList<>();
+
+		String materialName = null;
+		String objectName = null;
 
 		try {
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(FileUtil.get(filename, FileUtil.MESH_SUBFOLDER).asStream()));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(file.asStream()));
 
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -68,75 +84,116 @@ public class WavefrontLoader {
 				String[] lineSplit = line.split(" ");
 
 				switch (lineSplit[0]) {
-				case "v":
-					if (lineSplit.length == 4) {
-						float f1 = Float.parseFloat(lineSplit[1]);
-						float f2 = Float.parseFloat(lineSplit[2]);
-						float f3 = Float.parseFloat(lineSplit[3]);
+					case "mtllib":
+						for (int i = 1; i < lineSplit.length; i++) {
+							materialFiles.add(file.getRelative(lineSplit[i]));
+						}
+						break;
+					case "o":
+						if (separateObjects) {
+							if (!faces.isEmpty()) {
+								Mesh mesh = initMesh(
+										vertices, normals, texCoords,
+										vertexTuples, faces
+								                    );
 
-						vertices.add(new float[] { f1, f2, f3 });
-					}
-					break;
-				case "vt":
-					if (lineSplit.length == 3) {
-						float f1 = Float.parseFloat(lineSplit[1]);
-						float f2 = Float.parseFloat(lineSplit[2]);
-
-						texCoords.add(new float[] { f1, f2 });
-					}
-
-					break;
-				case "vn":
-					if (lineSplit.length == 4) {
-						float f1 = Float.parseFloat(lineSplit[1]);
-						float f2 = Float.parseFloat(lineSplit[2]);
-						float f3 = Float.parseFloat(lineSplit[3]);
-
-						normals.add(new float[] { f1, f2, f3 });
-					}
-					break;
-				case "f":
-					String lineData = line.substring(2);
-					lineSplit = lineData.split(" ");
-
-					if (lineSplit.length == 3) {
-						String[][] lineSubSplit = new String[3][];
-
-						lineSubSplit[0] = lineSplit[0].split("/");
-						lineSubSplit[1] = lineSplit[1].split("/");
-						lineSubSplit[2] = lineSplit[2].split("/");
-
-						int[] tupleIndices = new int[3];
-
-						boolean uvDirection = calcUVDirection(texCoords, Integer.parseInt(lineSubSplit[0][1]) - 1, Integer.parseInt(lineSubSplit[1][1]) - 1, Integer.parseInt(lineSubSplit[2][1]) - 1);
-
-						vertexLoop: for (int i = 0; i < 3; i++) {
-							if (lineSubSplit[i].length != 3) throw new RuntimeException("Unreadable wavefront file.");
-
-							int f1 = Integer.parseInt(lineSubSplit[i][0]) - 1;
-							int f2 = Integer.parseInt(lineSubSplit[i][1]) - 1;
-							int f3 = Integer.parseInt(lineSubSplit[i][2]) - 1;
-
-							VertexTuple newTuple = new VertexTuple(f1, f2, f3, uvDirection);
-
-							//find existing tuple
-							Integer tupleIndex = vertexTupleMap.get(newTuple);
-							if (tupleIndex != null) {
-								tupleIndices[i] = tupleIndex;
-								continue vertexLoop;
+								objects.put(objectName + "." + materialName, new WaveFrontObjectCollection.WaveFrontObject(mesh, materialName));
 							}
 
-							//if no tuple was found
-							vertexTuples.add(newTuple);
-							tupleIndices[i] = vertexTuples.size() - 1;
-							vertexTupleMap.put(newTuple, vertexTuples.size() - 1);
+							vertexTuples.clear();
+							vertexTupleMap.clear();
+							faces.clear();
 						}
 
-						faces.add(tupleIndices);
+						objectName = lineSplit[1];
+						break;
+					case "usemtl":
+						if (splitObjectsAtMaterials) {
+							if (!faces.isEmpty()) {
+								Mesh mesh = initMesh(
+										vertices, normals, texCoords,
+										vertexTuples, faces
+								                    );
 
-					}
+								objects.put(objectName + "." + materialName, new WaveFrontObjectCollection.WaveFrontObject(mesh, materialName));
+							}
 
-					break;
+							vertexTuples.clear();
+							vertexTupleMap.clear();
+							faces.clear();
+						}
+
+						materialName = lineSplit[1];
+						break;
+					case "v":
+						if (lineSplit.length == 4) {
+							float f1 = Float.parseFloat(lineSplit[1]);
+							float f2 = Float.parseFloat(lineSplit[2]);
+							float f3 = Float.parseFloat(lineSplit[3]);
+
+							vertices.add(new float[] { f1, f2, f3 });
+						}
+						break;
+					case "vt":
+						if (lineSplit.length == 3) {
+							float f1 = Float.parseFloat(lineSplit[1]);
+							float f2 = Float.parseFloat(lineSplit[2]);
+
+							texCoords.add(new float[] { f1, f2 });
+						}
+
+						break;
+					case "vn":
+						if (lineSplit.length == 4) {
+							float f1 = Float.parseFloat(lineSplit[1]);
+							float f2 = Float.parseFloat(lineSplit[2]);
+							float f3 = Float.parseFloat(lineSplit[3]);
+
+							normals.add(new float[] { f1, f2, f3 });
+						}
+						break;
+					case "f":
+						String lineData = line.substring(2);
+						lineSplit = lineData.split(" ");
+
+						if (lineSplit.length == 3) {
+							String[][] lineSubSplit = new String[3][];
+
+							lineSubSplit[0] = lineSplit[0].split("/");
+							lineSubSplit[1] = lineSplit[1].split("/");
+							lineSubSplit[2] = lineSplit[2].split("/");
+
+							int[] tupleIndices = new int[3];
+
+							boolean uvDirection = calcUVDirection(texCoords, Integer.parseInt(lineSubSplit[0][1]) - 1, Integer.parseInt(lineSubSplit[1][1]) - 1, Integer.parseInt(lineSubSplit[2][1]) - 1);
+
+							for (int i = 0; i < 3; i++) {
+								if (lineSubSplit[i].length != 3) throw new RuntimeException("Unreadable wavefront file.");
+
+								int f1 = Integer.parseInt(lineSubSplit[i][0]) - 1;
+								int f2 = Integer.parseInt(lineSubSplit[i][1]) - 1;
+								int f3 = Integer.parseInt(lineSubSplit[i][2]) - 1;
+
+								VertexTuple newTuple = new VertexTuple(f1, f2, f3, uvDirection);
+
+								// find existing tuple
+								Integer tupleIndex = vertexTupleMap.get(newTuple);
+								if (tupleIndex != null) {
+									tupleIndices[i] = tupleIndex;
+									continue;
+								}
+
+								// if no tuple was found
+								vertexTuples.add(newTuple);
+								tupleIndices[i] = vertexTuples.size() - 1;
+								vertexTupleMap.put(newTuple, vertexTuples.size() - 1);
+							}
+
+							faces.add(tupleIndices);
+
+						}
+
+						break;
 				}
 
 			}
@@ -146,7 +203,24 @@ public class WavefrontLoader {
 			e.printStackTrace();
 		}
 
-		//init object
+		// initialize the final object
+		Mesh mesh = initMesh(
+				vertices, normals, texCoords,
+				vertexTuples, faces
+		                    );
+		objects.put(objectName + "." + materialName, new WaveFrontObjectCollection.WaveFrontObject(mesh, materialName));
+
+		Noise.getLogger().log(Logger.INFO, "loaded .obj file: " + file.toString());
+		return new WaveFrontObjectCollection(materialFiles, objects);
+	}
+
+	private static Mesh initMesh(
+			ArrayList<float[]> vertices,
+			ArrayList<float[]> normals,
+			ArrayList<float[]> texCoords,
+			ArrayList<VertexTuple> vertexTuples,
+			ArrayList<int[]> faces
+	                            ) {
 
 		float[] verticesFinal = new float[vertexTuples.size() * 3];
 		float[] normalsFinal = new float[vertexTuples.size() * 3];
@@ -176,11 +250,7 @@ public class WavefrontLoader {
 			indices[i * 3 + 2] = face[2];
 		}
 
-		Mesh mesh = new Mesh(indices.length, vertexTuples.size(), indices, verticesFinal, texCoordsFinal, normalsFinal);
-
-		Noise.getLogger().log(Logger.INFO, "loaded .obj file: " + filename);
-
-		return mesh;
+		return new Mesh(indices.length, vertexTuples.size(), indices, verticesFinal, texCoordsFinal, normalsFinal);
 	}
 
 	private static boolean calcUVDirection(ArrayList<float[]> texCoords, int uIndex, int vIndex, int wIndex) {

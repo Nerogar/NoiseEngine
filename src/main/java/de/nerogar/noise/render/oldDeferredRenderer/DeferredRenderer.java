@@ -1,6 +1,7 @@
 package de.nerogar.noise.render.oldDeferredRenderer;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.math.Vector3f;
@@ -130,7 +131,8 @@ public class DeferredRenderer {
 
 		lightContainer = new LightContainer();
 		effectContainer = new EffectContainer();
-		Mesh sphere = WavefrontLoader.loadObject("<icoSphere.obj>");
+		Mesh sphere = WavefrontLoader.load(FileUtil.get("<icoSphere.obj>", FileUtil.MESH_SUBFOLDER));
+
 		lightVbo = new VertexBufferObjectInstanced(new int[] { 3 }, sphere.getIndexCount(), sphere.getVertexCount(), sphere.getIndexArray(), sphere.getPositionArray());
 
 		createFramebuffers(1);
@@ -198,7 +200,7 @@ public class DeferredRenderer {
 
 	private void loadOriginAxis() {
 		DeferredContainer axisContainer = new DeferredContainer(
-				WavefrontLoader.loadObject("<oldDeferredRenderer/originAxis.obj>"),
+				WavefrontLoader.load(FileUtil.get("<oldDeferredRenderer/originAxis.obj>", FileUtil.MESH_SUBFOLDER)),
 				null,
 				Texture2DLoader.loadTexture("<oldDeferredRenderer/originAxis/color.png>"),
 				Texture2DLoader.loadTexture("<oldDeferredRenderer/originAxis/normal.png>"),

@@ -5,6 +5,7 @@ import de.nerogar.noise.input.GlfwJoystickInputHandler;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.render.vr.OvrContext;
 import de.nerogar.noise.util.NoiseResource;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallbackI;
 import org.lwjgl.glfw.GLFWWindowRefreshCallbackI;
 
@@ -124,6 +125,10 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 
 		glfwSetFramebufferSizeCallback(windowPointer, frameBufferCallback);
 		glfwSetWindowRefreshCallback(windowPointer, windowRefreshCallback);
+
+		if (GLFW.glfwRawMouseMotionSupported()){
+			glfwSetInputMode(windowPointer, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		}
 
 		bind();
 	}
