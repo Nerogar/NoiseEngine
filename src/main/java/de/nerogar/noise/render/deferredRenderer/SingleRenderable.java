@@ -65,7 +65,7 @@ public class SingleRenderable implements IRenderable {
 	}
 
 	@Override
-	public Transformation getRenderProperties() {
+	public Transformation getTransformation() {
 		return renderProperties;
 	}
 

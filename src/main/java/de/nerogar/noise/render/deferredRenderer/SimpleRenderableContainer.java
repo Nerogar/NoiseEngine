@@ -17,7 +17,7 @@ public class SimpleRenderableContainer extends ArrayList<IRenderable> implements
 	}
 
 	@Override
-	public Transformation getRenderProperties() {
+	public Transformation getTransformation() {
 		return renderProperties;
 	}
 

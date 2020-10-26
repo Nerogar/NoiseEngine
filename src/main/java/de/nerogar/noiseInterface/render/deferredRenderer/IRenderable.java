@@ -11,7 +11,7 @@ public interface IRenderable {
 	 *
 	 * @return the render properties of this renderable.
 	 */
-	public Transformation getRenderProperties();
+	public Transformation getTransformation();
 
 	/**
 	 * Sets the render properties of the parent.

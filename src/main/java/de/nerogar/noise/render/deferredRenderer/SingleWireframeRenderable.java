@@ -42,7 +42,7 @@ public class SingleWireframeRenderable implements IRenderable {
 	public void setShadeless(boolean shadeless) { this.shadeless = shadeless; }
 
 	@Override
-	public Transformation getRenderProperties() {
+	public Transformation getTransformation() {
 		return renderProperties;
 	}
 

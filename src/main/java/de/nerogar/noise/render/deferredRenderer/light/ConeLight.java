@@ -52,7 +52,7 @@ public class ConeLight implements ILight {
 	}
 
 	@Override
-	public Transformation getRenderProperties() {
+	public Transformation getTransformation() {
 		return renderProperties;
 	}
 

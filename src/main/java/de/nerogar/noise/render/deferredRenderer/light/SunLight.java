@@ -25,7 +25,7 @@ public class SunLight implements ILight {
 	}
 
 	@Override
-	public Transformation getRenderProperties() {
+	public Transformation getTransformation() {
 		return null;
 	}
 
