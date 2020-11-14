@@ -33,27 +33,4 @@ public class TransformationComponent extends AbstractComponent {
 
 	public Transformation getTransformation() { return transformation; }
 
-	public float getX()                       { return transformation.getX(); }
-
-	public void setX(float x)                 { transformation.setX(x); }
-
-	public float getY()                       { return transformation.getY(); }
-
-	public void setY(float y)                 { transformation.setY(y); }
-
-	public float getZ()                       { return transformation.getZ(); }
-
-	public void setZ(float z)                     { transformation.setZ(z); }
-
-	public float getYaw()                         { return transformation.getYaw(); }
-
-	public void setYaw(float yaw)                 { transformation.setYaw(yaw); }
-
-	public float getPitch()                       { return transformation.getPitch(); }
-
-	public void setPitch(float pitch)             { transformation.setPitch(pitch); }
-
-	public float getRoll()                        { return transformation.getRoll(); }
-
-	public void setRoll(float roll)               { transformation.setRoll(roll); }
 }

@@ -1,6 +1,7 @@
 package de.nerogar.noise.math;
 
 import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IReadonlyVector3f;
 import de.nerogar.noiseInterface.math.IVector3f;
 
 public class Transformation {
@@ -415,11 +416,43 @@ public class Transformation {
 	/**
 	 * sets the x, y and z properties
 	 */
-	public void setXYZ(IVector3f v) {
+	public void setXYZ(IReadonlyVector3f v) {
 		if (this.x == v.getX() && this.y == v.getY() && this.z == v.getZ()) return;
 		this.x = v.getX();
 		this.y = v.getY();
 		this.z = v.getZ();
+
+		positionMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+
+		updateListener(true, false, false);
+	}
+
+	/**
+	 * adds to the x, y and z properties
+	 */
+	public void addXYZ(float x, float y, float z) {
+		if (x == 0 && y == 0 && z == 0) return;
+		this.x += x;
+		this.y += y;
+		this.z += z;
+
+		positionMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+
+		updateListener(true, false, false);
+	}
+
+	/**
+	 * adds to the x, y and z properties
+	 */
+	public void addXYZ(IReadonlyVector3f v) {
+		if (v.getX() == 0 && v.getY() == 0 && v.getZ() == 0) return;
+		this.x += v.getX();
+		this.y += v.getY();
+		this.z += v.getZ();
 
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;

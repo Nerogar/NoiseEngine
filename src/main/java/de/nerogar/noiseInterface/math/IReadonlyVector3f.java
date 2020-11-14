@@ -32,9 +32,9 @@ public interface IReadonlyVector3f {
 
 	float getSquaredLength();
 
-	IVector3f transformed(IMatrix4f m);
+	IVector3f transformed(IReadonlyMatrix4f m);
 
-	IVector3f transformed(IMatrix4f m, float w);
+	IVector3f transformed(IReadonlyMatrix4f m, float w);
 
 	IVector3f clone();
 }

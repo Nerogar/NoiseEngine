@@ -25,6 +25,10 @@ public class EntityContainer {
 		return entityId;
 	}
 
+	public IComponent[] removeEntity(int entityId) {
+		return entities.remove(entityId);
+	}
+
 	public IEntity getEntity(int entityId) {
 		return new Entity(entityId, this);
 	}
@@ -62,7 +66,7 @@ public class EntityContainer {
 		return entities.get(entityId);
 	}
 
-	public <T extends IComponent>  void getComponents(Class<T> componentClass, List<T> components) {
+	public <T extends IComponent> void getComponents(Class<T> componentClass, List<T> components) {
 		for (IComponent[] allComponents : entities.values()) {
 			for (IComponent component : allComponents) {
 				if (component.getClass() == componentClass) {

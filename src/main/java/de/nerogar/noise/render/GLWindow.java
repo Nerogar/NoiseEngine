@@ -59,24 +59,22 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 	 * @param swapInterval initial swap interval (0 = unbound)
 	 */
 	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval) {
-		this(title, width, height, resizable, swapInterval, null, null, false);
+		this(title, width, height, resizable, swapInterval, null, null);
 	}
 
 	/**
 	 * Creates a new window for OpenGL. A new GLContext will be created.
 	 * To share objects like textures or vertex buffers between windows, use the <code>parentWindow</code> parameter
 	 *
-	 * @param title            initial window Title
-	 * @param width            initial window width
-	 * @param height           initial window height
-	 * @param resizable        initial resizable status
-	 * @param swapInterval     initial swap interval (0 = unbound)
-	 * @param monitor          the monitor for fullscreen windows, null otherwise
-	 * @param parentWindow     the window to share openGL objects with, null otherwise
-	 * @param createOvrContext if this is true, an OpenVR context will be created for this OpenGL context.
-	 *                         Only one OpenVR context can exist at a time. Creating more than one context will generate exceptions.
+	 * @param title        initial window Title
+	 * @param width        initial window width
+	 * @param height       initial window height
+	 * @param resizable    initial resizable status
+	 * @param swapInterval initial swap interval (0 = unbound)
+	 * @param monitor      the monitor for fullscreen windows, null otherwise
+	 * @param parentWindow the window to share openGL objects with, null otherwise
 	 */
-	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval, Monitor monitor, GLWindow parentWindow, boolean createOvrContext) {
+	public GLWindow(String title, int width, int height, boolean resizable, int swapInterval, Monitor monitor, GLWindow parentWindow) {
 		super(title);
 
 		windows.add(this);
@@ -86,10 +84,6 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 		this.windowHeight = height;
 
 		inputHandler = new InputHandler();
-
-		if (createOvrContext) {
-			ovrContext = new OvrContext(this);
-		}
 
 		glfwDefaultWindowHints();
 		glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
@@ -126,11 +120,15 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 		glfwSetFramebufferSizeCallback(windowPointer, frameBufferCallback);
 		glfwSetWindowRefreshCallback(windowPointer, windowRefreshCallback);
 
-		if (GLFW.glfwRawMouseMotionSupported()){
+		if (GLFW.glfwRawMouseMotionSupported()) {
 			glfwSetInputMode(windowPointer, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 		}
 
 		bind();
+	}
+
+	public void setOvrContext(OvrContext ovrContext) {
+		this.ovrContext = ovrContext;
 	}
 
 	@Override

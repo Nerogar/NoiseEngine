@@ -7,20 +7,19 @@ import de.nerogar.noiseInterface.math.IMatrix4f;
 import de.nerogar.noiseInterface.render.vr.IOvrTrackedDevice;
 import org.lwjgl.openvr.VREventData;
 
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
-import static org.lwjgl.openvr.VR.EVREventType_VREvent_ButtonPress;
-import static org.lwjgl.openvr.VR.EVREventType_VREvent_ButtonUnpress;
+import static org.lwjgl.openvr.VR.*;
 
 public class OvrController extends Joystick implements IOvrTrackedDevice {
 
+	private final int        ovrTrackedDeviceIndex;
 	private final OvrContext ovrContext;
 
 	private final IMatrix4f gamePose;
 	private final IMatrix4f renderPose;
 
-	public OvrController(OvrContext ovrContext) {
+	public OvrController(int ovrTrackedDeviceIndex, OvrContext ovrContext) {
 		super("generic OvrController", 0, 0);
+		this.ovrTrackedDeviceIndex = ovrTrackedDeviceIndex;
 		this.ovrContext = ovrContext;
 		gamePose = new Matrix4f();
 		renderPose = new Matrix4f();
@@ -29,6 +28,11 @@ public class OvrController extends Joystick implements IOvrTrackedDevice {
 	@Override
 	public OvrTrackedDeviceType getType() {
 		return OvrTrackedDeviceType.CONTROLLER;
+	}
+
+	@Override
+	public int getTrackedDeviceIndex() {
+		return ovrTrackedDeviceIndex;
 	}
 
 	@Override
@@ -48,23 +52,35 @@ public class OvrController extends Joystick implements IOvrTrackedDevice {
 
 	@Override
 	public void processEvent(int eventType, VREventData data) {
-		int button;
+		/*int button;
 		switch (eventType) {
 			case EVREventType_VREvent_ButtonPress:
 				button = data.controller().button();
 				resizeButtons(button + 1);
 				buttons[button] = true;
-				events.add(new JoystickEvent(JoystickEvent.BUTTON, button, GLFW_PRESS));
+				events.add(new JoystickEvent(JoystickEvent.BUTTON, button, PRESS));
 				break;
 			case EVREventType_VREvent_ButtonUnpress:
 				button = data.controller().button();
 				resizeButtons(button + 1);
 				buttons[button] = false;
-				events.add(new JoystickEvent(JoystickEvent.BUTTON, button, GLFW_RELEASE));
+				events.add(new JoystickEvent(JoystickEvent.BUTTON, button, RELEASE));
+				break;
+			case EVREventType_VREvent_ButtonTouch:
+				button = data.controller().button();
+				resizeButtons(button + 1);
+				buttons[button] = true;
+				events.add(new JoystickEvent(JoystickEvent.BUTTON, button, TOUCH));
+				break;
+			case EVREventType_VREvent_ButtonUntouch:
+				button = data.controller().button();
+				resizeButtons(button + 1);
+				buttons[button] = false;
+				events.add(new JoystickEvent(JoystickEvent.BUTTON, button, UNTOUCH));
 				break;
 			default:
 				break;
-		}
+		}*/
 	}
 
 	private void resizeButtons(int newSize) {

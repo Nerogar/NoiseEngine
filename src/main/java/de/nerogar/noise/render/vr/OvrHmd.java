@@ -7,12 +7,14 @@ import org.lwjgl.openvr.VREventData;
 
 public class OvrHmd implements IOvrTrackedDevice {
 
+	private final int        ovrTrackedDeviceIndex;
 	private final OvrContext ovrContext;
 
 	private final Matrix4f gamePose;
 	private final Matrix4f renderPose;
 
-	public OvrHmd(OvrContext ovrContext) {
+	public OvrHmd(int ovrTrackedDeviceIndex, OvrContext ovrContext) {
+		this.ovrTrackedDeviceIndex = ovrTrackedDeviceIndex;
 		this.ovrContext = ovrContext;
 		gamePose = new Matrix4f();
 		renderPose = new Matrix4f();
@@ -21,6 +23,11 @@ public class OvrHmd implements IOvrTrackedDevice {
 	@Override
 	public OvrTrackedDeviceType getType() {
 		return OvrTrackedDeviceType.HMD;
+	}
+
+	@Override
+	public int getTrackedDeviceIndex() {
+		return ovrTrackedDeviceIndex;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package de.nerogar.noise.math;
 
-import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IReadonlyMatrix4f;
 import de.nerogar.noiseInterface.math.IReadonlyVector3f;
 import de.nerogar.noiseInterface.math.IVector3f;
 
@@ -294,7 +294,7 @@ public class Vector3f implements IVector3f {
 	}
 
 	@Override
-	public Vector3f transform(IMatrix4f m) {
+	public Vector3f transform(IReadonlyMatrix4f m) {
 		float x = this.x;
 		float y = this.y;
 		float z = this.z;
@@ -308,7 +308,7 @@ public class Vector3f implements IVector3f {
 	}
 
 	@Override
-	public Vector3f transform(IMatrix4f m, float w) {
+	public Vector3f transform(IReadonlyMatrix4f m, float w) {
 		float x = this.x;
 		float y = this.y;
 		float z = this.z;
@@ -322,12 +322,12 @@ public class Vector3f implements IVector3f {
 	}
 
 	@Override
-	public Vector3f transformed(IMatrix4f m) {
+	public Vector3f transformed(IReadonlyMatrix4f m) {
 		return clone().transform(m);
 	}
 
 	@Override
-	public Vector3f transformed(IMatrix4f m, float w) {
+	public Vector3f transformed(IReadonlyMatrix4f m, float w) {
 		return clone().transform(m, w);
 	}
 

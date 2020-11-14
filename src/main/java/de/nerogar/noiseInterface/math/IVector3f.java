@@ -45,7 +45,7 @@ public interface IVector3f extends IReadonlyVector3f {
 
 	IVector3f setLength(float length);
 
-	IVector3f transform(IMatrix4f m);
+	IVector3f transform(IReadonlyMatrix4f m);
 
-	IVector3f transform(IMatrix4f m, float w);
+	IVector3f transform(IReadonlyMatrix4f m, float w);
 }

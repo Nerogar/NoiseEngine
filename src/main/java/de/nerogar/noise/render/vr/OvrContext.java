@@ -1,15 +1,16 @@
 package de.nerogar.noise.render.vr;
 
+import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.Joystick;
 import de.nerogar.noise.math.Matrix4f;
+import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.render.GLWindow;
 import de.nerogar.noise.render.Texture2D;
 import de.nerogar.noise.render.camera.IVrCamera;
 import de.nerogar.noise.render.camera.OvrCamera;
-import de.nerogar.noiseInterface.render.vr.IOvrTrackedDevice;
-import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noise.util.NoiseResource;
 import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.render.vr.IOvrTrackedDevice;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openvr.*;
 import org.lwjgl.system.MemoryStack;
@@ -27,6 +28,7 @@ public class OvrContext extends NoiseResource {
 	private int height;
 
 	private GLWindow window;
+	private OvrInputHandler ovrInputHandler;
 
 	private org.lwjgl.openvr.Texture leftOvrEye;
 	private org.lwjgl.openvr.Texture rightOvrEye;
@@ -41,10 +43,13 @@ public class OvrContext extends NoiseResource {
 	private IOvrTrackedDevice[]      trackedDevices;
 	private IOvrTrackedDevice[][]    trackedDevicesByType;
 	private VREvent                  vrEvent;
+	private VRControllerState        controllerState;
 
-	public OvrContext(GLWindow window) {
+	public OvrContext(GLWindow window, String actionManifestPath) {
 		super("OvrContext");
 		this.window = window;
+		this.window.setOvrContext(this);
+		ovrInputHandler = new OvrInputHandler(this, actionManifestPath);
 
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			IntBuffer errorCode = stack.mallocInt(1);
@@ -53,6 +58,7 @@ public class OvrContext extends NoiseResource {
 
 			if (errorCode.get(0) == 0) {
 				OpenVR.create(token);
+				VRInput.VRInput_SetActionManifestPath(actionManifestPath);
 
 				IntBuffer w = stack.mallocInt(1);
 				IntBuffer h = stack.mallocInt(1);
@@ -72,23 +78,26 @@ public class OvrContext extends NoiseResource {
 				initTrackedDevices();
 
 				vrEvent = VREvent.create();
+				controllerState = VRControllerState.create();
 
 				camera = new OvrCamera(this);
 			}
 		}
 	}
 
-	public int getWidth()        { return width; }
+	public OvrInputHandler getOvrInputHandler() { return ovrInputHandler; }
 
-	public int getHeight()       { return height; }
+	public int getWidth()                       { return width; }
 
-	public IVrCamera getCamera() { return camera; }
+	public int getHeight()                      { return height; }
+
+	public IVrCamera getCamera()                { return camera; }
 
 	private void initTrackedDevices() {
 		trackedDevices = new IOvrTrackedDevice[k_unMaxTrackedDeviceCount];
 
 		for (int i = 0; i < trackedDevices.length; i++) {
-			trackedDevices[i] = IOvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(i), this);
+			trackedDevices[i] = IOvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(i), i, this);
 		}
 
 		sortTrackedDevices();
@@ -123,6 +132,7 @@ public class OvrContext extends NoiseResource {
 	public void update() {
 		pollEvents();
 		updateTracking();
+		ovrInputHandler.update();
 
 		VRCompositor.VRCompositor_PostPresentHandoff();
 	}
@@ -138,14 +148,14 @@ public class OvrContext extends NoiseResource {
 
 			switch (eventType) {
 				case EVREventType_VREvent_TrackedDeviceActivated:
-					trackedDevices[trackedDeviceIndex] = IOvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(trackedDeviceIndex), this);
+					trackedDevices[trackedDeviceIndex] = IOvrTrackedDevice.newDevice(VRSystem_GetTrackedDeviceClass(trackedDeviceIndex), trackedDeviceIndex, this);
 					sortTrackedDevices();
 					if (trackedDevices[trackedDeviceIndex] instanceof Joystick) {
 						window.getInputHandler().addJoystick((Joystick) trackedDevices[trackedDeviceIndex]);
 					}
 					break;
 				case EVREventType_VREvent_TrackedDeviceDeactivated:
-					trackedDevices[trackedDeviceIndex] = IOvrTrackedDevice.newDevice(ETrackedDeviceClass_TrackedDeviceClass_Invalid, this);
+					trackedDevices[trackedDeviceIndex] = IOvrTrackedDevice.newDevice(ETrackedDeviceClass_TrackedDeviceClass_Invalid, trackedDeviceIndex, this);
 					sortTrackedDevices();
 					if (trackedDevices[trackedDeviceIndex] instanceof Joystick) {
 						window.getInputHandler().removeJoystick((Joystick) trackedDevices[trackedDeviceIndex]);
@@ -153,6 +163,8 @@ public class OvrContext extends NoiseResource {
 					break;
 				case EVREventType_VREvent_ButtonPress:
 				case EVREventType_VREvent_ButtonUnpress:
+				case EVREventType_VREvent_ButtonTouch:
+				case EVREventType_VREvent_ButtonUntouch:
 					if (trackedDeviceIndex != k_unTrackedDeviceIndexInvalid) {
 						trackedDevices[trackedDeviceIndex].processEvent(eventType, vrEvent.data());
 					}

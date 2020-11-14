@@ -8,25 +8,27 @@ import static org.lwjgl.openvr.VR.*;
 
 public interface IOvrTrackedDevice {
 
-	static IOvrTrackedDevice newDevice(int ovrTrackedDeviceTypeId, OvrContext ovrContext) {
+	static IOvrTrackedDevice newDevice(int ovrTrackedDeviceTypeId, int ovrTrackedDeviceIndex, OvrContext ovrContext) {
 		switch (ovrTrackedDeviceTypeId) {
 			default:
 			case ETrackedDeviceClass_TrackedDeviceClass_Invalid:
-				return new OvrInvalidTrackedDevice(ovrContext);
+				return new OvrInvalidTrackedDevice(ovrTrackedDeviceIndex, ovrContext);
 			case ETrackedDeviceClass_TrackedDeviceClass_HMD:
-				return new OvrHmd(ovrContext);
+				return new OvrHmd(ovrTrackedDeviceIndex, ovrContext);
 			case ETrackedDeviceClass_TrackedDeviceClass_Controller:
-				return new OvrController(ovrContext);
+				return new OvrController(ovrTrackedDeviceIndex, ovrContext);
 			case ETrackedDeviceClass_TrackedDeviceClass_GenericTracker:
-				return new OvrGenericTracker(ovrContext);
+				return new OvrGenericTracker(ovrTrackedDeviceIndex, ovrContext);
 			case ETrackedDeviceClass_TrackedDeviceClass_TrackingReference:
-				return new OvrTrackingReference(ovrContext);
+				return new OvrTrackingReference(ovrTrackedDeviceIndex, ovrContext);
 			case ETrackedDeviceClass_TrackedDeviceClass_DisplayRedirect:
-				return new OvrDisplayRedirect(ovrContext);
+				return new OvrDisplayRedirect(ovrTrackedDeviceIndex, ovrContext);
 		}
 	}
 
 	OvrTrackedDeviceType getType();
+
+	int getTrackedDeviceIndex();
 
 	IMatrix4f getGamePose();
 

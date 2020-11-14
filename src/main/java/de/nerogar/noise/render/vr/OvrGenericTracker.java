@@ -7,12 +7,14 @@ import org.lwjgl.openvr.VREventData;
 
 public class OvrGenericTracker implements IOvrTrackedDevice {
 
+	private final int        ovrTrackedDeviceIndex;
 	private final OvrContext ovrContext;
 
 	private final IMatrix4f gamePose;
 	private final IMatrix4f renderPose;
 
-	public OvrGenericTracker(OvrContext ovrContext) {
+	public OvrGenericTracker(int ovrTrackedDeviceIndex, OvrContext ovrContext) {
+		this.ovrTrackedDeviceIndex = ovrTrackedDeviceIndex;
 		this.ovrContext = ovrContext;
 		gamePose = new Matrix4f();
 		renderPose = new Matrix4f();
@@ -21,6 +23,11 @@ public class OvrGenericTracker implements IOvrTrackedDevice {
 	@Override
 	public OvrTrackedDeviceType getType() {
 		return OvrTrackedDeviceType.GENERIC_TRACKER;
+	}
+
+	@Override
+	public int getTrackedDeviceIndex() {
+		return ovrTrackedDeviceIndex;
 	}
 
 	@Override

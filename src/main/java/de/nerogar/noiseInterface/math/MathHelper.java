@@ -9,39 +9,35 @@ public class MathHelper {
 
 	private static final float EPSILON = 0.000001f;
 
-	/*private static final int LOOKUP_TABLE_LENGTH = 4096;
-	private static float[] sinTable;
-
-	private static final float HALF_PI = (float) (Math.PI * 0.5);
-	public static final float PI = (float) (Math.PI);
-	public static final float TAU = (float) (Math.PI * 2);
-	public static final float INVERSE_TAU = 1.0f / TAU;
-
-	public static float sin(float radiant) {
-		float x = (radiant % TAU);
-		if (x < 0) x += TAU;
-		x *= INVERSE_TAU;
-		return sinTable[(int) (x * LOOKUP_TABLE_LENGTH)];
-	}
-
-	public static float cos(float radiant) {
-		return sin(radiant + HALF_PI);
-	}
-
-	static {
-		sinTable = new float[LOOKUP_TABLE_LENGTH];
-
-		for (int i = 0; i < LOOKUP_TABLE_LENGTH; i++) {
-			sinTable[i] = (float) Math.sin((TAU) * ((float) i / LOOKUP_TABLE_LENGTH));
-		}
-	}*/
-
 	public static float clamp(float val, float min, float max) {
 		return Math.min(Math.max(min, val), max);
 	}
 
 	public static int clamp(int val, int min, int max) {
 		return Math.min(Math.max(min, val), max);
+	}
+
+	/**
+	 * Returns the fractional part of a float.
+	 * The fractional part is positive for positive numbers and negative for negative numbers.
+	 *
+	 * @param val the value
+	 * @return the fractional part
+	 */
+	public static float fract(float val) {
+		return val - ((int) val);
+	}
+
+	/**
+	 * Mixes the values x and y with the factor a. If a is 0 x is returned. If a is 1 y is returned.
+	 *
+	 * @param x the first value
+	 * @param y the second value
+	 * @param a the mix factor
+	 * @return a mix between x and y
+	 */
+	public static float mix(float x, float y, float a) {
+		return x * (1.0f - a) + y * a;
 	}
 
 	/**
@@ -268,18 +264,6 @@ public class MathHelper {
 		} else {
 			return null;
 		}
-	}
-
-	/**
-	 * Mixes the values x and y with the factor a. If a is 0 x is returned. If a is 1 y is returned.
-	 *
-	 * @param x the first value
-	 * @param y the second value
-	 * @param a the mix factor
-	 * @return a mix between x and y
-	 */
-	public static float mix(float x, float y, float a) {
-		return x * (1.0f - a) + y * a;
 	}
 
 }
