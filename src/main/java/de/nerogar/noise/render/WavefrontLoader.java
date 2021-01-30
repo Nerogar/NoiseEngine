@@ -210,7 +210,7 @@ public class WavefrontLoader {
 		                    );
 		objects.put(objectName + "." + materialName, new WaveFrontObjectCollection.WaveFrontObject(mesh, materialName));
 
-		Noise.getLogger().log(Logger.INFO, "loaded .obj file: " + file.toString());
+		Noise.getLogger().log(Logger.INFO, "loaded .obj file: " + file.getFilename());
 		return new WaveFrontObjectCollection(materialFiles, objects);
 	}
 

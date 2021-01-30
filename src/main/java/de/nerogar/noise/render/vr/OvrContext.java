@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.vr;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.Joystick;
 import de.nerogar.noise.math.Matrix4f;
@@ -8,6 +9,7 @@ import de.nerogar.noise.render.GLWindow;
 import de.nerogar.noise.render.Texture2D;
 import de.nerogar.noise.render.camera.IVrCamera;
 import de.nerogar.noise.render.camera.OvrCamera;
+import de.nerogar.noise.util.Logger;
 import de.nerogar.noise.util.NoiseResource;
 import de.nerogar.noiseInterface.math.IMatrix4f;
 import de.nerogar.noiseInterface.render.vr.IOvrTrackedDevice;
@@ -17,6 +19,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.lang.reflect.Array;
 import java.nio.IntBuffer;
+import java.nio.file.Path;
 
 import static de.nerogar.noise.render.vr.OvrTrackedDeviceType.HMD;
 import static org.lwjgl.openvr.VR.*;
@@ -58,7 +61,12 @@ public class OvrContext extends NoiseResource {
 
 			if (errorCode.get(0) == 0) {
 				OpenVR.create(token);
-				VRInput.VRInput_SetActionManifestPath(actionManifestPath);
+				String pchActionManifestPath = Path.of(actionManifestPath).toAbsolutePath().toString();
+				int error = VRInput.VRInput_SetActionManifestPath(pchActionManifestPath);
+
+				if (error != 0) {
+					Noise.getLogger().log(Logger.ERROR, "Error while trying to set ovr action manifest '" + actionManifestPath + "'. Error: " + error);
+				}
 
 				IntBuffer w = stack.mallocInt(1);
 				IntBuffer h = stack.mallocInt(1);

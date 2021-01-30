@@ -1,12 +1,13 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.math.MathHelper;
 import de.nerogar.noise.math.Vector2f;
 import de.nerogar.noise.math.Vector3f;
-import de.nerogar.noise.util.*;
+import de.nerogar.noise.util.Logger;
+import de.nerogar.noise.util.Ray;
 import de.nerogar.noiseInterface.math.IVector2f;
 import de.nerogar.noiseInterface.math.IVector3f;
-import de.nerogar.noiseInterface.math.MathHelper;
 
 public class Mesh {
 
@@ -19,21 +20,32 @@ public class Mesh {
 	private float[]   uvArray;
 	private float[]   normalArray;
 	private float[]   tangentArray;
-	private float[]   bitangentArray;
+	private float[]   biTangentArray;
+	private float[]   boneIndexArray;
+	private float[]   boneWeightArray;
 	private float[][] additionalAttributes;
 	private int[]     additionalAttributeComponents;
 	private float     boundingRadius;
 
-	public Mesh(int indexCount, int vertexCount, int[] indexArray, float[] positionArray, float[] uvArray, float[] normalArray, float[] tangentArray, float[] bitangentArray) {
+	public Mesh(int indexCount, int vertexCount, int[] indexArray,
+			float[] positionArray, float[] uvArray,
+			float[] normalArray, float[] tangentArray, float[] biTangentArray,
+			float[] boneIndexArray, float[] boneWeightArray
+	           ) {
+
 		this.indexCount = indexCount;
 		this.vertexCount = vertexCount;
-
 		this.indexArray = indexArray;
+
 		this.positionArray = positionArray;
 		this.uvArray = uvArray;
+
 		this.normalArray = normalArray;
 		this.tangentArray = tangentArray;
-		this.bitangentArray = bitangentArray;
+		this.biTangentArray = biTangentArray;
+
+		this.boneIndexArray = boneIndexArray;
+		this.boneWeightArray = boneWeightArray;
 
 		calcBoundingRadius();
 		calcTriangleCount();
@@ -48,7 +60,6 @@ public class Mesh {
 		this.uvArray = uvArray;
 		this.normalArray = normalArray;
 
-		calcTangents();
 		calcBoundingRadius();
 		calcTriangleCount();
 	}
@@ -61,66 +72,8 @@ public class Mesh {
 		this.positionArray = positionArray;
 		this.uvArray = uvArray;
 
-		calcNormals();
-		calcTangents();
 		calcBoundingRadius();
 		calcTriangleCount();
-	}
-
-	public void setAdditionalAttributes(float[]... additionalAttributes) {
-		this.additionalAttributes = additionalAttributes;
-	}
-
-	public void setAdditionalAttributeComponents(int[] additionalAttributeComponents) {
-		this.additionalAttributeComponents = additionalAttributeComponents;
-	}
-
-	public int getIndexCount() {
-		return indexCount;
-	}
-
-	public int getVertexCount() {
-		return vertexCount;
-	}
-
-	public int[] getIndexArray() {
-		return indexArray;
-	}
-
-	public float[] getPositionArray() {
-		return positionArray;
-	}
-
-	public float[] getUVArray() {
-		return uvArray;
-	}
-
-	public float[] getNormalArray() {
-		return normalArray;
-	}
-
-	public float[] getTangentArray() {
-		return tangentArray;
-	}
-
-	public float[] getBitangentArray() {
-		return bitangentArray;
-	}
-
-	public float[][] getAdditionalAttributes() {
-		return additionalAttributes;
-	}
-
-	public int[] getAdditionalAttributeComponents() {
-		return additionalAttributeComponents;
-	}
-
-	public float getBoundingRadius() {
-		return boundingRadius;
-	}
-
-	public int getTriangleCount() {
-		return triangleCount;
 	}
 
 	private void calcNormals() {
@@ -165,7 +118,7 @@ public class Mesh {
 
 	private void calcTangents() {
 		tangentArray = new float[vertexCount * 3];
-		bitangentArray = new float[vertexCount * 3];
+		biTangentArray = new float[vertexCount * 3];
 
 		IVector2f sRelative = new Vector2f();
 		IVector2f tRelative = new Vector2f();
@@ -222,9 +175,9 @@ public class Mesh {
 				tangentArray[indexArray[i + j] * 3 + 1] += tangent.getY();
 				tangentArray[indexArray[i + j] * 3 + 2] += tangent.getZ();
 
-				bitangentArray[indexArray[i + j] * 3 + 0] += bitangent.getX();
-				bitangentArray[indexArray[i + j] * 3 + 1] += bitangent.getY();
-				bitangentArray[indexArray[i + j] * 3 + 2] += bitangent.getZ();
+				biTangentArray[indexArray[i + j] * 3 + 0] += bitangent.getX();
+				biTangentArray[indexArray[i + j] * 3 + 1] += bitangent.getY();
+				biTangentArray[indexArray[i + j] * 3 + 2] += bitangent.getZ();
 			}
 
 		}
@@ -237,7 +190,7 @@ public class Mesh {
 		// Normals are expected to be normalized, tangents and bitangents are normalized in the process
 		for (int i = 0; i < vertexCount; i++) {
 			tangent.set(tangentArray[i * 3 + 0], tangentArray[i * 3 + 1], tangentArray[i * 3 + 2]);
-			bitangent.set(bitangentArray[i * 3 + 0], bitangentArray[i * 3 + 1], bitangentArray[i * 3 + 2]);
+			bitangent.set(biTangentArray[i * 3 + 0], biTangentArray[i * 3 + 1], biTangentArray[i * 3 + 2]);
 
 			// make tangent orthogonal and store
 			normal.set(normalArray[i * 3 + 0], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
@@ -252,9 +205,9 @@ public class Mesh {
 			normal.set(normalArray[i * 3], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
 			bitangent.subtract(normal.multiply(normal.dot(bitangent)).add(tangent.multiply(tangent.dot(bitangent))));
 			bitangent.normalize();
-			bitangentArray[i * 3 + 0] = bitangent.getX();
-			bitangentArray[i * 3 + 1] = bitangent.getY();
-			bitangentArray[i * 3 + 2] = bitangent.getZ();
+			biTangentArray[i * 3 + 0] = bitangent.getX();
+			biTangentArray[i * 3 + 1] = bitangent.getY();
+			biTangentArray[i * 3 + 2] = bitangent.getZ();
 
 			// load normal and tangent again to calculate errors
 			normal.set(normalArray[i * 3], normalArray[i * 3 + 1], normalArray[i * 3 + 2]);
@@ -285,10 +238,10 @@ public class Mesh {
 
 	private void calcBoundingRadius() {
 
-		for (int i = 0; i < positionArray.length; i += 3) {
+		for (int i = 0; i < vertexCount; i += 3) {
 			float tempBoundingSize = positionArray[i + 0] * positionArray[i + 0] + positionArray[i + 1] * positionArray[i + 1] + positionArray[i + 2] * positionArray[i + 2];
 
-			if (tempBoundingSize > boundingRadius) boundingRadius = tempBoundingSize;
+			boundingRadius = Math.max(boundingRadius, tempBoundingSize);
 		}
 
 		boundingRadius = (float) Math.sqrt(boundingRadius);
@@ -314,14 +267,6 @@ public class Mesh {
 			int index1 = indexArray[triangle * 3 + 1];
 			int index2 = indexArray[triangle * 3 + 2];
 
-			/*Float currentIntersectionDistance = MathHelper.rayTriangleIntersectionCulling(
-					rayOriginX, rayOriginY, rayOriginZ,
-					rayDirX, rayDirY, rayDirZ,
-					positionArray[index0 * 3 + 0], positionArray[index0 * 3 + 1], positionArray[index0 * 3 + 2],
-					positionArray[index1 * 3 + 0], positionArray[index1 * 3 + 1], positionArray[index1 * 3 + 2],
-					positionArray[index2 * 3 + 0], positionArray[index2 * 3 + 1], positionArray[index2 * 3 + 2]
-			                                                                             );*/
-
 			Float currentIntersectionDistance = MathHelper.rayTriangleIntersectionCulling(
 					rayOriginX, rayOriginY, rayOriginZ,
 					rayDirX, rayDirY, rayDirZ,
@@ -338,13 +283,106 @@ public class Mesh {
 		return intersectionDistance;
 	}
 
+	public void setIndexCount(int indexCount)           { this.indexCount = indexCount;}
+
+	public int getIndexCount()                          { return indexCount; }
+
+	public void setVertexCount(int vertexCount)         { this.vertexCount = vertexCount; calcTriangleCount(); calcBoundingRadius();}
+
+	public int getVertexCount()                         { return vertexCount; }
+
+	public void setIndexArray(int[] indexArray)         { this.indexArray = indexArray; }
+
+	public int[] getIndexArray()                        { return indexArray; }
+
+	public void setPositionArray(float[] positionArray) { this.positionArray = positionArray; calcTriangleCount(); calcBoundingRadius();}
+
+	public float[] getPositionArray()                   { return positionArray; }
+
+	public void setUvArray(float[] uvArray)             { this.uvArray = uvArray; }
+
+	public float[] getUVArray()                         { return uvArray; }
+
+	public void setNormalArray(float[] normalArray) {
+		this.normalArray = normalArray;
+		this.tangentArray = null;
+		this.biTangentArray = null;
+	}
+
+	public float[] getNormalArray() {
+		if (normalArray == null) {
+			calcNormals();
+		}
+
+		return normalArray;
+	}
+
+	public void setTangentArray(float[] tangentArray) {
+		this.tangentArray = tangentArray;
+	}
+
+	public float[] getTangentArray() {
+		if (tangentArray == null) {
+			if (normalArray == null) {
+				calcNormals();
+			}
+			calcTangents();
+		}
+
+		return tangentArray;
+	}
+
+	public void setBiTangentArray(float[] biTangentArray) {
+		this.biTangentArray = biTangentArray;
+	}
+
+	public float[] getBiTangentArray() {
+		if (biTangentArray == null) {
+			if (normalArray == null) {
+				calcNormals();
+			}
+			calcTangents();
+		}
+
+		return biTangentArray;
+	}
+
+	public void setNormalAndTangentArrays(float[] normalArray, float[] tangentArray, float[] biTangentArray) {
+		this.normalArray = normalArray;
+		this.tangentArray = tangentArray;
+		this.biTangentArray = biTangentArray;
+	}
+
+	public void setBoneWeightArray(float[] boneWeightArray)                           { this.boneWeightArray = boneWeightArray; }
+
+	public float[] getBoneWeightArray()                                               { return boneWeightArray; }
+
+	public void setBoneIndexArray(float[] boneIndexArray)                             { this.boneIndexArray = boneIndexArray; }
+
+	public float[] getBoneIndexArray()                                                { return boneIndexArray; }
+
+	public void setAdditionalAttributes(float[]... additionalAttributes)              { this.additionalAttributes = additionalAttributes; }
+
+	public float[][] getAdditionalAttributes()                                        { return additionalAttributes; }
+
+	public void setAdditionalAttributeComponents(int[] additionalAttributeComponents) { this.additionalAttributeComponents = additionalAttributeComponents; }
+
+	public int[] getAdditionalAttributeComponents()                                   { return additionalAttributeComponents; }
+
+	public float getBoundingRadius()                                                  { return boundingRadius; }
+
+	public int getTriangleCount()                                                     { return triangleCount; }
+
 	public void clearArrays() {
 		indexArray = null;
 		positionArray = null;
 		uvArray = null;
 		normalArray = null;
 		tangentArray = null;
-		bitangentArray = null;
+		biTangentArray = null;
+		boneIndexArray = null;
+		boneWeightArray = null;
+		additionalAttributes = null;
 	}
 
 }

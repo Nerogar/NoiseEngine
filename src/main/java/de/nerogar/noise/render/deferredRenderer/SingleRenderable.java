@@ -47,7 +47,7 @@ public class SingleRenderable implements IRenderable {
 				mesh.getPositionArray(),
 				mesh.getNormalArray(),
 				mesh.getTangentArray(),
-				mesh.getBitangentArray(),
+				mesh.getBiTangentArray(),
 				mesh.getUVArray()
 		);
 	}
@@ -70,7 +70,7 @@ public class SingleRenderable implements IRenderable {
 	}
 
 	@Override
-	public void setParentRenderProperties(Transformation parentRenderProperties) {
+	public void setParentTransformation(Transformation parentRenderProperties) {
 		renderProperties.setParent(parentRenderProperties);
 	}
 

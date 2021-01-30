@@ -55,4 +55,8 @@ dependencies {
     // openVR
     compile "org.lwjgl:lwjgl-openvr:${lwjglVersion}"
     runtime "org.lwjgl:lwjgl-openvr:${lwjglVersion}:${lwjglNatives}"
+
+    // assimp
+    compile "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
+    runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
 }

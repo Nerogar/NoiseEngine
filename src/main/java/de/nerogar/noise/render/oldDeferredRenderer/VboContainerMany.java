@@ -59,7 +59,7 @@ class VboContainerMany implements VboContainer {
 				container.getMesh().getUVArray(),
 				container.getMesh().getNormalArray(),
 				container.getMesh().getTangentArray(),
-				container.getMesh().getBitangentArray()
+				container.getMesh().getBiTangentArray()
 		);
 	}
 

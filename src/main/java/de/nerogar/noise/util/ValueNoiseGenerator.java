@@ -4,7 +4,7 @@ import de.nerogar.noiseInterface.util.INoiseGenerator;
 
 import java.util.Random;
 
-import static de.nerogar.noiseInterface.math.MathHelper.mix;
+import static de.nerogar.noise.math.MathHelper.mix;
 
 public class ValueNoiseGenerator implements INoiseGenerator {
 

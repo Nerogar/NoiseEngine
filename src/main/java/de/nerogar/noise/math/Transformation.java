@@ -1,8 +1,8 @@
 package de.nerogar.noise.math;
 
 import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IReadonlyMatrix4f;
 import de.nerogar.noiseInterface.math.IReadonlyVector3f;
-import de.nerogar.noiseInterface.math.IVector3f;
 
 public class Transformation {
 
@@ -61,62 +61,8 @@ public class Transformation {
 		init();
 	}
 
-	public Transformation(IMatrix4f modelMatrix) {
-		float x0 = modelMatrix.get(0, 0);
-		float x1 = modelMatrix.get(1, 0);
-		float x2 = modelMatrix.get(2, 0);
-
-		float y0 = modelMatrix.get(0, 1);
-		float y1 = modelMatrix.get(1, 1);
-		float y2 = modelMatrix.get(2, 1);
-
-		float z0 = modelMatrix.get(0, 2);
-		float z1 = modelMatrix.get(1, 2);
-		float z2 = modelMatrix.get(2, 2);
-
-		// position
-		x = modelMatrix.get(0, 3);
-		y = modelMatrix.get(1, 3);
-		z = modelMatrix.get(2, 3);
-
-		// scale
-		scaleX = (float) Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
-		scaleY = (float) Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
-		scaleZ = (float) Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
-
-		// rotation
-		/*
-		rotationMatrix
-
-		= yaw*pitch*roll
-
-		  ( E  0  F)   (1  0  0)   ( A  B  0)
-		= ( 0  1  0) * (0  C  D) * (-B  A  0)
-		  (-F  0  E)   (0 -D  C)   ( 0  0  1)
-
-		  ( __  __  CF)
-		= (-CB  CA  D )
-		  ( __  __  CE)
-
-
-		roll  = atan2(-CB, CA)
-		yaw   = atan2(CF, CE)
-		pitch = atan2(D, C)
-			where C is calculated as
-			C=CA/A = CA/cos(roll) if cos(roll) != 0
-			C=CB/B = CB/sin(roll) if cos(roll) == 0
-
-		 */
-
-		roll = (float) Math.atan2(-x1, y1);
-		yaw = (float) Math.atan2(z0, z2);
-
-		double cosRoll = Math.cos(roll);
-		if (Math.abs(cosRoll) > 0.01) {
-			pitch = (float) Math.atan2(z1, y1 / cosRoll);
-		} else {
-			pitch = (float) Math.atan2(z1, (-x1) / Math.sin(roll));
-		}
+	public Transformation(IReadonlyMatrix4f modelMatrix) {
+		setFromMatrix(modelMatrix);
 
 		init();
 	}
@@ -220,6 +166,72 @@ public class Transformation {
 		modelMatrixDirty = false;
 		if (parent != null) parentModCount = parent.modCount;
 		modCount++;
+	}
+
+	public void setFromMatrix(IReadonlyMatrix4f modelMatrix) {
+		modelMatrixDirty = true;
+		positionMatrixDirty = true;
+		scaleMatrixDirty = true;
+		yawMatrixDirty = true;
+		pitchMatrixDirty = true;
+		rollMatrixDirty = true;
+		modCount++;
+
+		float x0 = modelMatrix.get(0, 0);
+		float x1 = modelMatrix.get(1, 0);
+		float x2 = modelMatrix.get(2, 0);
+
+		float y0 = modelMatrix.get(0, 1);
+		float y1 = modelMatrix.get(1, 1);
+		float y2 = modelMatrix.get(2, 1);
+
+		float z0 = modelMatrix.get(0, 2);
+		float z1 = modelMatrix.get(1, 2);
+		float z2 = modelMatrix.get(2, 2);
+
+		// position
+		x = modelMatrix.get(0, 3);
+		y = modelMatrix.get(1, 3);
+		z = modelMatrix.get(2, 3);
+
+		// scale
+		scaleX = (float) Math.sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+		scaleY = (float) Math.sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+		scaleZ = (float) Math.sqrt(z0 * z0 + z1 * z1 + z2 * z2);
+
+		// rotation
+		/*
+		rotationMatrix
+
+		= yaw*pitch*roll
+
+		  ( E  0  F)   (1  0  0)   ( A  B  0)
+		= ( 0  1  0) * (0  C  D) * (-B  A  0)
+		  (-F  0  E)   (0 -D  C)   ( 0  0  1)
+
+		  ( __  __  CF)
+		= (-CB  CA  D )
+		  ( __  __  CE)
+
+
+		roll  = atan2(-CB, CA)
+		yaw   = atan2(CF, CE)
+		pitch = atan2(D, C)
+			where C is calculated as
+			C=CA/A = CA/cos(roll) if cos(roll) != 0
+			C=CB/B = CB/sin(roll) if cos(roll) == 0
+
+		 */
+
+		roll = (float) Math.atan2(-x1, y1);
+		yaw = (float) Math.atan2(z0, z2);
+
+		double cosRoll = Math.cos(roll);
+		if (Math.abs(cosRoll) > 0.01) {
+			pitch = (float) -Math.atan2(z1, y1 / cosRoll);
+		} else {
+			pitch = (float) -Math.atan2(z1, (-x1) / Math.sin(roll));
+		}
 	}
 
 	/**

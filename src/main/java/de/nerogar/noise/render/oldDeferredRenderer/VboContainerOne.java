@@ -52,7 +52,7 @@ class VboContainerOne implements VboContainer {
 		attributes[1] = container.getMesh().getUVArray();
 		attributes[2] = container.getMesh().getNormalArray();
 		attributes[3] = container.getMesh().getTangentArray();
-		attributes[4] = container.getMesh().getBitangentArray();
+		attributes[4] = container.getMesh().getBiTangentArray();
 
 		for (int i = 0; i < container.getMesh().getAdditionalAttributes().length; i++) {
 			componentCounts[5 + i] = container.getMesh().getAdditionalAttributeComponents()[i];

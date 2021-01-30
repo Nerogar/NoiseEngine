@@ -47,7 +47,7 @@ public class SingleWireframeRenderable implements IRenderable {
 	}
 
 	@Override
-	public void setParentRenderProperties(Transformation parentRenderProperties) {
+	public void setParentTransformation(Transformation parentRenderProperties) {
 		renderProperties.setParent(parentRenderProperties);
 	}
 

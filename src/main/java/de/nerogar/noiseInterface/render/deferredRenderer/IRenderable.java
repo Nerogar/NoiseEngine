@@ -19,7 +19,7 @@ public interface IRenderable {
 	 *
 	 * @param parentRenderProperties the render properties of the parent.
 	 */
-	public void setParentRenderProperties(Transformation parentRenderProperties);
+	public void setParentTransformation(Transformation parentRenderProperties);
 
 	/**
 	 * Renders the geometry of the scene to a gBuffer.

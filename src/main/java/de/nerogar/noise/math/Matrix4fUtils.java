@@ -1,6 +1,7 @@
 package de.nerogar.noise.math;
 
 import de.nerogar.noiseInterface.math.IMatrix4f;
+import de.nerogar.noiseInterface.math.IReadonlyQuaternion;
 
 public final class Matrix4fUtils {
 
@@ -42,6 +43,20 @@ public final class Matrix4fUtils {
 				0.0f,                         0.0f,                         1.0f,                         0.0f,
 				0.0f,                         0.0f,                         0.0f,                         1.0f
 		);
+	}
+
+	public static void setRotationMatrixByUnitQuaternion(IMatrix4f m, IReadonlyQuaternion quaternion) {
+		float x = quaternion.getX();
+		float y = quaternion.getY();
+		float z = quaternion.getZ();
+		float w = quaternion.getW();
+
+		m.set(
+				1.0f - 2.0f*y*y - 2.0f*z*z,   2.0f*x*y - 2.0f*z*w,          2.0f*x*z + 2.0f*y*w,          0.0f,
+				2.0f*x*y + 2.0f*z*w,          1.0f - 2.0f*x*x - 2.0f*z*z,   2.0f*y*z - 2.0f*x*w,          0.0f,
+				2.0f*x*z - 2.0f*y*w,          2.0f*y*z + 2.0f*x*w,          1.0f - 2.0f*x*x - 2.0f*y*y,   0.0f,
+				0.0f,                         0.0f,                         0.0f,                         1.0f
+		     );
 	}
 
 	public static void setScaleMatrix(IMatrix4f m, float scaleX, float scaleY, float scaleZ) {
@@ -96,6 +111,12 @@ public final class Matrix4fUtils {
 	public static IMatrix4f getRollMatrix(float radians) {
 		Matrix4f mat = new Matrix4f();
 		setRollMatrix(mat, radians);
+		return mat;
+	}
+
+	public static IMatrix4f getRotationMatrixByUnitQuaternion(IReadonlyQuaternion quaternion) {
+		Matrix4f mat = new Matrix4f();
+		setRotationMatrixByUnitQuaternion(mat, quaternion);
 		return mat;
 	}
 

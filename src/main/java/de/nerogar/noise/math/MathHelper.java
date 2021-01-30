@@ -1,6 +1,5 @@
-package de.nerogar.noiseInterface.math;
+package de.nerogar.noise.math;
 
-import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.util.Ray;
 
 public class MathHelper {
@@ -40,6 +39,14 @@ public class MathHelper {
 		return x * (1.0f - a) + y * a;
 	}
 
+	public static float cot(float x) {
+		return 1f/(float)Math.tan(x);
+	}
+
+	public static float acot(float x) {
+		return PI / 2 - (float) Math.atan(x);
+	}
+
 	/**
 	 * only works if the ray direction is normalized
 	 *
@@ -60,6 +67,145 @@ public class MathHelper {
 
 			return (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
 		}
+	}
+
+	/**
+	 * Calculates the intersection position of a ray and a circle.
+	 *
+	 * @param x0 the x coordinate of the ray origin
+	 * @param y0 the y coordinate of the ray origin
+	 * @param dx the x coordinate of the ray direction
+	 * @param dy the y coordinate of the ray direction
+	 * @param cx  the x coordinate of the circle center
+	 * @param cy  the y coordinate of the circle center
+	 * @param r  the radius of the circle
+	 * @return the distance on the ray for the intersection point or negative infinity in case of no intersection
+	 */
+	public static float rayCircleIntersection(float x0, float y0, float dx, float dy, float cx, float cy, float r) {
+		// X: point in space, X0: ray origin, D: ray direction, t: position on the ray, r: radius of the circle
+		//
+		// ray: X = X0 + tD
+		// circle: |X| = r (a circle centered around the origin)
+		//
+		// expanding |X0 + tD| = r gives
+		// (x0^2 + y0^2) + (2*x0*dx + 2*y0*dy)*t + (dx^2 + dy^2)*t^2 = r^2
+		// or
+		// <D, D> * t^2 + 2<X0, D> * t + <X0, X0> - r^2 = 0 (where <_,_> is the scalar product
+		// solving for t:
+		// p = 2<X0, D>/<D, D>
+		// q = (<X0, X0> - r^2)/<D, D>
+		// t = -(p/2) +- sqrt((p/2)^2) - 2q)
+		//
+		// t = -(<X0, D>/<D, D>) +- sqrt((<X0, D>/<D, D>)^2 - (<X0, X0> - r^2)/<D, D>)
+
+		x0 -= cx;
+		y0 -= cy;
+
+		// d = <D, D>
+		float d = dx * dx + dy * dy;
+
+		float p = 2 * (x0 * dx + y0 * dy) / d;
+		float q = ((x0 * x0 + y0 * y0) - r * r) / d;
+
+		// discriminant = (<X0, D>/<D, D>)^2 - (<X0, X0> - r^2)/<D, D>
+		float discriminant = ((p / 2) * (p / 2)) - q;
+
+		// if discriminant is smaller that 0 no intersection exists
+		if (discriminant < 0) {
+			return -1;
+		}
+
+		// not interested in the + case, because it will always be greater and therefore farther away
+		float intersection = (-(p / 2) - (float) Math.sqrt(discriminant)) * (float) Math.sqrt(d);
+
+		if (intersection >= 0) {
+			return intersection;
+		} else if (q < 0) {
+			return intersection;
+		} else {
+			return Float.NEGATIVE_INFINITY;
+		}
+	}
+
+	/**
+	 * A version of {@link MathHelper#rayCircleIntersection(float, float, float, float, float, float, float)}
+	 * where the direction vector is assumed to be normalized.
+	 *
+	 * @param x0 the x coordinate of the ray origin
+	 * @param y0 the y coordinate of the ray origin
+	 * @param dx the x coordinate of the ray direction
+	 * @param dy the y coordinate of the ray direction
+	 * @param cx  the x coordinate of the circle center
+	 * @param cy  the y coordinate of the circle center
+	 * @param r  the radius of the circle
+	 * @return the distance on the ray for the intersection point or negative infinity in case of no intersection
+	 */
+	public static float rayCircleIntersectionNormalized(float x0, float y0, float dx, float dy, float cx, float cy, float r) {
+		x0 -= cx;
+		y0 -= cy;
+
+		float p = 2 * (x0 * dx + y0 * dy);
+		float q = ((x0 * x0 + y0 * y0) - r * r);
+
+		// discriminant = (<X0, D>/<D, D>)^2 - (<X0, X0> - r^2)/<D, D>
+		float discriminant = ((p / 2) * (p / 2)) - q;
+
+		// if discriminant is smaller that 0 no intersection exists
+		if (discriminant < 0) {
+			return Float.NEGATIVE_INFINITY;
+		}
+
+		// not interested in the + case, because it will always be greater and therefore farther away
+		float intersection =  (-(p / 2) - (float) Math.sqrt(discriminant));
+
+		if (intersection >= 0) {
+			return intersection;
+		} else if (q < 0) {
+			return intersection;
+		} else {
+			return Float.NEGATIVE_INFINITY;
+		}
+	}
+
+	/**
+	 * Calculates the intersection position of a ray with a line segment.
+	 * This variant is culling, meaning that the ray only collides with one side (the right side) of the line segment.
+	 *
+	 * @param x0     the x coordinate of the ray origin
+	 * @param y0     the y coordinate of the ray origin
+	 * @param dx     the x coordinate of the ray direction
+	 * @param dy     the y coordinate of the ray direction
+	 * @param lineX0 the x coordinate of the start position of the line segment
+	 * @param lineY0 the y coordinate of the start position of the line segment
+	 * @param lineX1 the x coordinate of the end position of the line segment
+	 * @param lineY1 the y coordinate of the end position of the line segment
+	 * @return the intersection position on the ray or a negative value in case of no intersection
+	 */
+	public static float rayLineSegmentIntersectionCulling(float x0, float y0, float dx, float dy, float lineX0, float lineY0, float lineX1, float lineY1) {
+		// X: point in space, X0: ray origin, D1: ray direction, t1: position on the ray, D2: end of the line segment, t2: position on the line segment
+		//
+		// ray: X = X0 + t1*D1
+		// line segment: X = t2*D2 (line segment starting at the origin)
+		//
+		// X0 + t1*D1 = t2*D2
+
+		float d2x = lineX1 - lineX1;
+		float d2y = lineY1 - lineY1;
+
+		// culling (where the normal is nx = d2y, ny = -d2x)
+		if ((d2y * dx - d2x * dy) <= 0) {
+			return -1;
+		}
+
+		// TODO: implement
+
+		//float t2 =
+
+		/*if () {
+			return -1;
+		}*/
+
+		return 0;
 	}
 
 	/**

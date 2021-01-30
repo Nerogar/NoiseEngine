@@ -48,7 +48,7 @@ public class ConeLight implements ILight {
 		setAngle(angle);
 
 		debugRenderable = new SingleWireframeRenderable(debugMesh, DEBUG_MESH_COLOR, 0.0f, true);
-		debugRenderable.setParentRenderProperties(renderProperties);
+		debugRenderable.setParentTransformation(renderProperties);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class ConeLight implements ILight {
 	}
 
 	@Override
-	public void setParentRenderProperties(Transformation parentRenderProperties) {
+	public void setParentTransformation(Transformation parentRenderProperties) {
 		renderProperties.setParent(renderProperties);
 	}
 

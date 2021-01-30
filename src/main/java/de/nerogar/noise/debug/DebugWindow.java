@@ -9,7 +9,7 @@ import de.nerogar.noise.render.fontRenderer.Font;
 import de.nerogar.noise.render.fontRenderer.FontRenderableString;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noiseInterface.math.IMatrix4f;
-import de.nerogar.noiseInterface.math.MathHelper;
+import de.nerogar.noise.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 

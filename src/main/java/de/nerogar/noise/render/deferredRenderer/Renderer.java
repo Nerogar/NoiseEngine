@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
 import static org.lwjgl.opengl.GL14.GL_CLAMP_TO_EDGE;
 
 /**
@@ -34,6 +35,8 @@ public class Renderer implements IRenderer {
 	private static final int GBUFFER_NORMAL_SLOT   = 1;
 	private static final int GBUFFER_MATERIAL_SLOT = 2;
 	private static final int LIGHT_LIGHTS_SLOT     = 0;
+
+	private static final int EMISSION_LEVEL_COUNT = 6;
 
 	private static Shader             gBufferCombineShader;
 	private static Shader             downSampleEmission1Shader;
@@ -65,7 +68,7 @@ public class Renderer implements IRenderer {
 		                                    Texture2D.DataType.BGRA_16_16_16F
 		);
 
-		downSampleEmissionBuffers = new FrameBufferObject[2][4];
+		downSampleEmissionBuffers = new FrameBufferObject[2][EMISSION_LEVEL_COUNT];
 		for (int i = 0; i < downSampleEmissionBuffers.length; i++) {
 			for (int j = 0; j < downSampleEmissionBuffers[i].length; j++) {
 				downSampleEmissionBuffers[i][j] = new FrameBufferObject(
@@ -78,7 +81,7 @@ public class Renderer implements IRenderer {
 						downSampleEmissionBuffers[i][j].getWidth(), downSampleEmissionBuffers[i][j].getHeight(),
 						null, Texture2D.InterpolationType.LINEAR, Texture2D.DataType.BGRA_16_16_16F
 				));
-				downSampleEmissionBuffers[i][j].getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_EDGE);
+				downSampleEmissionBuffers[i][j].getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_BORDER);
 			}
 		}
 
@@ -239,20 +242,19 @@ public class Renderer implements IRenderer {
 		gBuffer.getTextureAttachment(GBUFFER_NORMAL_SLOT).bind(1);
 		gBuffer.getTextureAttachment(GBUFFER_MATERIAL_SLOT).bind(2);
 		lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT).bind(3);
-		downSampleEmissionBuffers[0][0].getTextureAttachment(0).bind(4);
-		downSampleEmissionBuffers[0][1].getTextureAttachment(0).bind(5);
-		downSampleEmissionBuffers[0][2].getTextureAttachment(0).bind(6);
-		downSampleEmissionBuffers[0][3].getTextureAttachment(0).bind(7);
+
+		for (int i = 0; i < EMISSION_LEVEL_COUNT; i++) {
+			downSampleEmissionBuffers[0][i].getTextureAttachment(0).bind(4 + i);
+		}
 
 		gBufferCombineShader.activate();
 		gBufferCombineShader.setUniform1i("u_albedoBuffer", 0);
 		gBufferCombineShader.setUniform1i("u_normalBuffer", 1);
 		gBufferCombineShader.setUniform1i("u_materialBuffer", 2);
 		gBufferCombineShader.setUniform1i("u_lightBuffer", 3);
-		gBufferCombineShader.setUniform1i("u_emissionBuffer1", 4);
-		gBufferCombineShader.setUniform1i("u_emissionBuffer2", 5);
-		gBufferCombineShader.setUniform1i("u_emissionBuffer3", 6);
-		gBufferCombineShader.setUniform1i("u_emissionBuffer4", 7);
+		for (int i = 0; i < EMISSION_LEVEL_COUNT; i++) {
+			gBufferCombineShader.setUniform1i("u_emissionBuffer" + (i + 1), 4 + i);
+		}
 
 		fullscreenQuad.render();
 
@@ -261,8 +263,8 @@ public class Renderer implements IRenderer {
 
 	private static void loadBlurShader() {
 		// normal distribution (sigma=2)
-		float sigma = 2;
-		int tailSampleCount = 6;
+		float sigma = 5;
+		int tailSampleCount = 10;
 		float[] normalDistributionKernel = new float[tailSampleCount + 1];
 		float sum = 0;
 		for (int x = 0; x < normalDistributionKernel.length; x++) {
@@ -313,7 +315,10 @@ public class Renderer implements IRenderer {
 	}
 
 	static {
-		gBufferCombineShader = ShaderLoader.loadShader("<deferredRenderer/gBufferCombine.vert>", "<deferredRenderer/gBufferCombine.frag>");
+		Map<String, String> gBufferCombineParameters = new HashMap<>();
+		gBufferCombineParameters.put("EMISSION_TEXTURE_COUNT", "#define EMISSION_TEXTURE_COUNT " + EMISSION_LEVEL_COUNT);
+
+		gBufferCombineShader = ShaderLoader.loadShader("<deferredRenderer/gBufferCombine.vert>", "<deferredRenderer/gBufferCombine.frag>", gBufferCombineParameters);
 		downSampleEmission1Shader = ShaderLoader.loadShader("<deferredRenderer/downSampleEmission1.vert>", "<deferredRenderer/downSampleEmission1.frag>");
 		downSampleEmissionNShader = ShaderLoader.loadShader("<deferredRenderer/downSampleEmissionN.vert>", "<deferredRenderer/downSampleEmissionN.frag>");
 		loadBlurShader();
