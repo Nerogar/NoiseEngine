@@ -1,6 +1,6 @@
 package de.nerogar.noise.oldGame;
 
-import de.nerogar.noise.event.EventListener;
+import de.nerogar.noiseInterface.event.IEventListener;
 import de.nerogar.noise.event.EventManager;
 import de.nerogar.noise.oldGame.core.events.SystemSyncEvent;
 import de.nerogar.noise.oldGame.core.network.packets.InitSystemContainerPacket;
@@ -27,8 +27,8 @@ public abstract class SystemContainer implements Sided {
 
 	private INetworkAdapter networkAdapter;
 
-	private EventManager                   eventManager;
-	private EventListener<SystemSyncEvent> systemSyncListener;
+	private EventManager                    eventManager;
+	private IEventListener<SystemSyncEvent> systemSyncListener;
 
 	public SystemContainer(EventManager eventManager, INetworkAdapter networkAdapter) {
 		this.networkAdapter = networkAdapter;

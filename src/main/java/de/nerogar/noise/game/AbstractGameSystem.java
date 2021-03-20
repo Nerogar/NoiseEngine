@@ -1,15 +1,15 @@
 package de.nerogar.noise.game;
 
-import de.nerogar.noise.event.EventManager;
+import de.nerogar.noise.event.EventHub;
 import de.nerogar.noiseInterface.game.IGameSystem;
 
 public class AbstractGameSystem implements IGameSystem {
 
-	private EventManager        eventManager;
 	private GameSystemContainer gameSystemContainer;
+	private EventHub eventHub;
 
-	public AbstractGameSystem(EventManager eventManager) {
-		this.eventManager = eventManager;
+	public AbstractGameSystem(EventHub eventHub) {
+		this.eventHub = eventHub;
 	}
 
 	@Override
@@ -17,8 +17,8 @@ public class AbstractGameSystem implements IGameSystem {
 		this.gameSystemContainer = gameSystemContainer;
 	}
 
-	public EventManager getEventManager() {
-		return eventManager;
+	public EventHub getEventHub() {
+		return eventHub;
 	}
 
 	protected GameSystemContainer getGameSystemContainer() {

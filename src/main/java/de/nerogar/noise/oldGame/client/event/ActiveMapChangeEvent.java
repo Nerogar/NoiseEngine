@@ -1,6 +1,6 @@
 package de.nerogar.noise.oldGame.client.event;
 
-import de.nerogar.noise.event.IEvent;
+import de.nerogar.noiseInterface.event.IEvent;
 import de.nerogar.noise.oldGame.CoreMap;
 
 public class ActiveMapChangeEvent implements IEvent {

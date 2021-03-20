@@ -56,12 +56,12 @@ public class MtlLoader {
 						}
 						currentMaterial.setAlbedoColor(new Color(Float.parseFloat(lineSplit[1]), Float.parseFloat(lineSplit[2]), Float.parseFloat(lineSplit[3]), 0));
 						break;
-					case "Kd":
+					/*case "Kd":
 						if (lineSplit[1].equals("spectral") || lineSplit[1].equals("xyz")){
 							throw new RuntimeException("spectral curves and the CIEXYZ color space are not supported");
 						}
 						currentMaterial.setSpecularTintColor(new Color(Float.parseFloat(lineSplit[1]), Float.parseFloat(lineSplit[2]), Float.parseFloat(lineSplit[3]), 0));
-						break;
+						break;*/
 					case "Ke":
 						if (lineSplit[1].equals("spectral") || lineSplit[1].equals("xyz")){
 							throw new RuntimeException("spectral curves and the CIEXYZ color space are not supported");

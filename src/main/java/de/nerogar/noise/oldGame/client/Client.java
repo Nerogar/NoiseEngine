@@ -1,6 +1,6 @@
 package de.nerogar.noise.oldGame.client;
 
-import de.nerogar.noise.event.EventListener;
+import de.nerogar.noiseInterface.event.IEventListener;
 import de.nerogar.noise.event.EventManager;
 import de.nerogar.noise.oldGame.*;
 import de.nerogar.noise.oldGame.client.event.ActiveMapChangeEvent;
@@ -52,12 +52,12 @@ public abstract class Client<
 	private Faction                              ownFaction;
 	private Controller                           controller;
 
-	private EventListener<ActiveMapChangeEvent> activeMapChangeListener;
+	private IEventListener<ActiveMapChangeEvent> activeMapChangeListener;
 
 	// gui
 	private GuiContainer guiContainer;
 
-	private EventListener<WindowSizeChangeEvent> windowSizeChangeListener;
+	private IEventListener<WindowSizeChangeEvent> windowSizeChangeListener;
 
 	private MapLoader clientMapLoader;
 	private boolean   clientMapLoaderDone;

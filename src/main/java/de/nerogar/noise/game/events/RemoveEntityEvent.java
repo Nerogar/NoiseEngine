@@ -1,6 +1,6 @@
 package de.nerogar.noise.game.events;
 
-import de.nerogar.noise.event.IEvent;
+import de.nerogar.noiseInterface.event.IEvent;
 import de.nerogar.noiseInterface.game.IComponent;
 
 public class RemoveEntityEvent implements IEvent {

@@ -1,12 +1,11 @@
 package de.nerogar.noise.render.animation;
 
 import de.nerogar.noise.math.Matrix4f;
-import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noiseInterface.math.IMatrix4f;
 import de.nerogar.noiseInterface.math.IReadonlyMatrix4f;
-import de.nerogar.noiseInterface.math.IReadonlyVector3f;
+import de.nerogar.noiseInterface.render.animation.ISkeletonAnimation;
 
-public class SkeletonAnimation {
+public class SkeletonAnimation implements ISkeletonAnimation {
 
 	private int frameCount;
 

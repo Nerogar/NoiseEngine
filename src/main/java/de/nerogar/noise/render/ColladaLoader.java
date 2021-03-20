@@ -6,7 +6,7 @@ import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.render.animation.Skeleton;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Logger;
-import de.nerogar.noiseInterface.math.IReadonlyMatrix4f;
+import de.nerogar.noiseInterface.math.IMatrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
@@ -60,6 +60,9 @@ public class ColladaLoader {
 
 				Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_EMISSIVE, 0, 0, aiColor4D);
 				material.setEmissionColor(new Color(aiColor4D.r(), aiColor4D.g(), aiColor4D.b(), aiColor4D.a()));
+
+				Assimp.aiGetMaterialColor(aiMaterial, Assimp.AI_MATKEY_COLOR_DIFFUSE, 0, 0, aiColor4D);
+				material.setAlbedoColor(new Color(aiColor4D.r(), aiColor4D.g(), aiColor4D.b(), aiColor4D.a()));
 
 				materialArray[i] = material;
 			}
@@ -148,7 +151,7 @@ public class ColladaLoader {
 
 		String[] boneNames = new String[bones.size()];
 		int[] parents = new int[bones.size()];
-		IReadonlyMatrix4f[] bindPose = new IReadonlyMatrix4f[bones.size()];
+		IMatrix4f[] bindPose = new IMatrix4f[bones.size()];
 
 		for (int bone = 0; bone < bones.size(); bone++) {
 			AINode aiNode = bones.get(bone);
@@ -173,6 +176,7 @@ public class ColladaLoader {
 				for (int i = 0; i < bone; i++) {
 					if (parentBoneName.equals(boneNames[i])) {
 						parents[bone] = i;
+						bindPose[bone].multiplyLeft(bindPose[i]);
 						break;
 					}
 				}
@@ -191,19 +195,20 @@ public class ColladaLoader {
 
 		for (int vertex = 0; vertex < aiMesh.mNumVertices(); vertex++) {
 			AIVector3D position = positionBuffer.get(vertex);
-			AIVector3D normal = normalBuffer.get(vertex);
-			AIVector3D uv = uvBuffer.get(vertex);
-
 			positionArray[vertex * 3] = position.x();
 			positionArray[vertex * 3 + 1] = position.y();
 			positionArray[vertex * 3 + 2] = position.z();
 
+			AIVector3D normal = normalBuffer.get(vertex);
 			normalArray[vertex * 3] = normal.x();
 			normalArray[vertex * 3 + 1] = normal.y();
 			normalArray[vertex * 3 + 2] = normal.z();
 
-			uvArray[vertex * 2] = uv.x();
-			uvArray[vertex * 2 + 1] = uv.y();
+			if (uvBuffer != null) {
+				AIVector3D uv = uvBuffer.get(vertex);
+				uvArray[vertex * 2] = uv.x();
+				uvArray[vertex * 2 + 1] = uv.y();
+			}
 		}
 
 		for (int face = 0; face < aiMesh.mNumFaces(); face++) {
@@ -243,7 +248,7 @@ public class ColladaLoader {
 				Assimp.aiProcess_Triangulate | Assimp.aiProcess_LimitBoneWeights | Assimp.aiProcess_CalcTangentSpace,
 				(ByteBuffer) null,
 				aiPropertyStore
-		                                             );
+		                                                             );
 
 		debugPrintScene(aiScene);
 
@@ -300,7 +305,7 @@ public class ColladaLoader {
 			}
 
 			objects.add(new RenderableObject(
-					mesh, materialArray[aiMesh.mMaterialIndex()], parameterSkeleton
+					mesh, materialArray[aiMesh.mMaterialIndex()], skeleton
 			));
 		}
 

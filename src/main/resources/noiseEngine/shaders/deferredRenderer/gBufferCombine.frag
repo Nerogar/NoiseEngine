@@ -35,18 +35,30 @@ in DATA
 
 void main(){
     vec4 albedoSample = texture(u_albedoBuffer, frag_in.uv);
-    vec3 albedo = albedoSample.rgb;
-    float emission = albedoSample.a * 20.0;
     vec4 normalSample = texture(u_normalBuffer, frag_in.uv);
+    vec4 materialSample = texture(u_materialBuffer, frag_in.uv);
+
+    vec3 albedo = albedoSample.rgb;
+    float emissionStrength = albedoSample.a * 20.0;
+
     vec3 normal = normalSample.xyz;
+
     float shadeless = normalSample.w;
-    vec4 material = texture(u_materialBuffer, frag_in.uv);
+    float diffuseStrength = materialSample.a;
+
     vec3 light = texture(u_lightBuffer, frag_in.uv).rgb;
 
+    // diffuse
+    vec3 diffuse = albedo * diffuseStrength;
+
+    // emission
+    vec3 emission = albedo * emissionStrength;
+
+    // light
     float ambient = 0.1;
     light = pow(max(vec3(ambient), light), vec3(1.0 / 2.2));
 
-    vec3 color = mix(albedo * light, albedo, shadeless) * (1.0 + emission);
+    vec3 color = mix(diffuse * light, diffuse, shadeless) + emission;
 
     // bloom
     #if EMISSION_TEXTURE_COUNT > 0

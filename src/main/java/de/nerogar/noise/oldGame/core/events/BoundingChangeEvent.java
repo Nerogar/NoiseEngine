@@ -1,6 +1,6 @@
 package de.nerogar.noise.oldGame.core.events;
 
-import de.nerogar.noise.event.IEvent;
+import de.nerogar.noiseInterface.event.IEvent;
 import de.nerogar.noise.oldGame.core.components.BoundingComponent;
 
 public class BoundingChangeEvent implements IEvent {

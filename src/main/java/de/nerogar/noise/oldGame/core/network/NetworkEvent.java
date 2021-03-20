@@ -1,6 +1,6 @@
 package de.nerogar.noise.oldGame.core.network;
 
-import de.nerogar.noise.event.IEvent;
+import de.nerogar.noiseInterface.event.IEvent;
 import de.nerogar.noise.oldGame.NoiseGame;
 import de.nerogar.noise.network.Packet;
 

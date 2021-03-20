@@ -1,13 +1,13 @@
 package de.nerogar.noise.game.systems;
 
-import de.nerogar.noise.event.EventManager;
+import de.nerogar.noise.event.EventHub;
 import de.nerogar.noise.game.AbstractGameSystem;
 import de.nerogar.noiseInterface.game.IComponent;
 
 public class EntityFactorySystem extends AbstractGameSystem {
 
-	public EntityFactorySystem(EventManager eventManager) {
-		super(eventManager);
+	public EntityFactorySystem(EventHub eventHub) {
+		super(eventHub);
 	}
 
 	public void setEntityDefinitions() {

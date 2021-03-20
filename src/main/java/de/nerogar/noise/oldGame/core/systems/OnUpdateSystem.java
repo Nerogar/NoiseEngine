@@ -1,12 +1,12 @@
 package de.nerogar.noise.oldGame.core.systems;
 
-import de.nerogar.noise.event.EventListener;
+import de.nerogar.noiseInterface.event.IEventListener;
 import de.nerogar.noise.oldGame.LogicSystem;
 import de.nerogar.noise.oldGame.core.events.UpdateEvent;
 
 public abstract class OnUpdateSystem extends LogicSystem {
 
-	private EventListener<UpdateEvent> updateListener;
+	private IEventListener<UpdateEvent> updateListener;
 
 	@Override
 	public void init() {

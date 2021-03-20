@@ -16,17 +16,20 @@ import static org.lwjgl.opengl.GL14.GL_CLAMP_TO_EDGE;
 
 /**
  * gBuffer textures:
+ *
  * 1. albedo:
  * rgb: (8 bit) base color
  * a: emission power
+ *
  * 2. normal:
  * rgb: (10 bit) -> xyz in world space
  * a: (2 bit) shadeless factor
+ *
  * 3. material: rgba (8 bit)
  * r: ambient occlusion
  * g: specular factor
  * b: specular exponent in logarithmic scale (0, 1)->(1, 128) or (exponent = 2 ^ (blue * 7))
- * a:
+ * a: diffuse power
  */
 public class Renderer implements IRenderer {
 

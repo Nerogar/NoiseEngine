@@ -1,5 +1,8 @@
 package de.nerogar.noise.event;
 
+import de.nerogar.noiseInterface.event.IEvent;
+import de.nerogar.noiseInterface.event.IEventListener;
+
 import java.util.*;
 
 public class EventManager {
@@ -9,7 +12,7 @@ public class EventManager {
 	private final List<EventManager> children;
 
 	private final Map<Class<? extends IEvent>, DefaultEventManager<? extends IEvent>> defaultListenerMap;
-	private final Map<EventListener<?>, Boolean>                                      isImmediateMap;
+	private final Map<IEventListener<?>, Boolean>                                     isImmediateMap;
 
 	private final Queue<IEvent> eventQueue;
 	boolean triggered;
@@ -30,21 +33,21 @@ public class EventManager {
 		return (DefaultEventManager<T>) defaultListenerMap.computeIfAbsent(eventClass, ec -> new DefaultEventManager<T>());
 	}
 
-	public <T extends IEvent> void register(Class<T> eventClass, EventListener<T> eventListener) {
+	public <T extends IEvent> void register(Class<T> eventClass, IEventListener<T> eventListener) {
 		register(eventClass, eventListener, false);
 	}
 
-	public <T extends IEvent> void registerImmediate(Class<T> eventClass, EventListener<T> eventListener) {
+	public <T extends IEvent> void registerImmediate(Class<T> eventClass, IEventListener<T> eventListener) {
 		register(eventClass, eventListener, true);
 	}
 
-	private <T extends IEvent> void register(Class<T> eventClass, EventListener<T> eventListener, boolean isImmediate) {
+	private <T extends IEvent> void register(Class<T> eventClass, IEventListener<T> eventListener, boolean isImmediate) {
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 		defaultEventManager.register(eventListener);
 		isImmediateMap.put(eventListener, isImmediate);
 	}
 
-	public <T extends IEvent> void unregister(Class<T> eventClass, EventListener<T> eventListener) {
+	public <T extends IEvent> void unregister(Class<T> eventClass, IEventListener<T> eventListener) {
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 
 		defaultEventManager.unregister(eventListener);
@@ -92,7 +95,7 @@ public class EventManager {
 
 		DefaultEventManager<T> defaultEventManager = getDefaultEventManager(eventClass);
 
-		for (EventListener<T> entry : defaultEventManager.listeners) {
+		for (IEventListener<T> entry : defaultEventManager.listeners) {
 			if (isImmediateMap.get(entry) == isImmediate) {
 				entry.trigger(event);
 			}

@@ -91,7 +91,10 @@ public class Transformation {
 		this.parent = parent;
 		modelMatrixDirty = true;
 		modCount++;
-		parentModCount = parent.modCount;
+
+		if (parent != null) {
+			parentModCount = parent.modCount;
+		}
 	}
 
 	private boolean hasParentChanged() {

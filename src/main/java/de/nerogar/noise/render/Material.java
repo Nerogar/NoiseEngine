@@ -14,8 +14,8 @@ public class Material {
 	private float  specularIntensity;
 	private String specularIntensityMap;
 
-	private Color  specularTintColor;
-	private String specularTintTexture;
+	private float  specularExponent;
+	private String specularExponentMap;
 
 	private Color  emissionColor;
 	private String emissionTexture;
@@ -44,13 +44,13 @@ public class Material {
 
 	public void setSpecularIntensityMap(String specularIntensityMap) { this.specularIntensityMap = specularIntensityMap; }
 
-	public Color getSpecularTintColor()                              { return specularTintColor; }
+	public float getSpecularExponent()                               { return specularExponent; }
 
-	public void setSpecularTintColor(Color specularTintColor)        { this.specularTintColor = specularTintColor; }
+	public void setSpecularExponent(float specularExponent)          { this.specularExponent = specularExponent; }
 
-	public String getSpecularTintTexture()                           { return specularTintTexture; }
+	public String getSpecularExponentMap()                           { return specularExponentMap; }
 
-	public void setSpecularTintTexture(String specularTintTexture)   { this.specularTintTexture = specularTintTexture; }
+	public void setSpecularExponentMap(String specularExponentMap)   { this.specularExponentMap = specularExponentMap; }
 
 	public Color getEmissionColor()                                  { return emissionColor; }
 

@@ -1,6 +1,6 @@
 package de.nerogar.noise.oldGame.client.systems;
 
-import de.nerogar.noise.event.EventListener;
+import de.nerogar.noiseInterface.event.IEventListener;
 import de.nerogar.noise.oldGame.CoreMap;
 import de.nerogar.noise.oldGame.LogicSystem;
 import de.nerogar.noise.oldGame.client.event.RenderEvent;
@@ -16,9 +16,9 @@ public class RenderSystem extends LogicSystem {
 	private PerspectiveCamera camera;
 	private boolean           active;
 
-	private EventListener<WindowSizeChangeEvent> windowSizeChangeListener;
-	private EventListener<RenderEvent>           renderEventListener;
-	private EventListener<ActiveMapChangeEvent>  activeMapChangeListener;
+	private IEventListener<WindowSizeChangeEvent> windowSizeChangeListener;
+	private IEventListener<RenderEvent>           renderEventListener;
+	private IEventListener<ActiveMapChangeEvent>  activeMapChangeListener;
 
 	public RenderSystem(CoreMap map) {
 		this.map = map;
