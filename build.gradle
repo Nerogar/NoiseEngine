@@ -7,9 +7,8 @@ repositories {
     mavenCentral()
 }
 
-//group = 'de.nerogar'
-version = '0.1.0'
-sourceCompatibility = 1.11
+version = '2.0.0'
+sourceCompatibility = 1.16
 
 // lwjgl
 
@@ -34,29 +33,29 @@ switch (os) {
 
 dependencies {
     // lwjgl
-    compile "org.lwjgl:lwjgl:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
-    compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-    compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
 
     // openGL, openAL, openCL
-    compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-    compile "org.lwjgl:lwjgl-openal:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
-    compile "org.lwjgl:lwjgl-opencl:${lwjglVersion}"
+    api "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-openal:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-opencl:${lwjglVersion}"
 
     // stb
-    compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-stb:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
 
     // openVR
-    compile "org.lwjgl:lwjgl-openvr:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl-openvr:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-openvr:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl-openvr:${lwjglVersion}:${lwjglNatives}"
 
     // assimp
-    compile "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
-    runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
+    runtimeOnly "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
 }
