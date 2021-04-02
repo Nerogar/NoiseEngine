@@ -3,14 +3,12 @@ package de.nerogar.noise.game;
 import de.nerogar.noise.event.EventHub;
 import de.nerogar.noiseInterface.game.*;
 
-import java.lang.invoke.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class GameSystemContainer implements IGameSystemContainer {
 
@@ -31,12 +29,10 @@ public class GameSystemContainer implements IGameSystemContainer {
 	public void addGameSystem(IGameSystem gameSystem) {
 		gameSystemList.add(gameSystem);
 		gameSystemMap.put(gameSystem.getClass(), gameSystem);
-		gameSystem.setSystemContainer(this);
 	}
 
 	public void addGamePipeline(IGamePipeline<?> gamePipeline) {
 		gamePipelineMap.put(gamePipeline.getClass(), gamePipeline);
-
 	}
 
 	public void addInjectionObject(Object object) {
@@ -45,6 +41,7 @@ public class GameSystemContainer implements IGameSystemContainer {
 
 	private void addDefaultInjectionObjects() {
 		addInjectionObject(this);
+		addInjectionObject(eventHub);
 	}
 
 	public void startInjection() {
@@ -80,8 +77,6 @@ public class GameSystemContainer implements IGameSystemContainer {
 				}
 			}
 		}
-
-
 
 	}
 

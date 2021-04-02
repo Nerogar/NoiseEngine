@@ -11,14 +11,12 @@ import java.util.function.Function;
 
 public class EventHub {
 
-	private final List<IEventListener<?>>                    listeners;
 	private final List<Class<? extends IEvent>>              eventClasses;
 	private final Map<Class<? extends IEvent>, List<IEvent>> eventMap;
 
 	private final Function<Class<? extends IEvent>, List<IEvent>> addNewEventListLambda = eventClass -> new ArrayList<>();
 
 	public EventHub() {
-		listeners = new ArrayList<>();
 		eventClasses = new ArrayList<>();
 		eventMap = new HashMap<>();
 	}
@@ -28,34 +26,19 @@ public class EventHub {
 		events.add(event);
 	}
 
-	public <T extends IEvent> void resetEvents() {
+	public void resetEvents() {
 		for (List<IEvent> events : eventMap.values()) {
 			events.clear();
 		}
 	}
 
-	public <T extends IEvent> int addListener(Class<T> eventClass, IEventListener<T> listener) {
-		listeners.add(listener);
-		eventClasses.add(eventClass);
-
-		return listeners.size() - 1;
-	}
-
-	public void removeListener(int listenerHandle) {
-		listeners.set(listenerHandle, null);
-		eventClasses.set(listenerHandle, null);
-	}
-
-	public void triggerListener(int listenerHandle) {
-		IEventListener<IEvent> eventListener = (IEventListener<IEvent>) listeners.get(listenerHandle);
-		Class<IEvent> eventClass = (Class<IEvent>) eventClasses.get(listenerHandle);
-
+	public <T extends IEvent> void triggerListener(Class<T> eventClass, IEventListener<T> eventListener) {
 		List<IEvent> events = eventMap.get(eventClass);
 
 		if (events != null) {
 			int size = events.size();
 			for (int i = 0; i < size; i++) {
-				eventListener.trigger(events.get(i));
+				eventListener.trigger((T) events.get(i));
 			}
 		}
 	}
