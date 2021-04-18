@@ -49,7 +49,7 @@ public class GameSystemContainer implements IGameSystemContainer {
 
 		for (IGameSystem gameSystem : gameSystemList) {
 			for (Method method : gameSystem.getClass().getDeclaredMethods()) {
-				if (method.isAnnotationPresent(InjectionMethod.class)) {
+				if (method.isAnnotationPresent(Inject.class)) {
 					Object[] params = new Object[method.getParameterCount()];
 					Class<?>[] parameterTypes = method.getParameterTypes();
 

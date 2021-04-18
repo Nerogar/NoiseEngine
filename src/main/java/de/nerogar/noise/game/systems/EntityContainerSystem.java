@@ -17,7 +17,7 @@ public class EntityContainerSystem implements IGameSystem {
 		entityContainer = new EntityContainer();
 	}
 
-	@InjectionMethod
+	@Inject
 	public void inject(EventHub eventHub) {
 		this.eventHub = eventHub;
 	}
@@ -45,6 +45,10 @@ public class EntityContainerSystem implements IGameSystem {
 
 	public <T extends IComponent> void getEntityComponents(int entityId, Class<T> componentClass, List<? super T> components) {
 		entityContainer.getEntityComponents(entityId, componentClass, components);
+	}
+
+	public <T extends IComponent> boolean hasEntityComponent(int entityId, Class<T> componentClass) {
+		return entityContainer.getEntityComponent(entityId, componentClass) != null;
 	}
 
 	public IComponent[] getComponents(int entityId) {

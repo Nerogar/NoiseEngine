@@ -3,9 +3,11 @@ package de.nerogar.noise.game;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.event.EventHub;
 import de.nerogar.noise.util.Logger;
+import de.nerogar.noise.util.DirectedGraph;
 import de.nerogar.noiseInterface.event.IEvent;
 import de.nerogar.noiseInterface.event.IEventListener;
 import de.nerogar.noiseInterface.game.*;
+import de.nerogar.noiseInterface.util.IDirectedGraph;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.LambdaMetafactory;
@@ -68,13 +70,38 @@ public abstract class AbstractGamePipeline<T extends IEvent> implements IGamePip
 
 			long t1 = System.nanoTime();
 
-			System.out.println(pipelineMethod.name + ": " + ((t1 - t0) / 1_000_000d));
+			//System.out.println(pipelineMethod.name + ": " + ((t1 - t0) / 1_000_000d));
 		}
 	}
 
 	@Override
 	public IEventTrigger getEventTrigger(Class<? extends IEvent> eventClass) {
 		return activeMethod.eventTriggers.get(eventClass);
+	}
+
+	private List<PipelineMethod> sortPipelineMethods(List<PipelineMethod> pipelineMethods) {
+		IDirectedGraph<PipelineMethod> graph = new DirectedGraph<>();
+
+		for (PipelineMethod pipelineMethod : pipelineMethods) {
+			graph.addNode(pipelineMethod);
+		}
+
+		for (PipelineMethod producer : pipelineMethods) {
+			for (PipelineMethod consumer : pipelineMethods) {
+				for (Class<? extends IEvent> producedEvent : producer.producedEvents) {
+					if (consumer.consumedEvents.contains(producedEvent)) {
+						graph.addEdge(producer, consumer);
+						break;
+					}
+				}
+			}
+		}
+
+		if (!graph.isAcyclic()) {
+			throw new RuntimeException("Pipeline could not be sorted. Cyclic event dependency detected.");
+		}
+
+		return graph.getTopologicalSort();
 	}
 
 	private void build() throws Throwable {
@@ -103,15 +130,12 @@ public abstract class AbstractGamePipeline<T extends IEvent> implements IGamePip
 					for (ConsumesEvent annotation : method.getAnnotationsByType(ConsumesEvent.class)) {
 						pipelineMethod.producedEvents.add(annotation.event());
 
-						boolean found = false;
-						for (Method eventMethod : object.getClass().getMethods()) {
-							if (eventMethod.getName().equals(annotation.method())) {
-								found = true;
-								pipelineMethod.eventTriggers.put(annotation.event(), new EventTrigger<>(annotation.event(), createEventListener(object, eventMethod)));
-							}
-						}
-						if (!found) {
-							throw new RuntimeException("Could not find event method " + annotation.method() + " in class " + object.getClass().getName() + ". Event methods must be public.");
+						try {
+							Method eventMethod = object.getClass().getDeclaredMethod(annotation.method(), annotation.event());
+							eventMethod.setAccessible(true);
+							pipelineMethod.eventTriggers.put(annotation.event(), new EventTrigger<>(annotation.event(), createEventListener(object, eventMethod)));
+						} catch (NoSuchMethodException | IllegalAccessException e) {
+							throw new RuntimeException("Could not find event handler " + annotation.method() + " in class " + object.getClass().getName() + ". Event handlers must be public.");
 						}
 					}
 
@@ -120,43 +144,11 @@ public abstract class AbstractGamePipeline<T extends IEvent> implements IGamePip
 			}
 		}
 
-		// sort the list
-		pipelineMethods.sort((a, b) -> {
-			boolean aFirst = false;
-			boolean bFirst = false;
-
-			// if a produces an event that is consumed by b, a is evaluated first
-			for (Class<? extends IEvent> producedEvent : a.producedEvents) {
-				if (b.consumedEvents.contains(producedEvent)) {
-					aFirst = true;
-					break;
-				}
-			}
-
-			// if b produces an event that is consumed by a, b is evaluated first
-			for (Class<? extends IEvent> producedEvent : a.producedEvents) {
-				if (b.consumedEvents.contains(producedEvent)) {
-					bFirst = true;
-					break;
-				}
-			}
-
-			if (aFirst && bFirst) {
-				throw new RuntimeException("Could not construct pipeline " + this.getClass().getName() + ". Cyclic event dependencies detected.");
-			} else if (aFirst) {
-				return -1;
-			} else if (bFirst) {
-				return 1;
-			} else {
-				return 0;
-			}
-		});
+		sortPipelineMethods(pipelineMethods);
 
 		// finalize
 		methods.clear();
-		for (PipelineMethod pipelineMethod : pipelineMethods) {
-			methods.add(pipelineMethod);
-		}
+		methods.addAll(pipelineMethods);
 		isDirty = false;
 	}
 
@@ -165,6 +157,7 @@ public abstract class AbstractGamePipeline<T extends IEvent> implements IGamePip
 			throws Throwable {
 
 		MethodHandles.Lookup lookup = MethodHandles.lookup();
+
 		CallSite callSite = LambdaMetafactory.metafactory(
 				lookup,
 				"accept",
