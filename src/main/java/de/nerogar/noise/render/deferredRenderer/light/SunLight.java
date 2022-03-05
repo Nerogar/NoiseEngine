@@ -30,7 +30,7 @@ public class SunLight implements ILight {
 	}
 
 	@Override
-	public void setParentTransformation(Transformation parentRenderProperties) { }
+	public void setParentTransformation(Transformation parentTransformation) { }
 
 	public void setDirection(IVector3f direction) {
 		this.direction.set(direction).normalize();

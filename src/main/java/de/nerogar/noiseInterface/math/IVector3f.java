@@ -1,7 +1,5 @@
 package de.nerogar.noiseInterface.math;
 
-import de.nerogar.noise.math.Vector3f;
-
 public interface IVector3f extends IReadonlyVector3f {
 
 	// set

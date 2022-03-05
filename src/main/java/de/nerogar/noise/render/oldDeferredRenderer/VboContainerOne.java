@@ -64,7 +64,7 @@ class VboContainerOne implements VboContainer {
 				container.getMesh().getIndexCount(),
 				container.getMesh().getVertexCount(),
 				container.getMesh().getIndexArray(),
-				attributes
+				(Object[]) attributes
 		);
 	}
 

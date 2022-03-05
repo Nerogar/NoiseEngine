@@ -1,12 +1,13 @@
 package de.nerogar.noise.render;
 
 import de.nerogar.noise.util.NoiseResource;
+import de.nerogar.noiseInterface.render.IVertexBufferObject;
 
 import static org.lwjgl.opengl.GL11.*;
 
 import java.util.HashMap;
 
-public abstract class VertexBufferObject extends NoiseResource {
+public abstract class VertexBufferObject extends NoiseResource implements IVertexBufferObject {
 
 	/**Renders points using 1 vertex. Equal to GL_POINTS*/
 	public static final int POINTS = GL_POINTS;
@@ -15,11 +16,12 @@ public abstract class VertexBufferObject extends NoiseResource {
 	/**Renders triangles using 3 vertices. Equal to GL_TRIANGLES*/
 	public static final int TRIANGLES = GL_TRIANGLES;
 
-	protected int renderType;
-	protected HashMap<Long, Integer> glContextVaoHandles;
+	protected final int renderType;
+	protected final HashMap<Long, Integer> glContextVaoHandles;
 
-	public abstract int getBufferName();
-
-	public abstract void render();
+	public VertexBufferObject(int renderType) {
+		this.renderType = renderType;
+		this.glContextVaoHandles = new HashMap<>();
+	}
 
 }

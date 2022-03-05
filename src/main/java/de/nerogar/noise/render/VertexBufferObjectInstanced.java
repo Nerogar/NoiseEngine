@@ -64,14 +64,14 @@ public class VertexBufferObjectInstanced extends VertexBufferObject {
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
 	public VertexBufferObjectInstanced(int renderType, int[] componentCounts, int indexCount, int vertexCount, int[] indexArray, float[]... attributes) {
+		super(renderType);
+
 		if (componentCounts.length != attributes.length) throw new ArrayIndexOutOfBoundsException();
 
-		this.renderType = renderType;
 		this.componentCounts = componentCounts;
 		this.indexCount = indexCount;
 
-		glContextVaoHandles = new HashMap<Long, Integer>();
-		glContextInstanceDataDirty = new HashMap<Long, Boolean>();
+		glContextInstanceDataDirty = new HashMap<>();
 
 		//create Buffer
 		incrementalComponentCounts = new int[componentCounts.length];

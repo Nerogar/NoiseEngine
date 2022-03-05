@@ -2,8 +2,7 @@ package de.nerogar.noise.render.camera;
 
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noiseInterface.math.IMatrix4f;
-import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public interface IReadOnlyCamera extends IMultiCamera {
 
@@ -65,14 +64,20 @@ public interface IReadOnlyCamera extends IMultiCamera {
 	void directionToWorldSpace(IVector3f direction);
 
 	/**
-	 * <p>
+	 * Projects a point in world space onto the screen.
+	 * The resulting coordinates are in normalized screen coordinates.
+	 * (0, 0) is the center, (1, 1) is the top right.
+	 *
+	 * @param point the point in world space
+	 * @return the projected point in screen space
+	 */
+	IVector2f project(IReadonlyVector3f point);
+
+	/**
 	 * Unproject a single pixel to a ray in world space.
 	 * The pixel coordinates are in normalized screen coordinates.
 	 * (0, 0) is the center, (1, 1) is the top right.
-	 * </p>
-	 * <p>
 	 * The ray is in the following format: ray.pos + ray.dir has a z value of 1 in screen space.
-	 * </p>
 	 *
 	 * @param x the x component of the pixel
 	 * @param y the y component of the pixel

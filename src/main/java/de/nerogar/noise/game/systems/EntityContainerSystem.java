@@ -22,17 +22,15 @@ public class EntityContainerSystem implements IGameSystem {
 		this.eventHub = eventHub;
 	}
 
-	@ProducesEvent(SpawnEntityEvent.class)
-	public int addEntity(IComponent[] components) {
+	public int addEntity(IComponent[] components, IEventProducer<SpawnEntityEvent> spawnEntityEvents) {
 		int entityId = entityContainer.addEntity(components);
-		eventHub.addEvent(new SpawnEntityEvent(entityId, components));
+		spawnEntityEvents.addEvent(new SpawnEntityEvent(entityId, components));
 		return entityId;
 	}
 
-	@ProducesEvent(RemoveEntityEvent.class)
-	public void removeEntity(int entityId) {
+	public void removeEntity(int entityId, IEventProducer<RemoveEntityEvent> removeEntityEvents) {
 		IComponent[] removedEntity = entityContainer.removeEntity(entityId);
-		eventHub.addEvent(new RemoveEntityEvent(entityId, removedEntity));
+		removeEntityEvents.addEvent(new RemoveEntityEvent(entityId, removedEntity));
 	}
 
 	public IEntity getEntity(int entityId) {

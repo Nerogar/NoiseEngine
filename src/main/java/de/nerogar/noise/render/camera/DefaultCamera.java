@@ -1,12 +1,9 @@
 package de.nerogar.noise.render.camera;
 
-import de.nerogar.noise.math.Matrix4f;
-import de.nerogar.noise.math.Matrix4fUtils;
-import de.nerogar.noise.math.Vector3f;
+import de.nerogar.noise.math.*;
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noiseInterface.math.IMatrix4f;
-import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public abstract class DefaultCamera extends Camera {
 
@@ -358,6 +355,16 @@ public abstract class DefaultCamera extends Camera {
 		direction.setX(newX);
 		direction.setY(newY);
 		direction.setZ(newZ);
+	}
+
+	@Override
+	public IVector2f project(IReadonlyVector3f point) {
+		IVector3f pointInScreenSpace = point.transformed(viewMatrix, 1).transform(projectionMatrix, 1);
+
+		return new Vector2f(
+				pointInScreenSpace.getX() / pointInScreenSpace.getZ(),
+				pointInScreenSpace.getY() / pointInScreenSpace.getZ()
+		);
 	}
 
 	/**

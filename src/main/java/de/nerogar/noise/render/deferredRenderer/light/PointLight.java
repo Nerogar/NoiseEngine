@@ -47,8 +47,8 @@ public class PointLight implements ILight {
 	}
 
 	@Override
-	public void setParentTransformation(Transformation parentRenderProperties) {
-		renderProperties.setParent(parentRenderProperties);
+	public void setParentTransformation(Transformation parentTransformation) {
+		renderProperties.setParent(parentTransformation);
 	}
 
 	public void setPosition(IVector3f position)        { renderProperties.setXYZ(position); }

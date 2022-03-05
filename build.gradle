@@ -1,61 +1,63 @@
 apply plugin: 'java-library'
-
-import org.gradle.internal.os.OperatingSystem
+apply plugin: 'maven-publish'
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
-version = '2.0.0'
-sourceCompatibility = 1.16
+group = 'de.nerogar.noise-engine'
+version = '2.0.0-SNAPSHOT'
+sourceCompatibility = 1.17
 
 // lwjgl
-
-project.ext.lwjglVersion = "3.2.3"
-
-def osProp = System.getProperty("os")
-def os = osProp == null ? OperatingSystem.current() : OperatingSystem.forName(osProp)
-
-switch (os) {
-    case OperatingSystem.WINDOWS:
-        project.ext.lwjglNatives = "natives-windows"
-        break
-    case OperatingSystem.LINUX:
-        project.ext.lwjglNatives = "natives-linux"
-        break
-    case OperatingSystem.MAC_OS:
-        project.ext.lwjglNatives = "natives-macos"
-        break
-    default:
-        throw new UnsupportedOperationException("Unsupported OS: " + os.familyName + "(" + osProp + ")")
-}
+project.ext.lwjglVersion = "3.3.0"
+project.ext.lwjglNatives = "natives-windows"
 
 dependencies {
-    // lwjgl
-    api "org.lwjgl:lwjgl:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
-    api "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-    api "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+    // lwjgl base
+    api "org.lwjgl:lwjgl:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
+    api "org.lwjgl:lwjgl-glfw:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl-glfw:$lwjglVersion:$lwjglNatives"
+    api "org.lwjgl:lwjgl-jemalloc:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl-jemalloc:$lwjglVersion:$lwjglNatives"
 
     // openGL, openAL, openCL
-    api "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-    api "org.lwjgl:lwjgl-openal:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
-    api "org.lwjgl:lwjgl-opencl:${lwjglVersion}"
+    api "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl-opengl:$lwjglVersion:$lwjglNatives"
+    api "org.lwjgl:lwjgl-openal:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl-openal:$lwjglVersion:$lwjglNatives"
+    api "org.lwjgl:lwjgl-opencl:$lwjglVersion"
 
     // stb
-    api "org.lwjgl:lwjgl-stb:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-stb:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives"
 
     // openVR
-    api "org.lwjgl:lwjgl-openvr:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl-openvr:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-openvr:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl-openvr:$lwjglVersion:$lwjglNatives"
 
     // assimp
-    api "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
-    runtimeOnly "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
+    api "org.lwjgl:lwjgl-assimp:$lwjglVersion"
+    runtimeOnly "org.lwjgl:lwjgl-assimp:$lwjglVersion:$lwjglNatives"
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Nerogar/noise-engine-package")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
 }

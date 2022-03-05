@@ -17,9 +17,9 @@ public interface IRenderable {
 	 * Sets the render properties of the parent.
 	 * If no parent exists, or the rendering should be independent of the parents render properties, null should be passed.
 	 *
-	 * @param parentRenderProperties the render properties of the parent.
+	 * @param parentTransformation the render properties of the parent.
 	 */
-	public void setParentTransformation(Transformation parentRenderProperties);
+	public void setParentTransformation(Transformation parentTransformation);
 
 	/**
 	 * Renders the geometry of the scene to a gBuffer.

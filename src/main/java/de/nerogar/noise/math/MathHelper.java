@@ -1,6 +1,7 @@
 package de.nerogar.noise.math;
 
 import de.nerogar.noise.util.Ray;
+import de.nerogar.noiseInterface.math.*;
 
 public class MathHelper {
 
@@ -40,7 +41,7 @@ public class MathHelper {
 	}
 
 	public static float cot(float x) {
-		return 1f/(float)Math.tan(x);
+		return 1f / (float) Math.tan(x);
 	}
 
 	public static float acot(float x) {
@@ -70,14 +71,110 @@ public class MathHelper {
 	}
 
 	/**
+	 * Calculates the closest point on the line segment between {@code vert0} and {@code vert1} to the given point
+	 *
+	 * @return the closes point on the ray
+	 */
+	public static IVector3f closestPointOnLineSegment(IReadonlyVector3f vert0, IReadonlyVector3f vert1, IReadonlyVector3f point) {
+		float lineDirX = vert1.getX() - vert0.getX();
+		float lineDirY = vert1.getY() - vert0.getY();
+		float lineDirZ = vert1.getZ() - vert0.getZ();
+
+		float d = (float) Math.sqrt(lineDirX * lineDirX + lineDirY * lineDirY + lineDirZ * lineDirZ);
+
+		float pointDistX = point.getX() - vert0.getX();
+		float pointDistY = point.getY() - vert0.getY();
+		float pointDistZ = point.getZ() - vert0.getZ();
+
+		float t0 = (lineDirX / d) * pointDistX + (lineDirY / d) * pointDistY + (lineDirZ / d) * pointDistZ;
+		if (t0 < 0) {
+			return vert0.clone();
+		} else if (t0 > d) {
+			return vert1.clone();
+		} else {
+			return new Vector3f(
+					vert0.getX() + (t0 * lineDirX / d),
+					vert0.getY() + (t0 * lineDirY / d),
+					vert0.getZ() + (t0 * lineDirZ / d)
+			);
+		}
+	}
+
+	/**
+	 * Calculates the closest point on a circle to a point.
+	 *
+	 * @param center the center of the circle
+	 * @param normal the normal direction of the circle
+	 * @param radius the radius of the circle
+	 * @param point  the point
+	 * @return the closes point on the circle
+	 */
+	public static IVector3f closestPointOnCircle(IReadonlyVector3f center, IReadonlyVector3f normal, float radius, IReadonlyVector3f point) {
+		float pointDistX = point.getX() - center.getX();
+		float pointDistY = point.getY() - center.getY();
+		float pointDistZ = point.getZ() - center.getZ();
+
+		float dot = pointDistX * normal.getX() + pointDistY * normal.getY() + pointDistZ * normal.getZ();
+
+		float projectedX = pointDistX - dot * normal.getX();
+		float projectedY = pointDistY - dot * normal.getY();
+		float projectedZ = pointDistZ - dot * normal.getZ();
+
+		float d = (float) Math.sqrt(projectedX * projectedX + projectedY * projectedY + projectedZ * projectedZ);
+
+		projectedX /= d;
+		projectedY /= d;
+		projectedZ /= d;
+
+		projectedX *= radius;
+		projectedY *= radius;
+		projectedZ *= radius;
+
+		return new Vector3f(
+				center.getX() + projectedX,
+				center.getY() + projectedY,
+				center.getZ() + projectedZ
+		);
+	}
+
+	/**
+	 * Calculates the closest point on a circle segment to a point.
+	 * The circle segment is the shorter distance between the two vectors {@code v0} and {@code v1}
+	 *
+	 * @param center the center of the circle
+	 * @param v0     the first enclosing vector of the circle segment
+	 * @param v1     the second enclosing vector of the circle segment
+	 * @param radius the radius of the circle
+	 * @param point  the point
+	 * @return the closes point on the circle
+	 */
+	public static IVector3f closestPointOnCircleSegment(IReadonlyVector3f center, IReadonlyVector3f v0, IReadonlyVector3f v1, float radius, IReadonlyVector3f point) {
+		IVector3f normal = v0.crossed(v1).normalize();
+		IVector3f closestPoint = closestPointOnCircle(center, normal, radius, point);
+
+		if (isVectorBetween(closestPoint, v0, v1)) {
+			return closestPoint;
+		} else {
+			float d0 = closestPoint.set(v0).add(center).setLength(radius).subtract(point).getLength();
+			float d1 = closestPoint.set(v1).add(center).setLength(radius).subtract(point).getLength();
+
+			if (d0 < d1) {
+				return closestPoint.set(v0).add(center).setLength(radius);
+			} else {
+				return closestPoint.set(v1).add(center).setLength(radius);
+			}
+		}
+	}
+
+	/**
 	 * Calculates the intersection position of a ray and a circle.
 	 *
 	 * @param x0 the x coordinate of the ray origin
 	 * @param y0 the y coordinate of the ray origin
 	 * @param dx the x coordinate of the ray direction
 	 * @param dy the y coordinate of the ray direction
-	 * @param cx  the x coordinate of the circle center
-	 * @param cy  the y coordinate of the circle center
+	 * @param cx the x coordinate of the circle center
+	 * @param cy the y coordinate of the circle center
 	 * @param r  the radius of the circle
 	 * @return the distance on the ray for the intersection point or negative infinity in case of no intersection
 	 */
@@ -135,8 +232,8 @@ public class MathHelper {
 	 * @param y0 the y coordinate of the ray origin
 	 * @param dx the x coordinate of the ray direction
 	 * @param dy the y coordinate of the ray direction
-	 * @param cx  the x coordinate of the circle center
-	 * @param cy  the y coordinate of the circle center
+	 * @param cx the x coordinate of the circle center
+	 * @param cy the y coordinate of the circle center
 	 * @param r  the radius of the circle
 	 * @return the distance on the ray for the intersection point or negative infinity in case of no intersection
 	 */
@@ -156,7 +253,7 @@ public class MathHelper {
 		}
 
 		// not interested in the + case, because it will always be greater and therefore farther away
-		float intersection =  (-(p / 2) - (float) Math.sqrt(discriminant));
+		float intersection = (-(p / 2) - (float) Math.sqrt(discriminant));
 
 		if (intersection >= 0) {
 			return intersection;
@@ -410,6 +507,59 @@ public class MathHelper {
 		} else {
 			return null;
 		}
+	}
+
+	public static Float raySphereIntersection(IReadonlyVector3f orig, IReadonlyVector3f dir, IReadonlyVector3f center, float radius) {
+		IVector3f l = center.subtracted(orig);
+		float tca = l.dot(dir);
+		if (tca < 0) return null;
+		float d2 = l.dot(l) - tca * tca;
+		if (d2 > radius * radius) return null;
+		float thc = (float) Math.sqrt(radius * radius - d2);
+		return tca - thc;
+	}
+
+	/**
+	 * Calculates the area of a triangle with vertices {@code vert0}, {@code vert1} and {@code vert2} using Heron's Formula.
+	 *
+	 * @param vert0 vertex 0
+	 * @param vert1 vertex 1
+	 * @param vert2 vertex 2
+	 * @return the area of the triangle
+	 */
+	public static float triangleArea(IReadonlyVector2f vert0, IReadonlyVector2f vert1, IReadonlyVector2f vert2) {
+		float ax = vert0.getX() - vert1.getX();
+		float ay = vert0.getY() - vert1.getY();
+		float bx = vert1.getX() - vert2.getX();
+		float by = vert1.getY() - vert2.getY();
+		float cx = vert2.getX() - vert0.getX();
+		float cy = vert2.getY() - vert0.getY();
+
+		float a = (float) Math.sqrt(ax * ax + ay * ay);
+		float b = (float) Math.sqrt(bx * bx + by * by);
+		float c = (float) Math.sqrt(cx * cx + cy * cy);
+		float s = (a + b + c) / 2;
+
+		return (float) Math.sqrt(s * (s - a) * (s - b) * (s - c));
+	}
+
+	/**
+	 * Determines if a vector {@code v} is roughly "between" two vectors {@code v0} and {@code v1}.
+	 * The vector {@code v} has to be linearly dependent on the vectors @code v0} and {@code v1} for this test to function correctly.
+	 * A vector is considered to be between two other vectors, if it intersects with the line segment that connects these vectors.
+	 *
+	 * @return true, if the vector {@code v} is roughly "between" two vectors {@code v0} and {@code v1}
+	 */
+	public static boolean isVectorBetween(IReadonlyVector3f v, IReadonlyVector3f v0, IReadonlyVector3f v1) {
+		float vLength = v.getLength();
+		float v0Length = v0.getLength();
+		float v1Length = v1.getLength();
+
+		float dot01 = v0.dot(v1) / v0Length / v1Length;
+		float dot0 = v.dot(v0) / vLength / v0Length;
+		float dot1 = v.dot(v1) / vLength / v1Length;
+
+		return dot0 > dot01 && dot1 > dot01;
 	}
 
 }

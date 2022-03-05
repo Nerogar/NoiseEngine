@@ -1,10 +1,10 @@
 package de.nerogar.noise.math;
 
-import de.nerogar.noiseInterface.math.IReadonlyMatrix4f;
-import de.nerogar.noiseInterface.math.IReadonlyVector3f;
-import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public class Vector3f implements IVector3f {
+
+	public static final IReadonlyVector3f ZERO = new Vector3f();
 
 	private static final float SQRT_3 = (float) Math.sqrt(3.0);
 

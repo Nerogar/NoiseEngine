@@ -57,7 +57,7 @@ public class ConeLight implements ILight {
 	}
 
 	@Override
-	public void setParentTransformation(Transformation parentRenderProperties) {
+	public void setParentTransformation(Transformation parentTransformation) {
 		renderProperties.setParent(renderProperties);
 	}
 

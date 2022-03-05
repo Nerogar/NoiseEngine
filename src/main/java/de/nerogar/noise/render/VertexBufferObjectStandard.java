@@ -41,11 +41,9 @@ public class VertexBufferObjectStandard extends VertexBufferObject {
 	 * @throws ArrayIndexOutOfBoundsException if componentCounts.length does not equal the amount of attribute arrays
 	 */
 	public VertexBufferObjectStandard(int renderType, int[] componentCounts, float[]... attributes) {
-		this.renderType = renderType;
+		super(renderType);
 
 		if (componentCounts.length != attributes.length) throw new ArrayIndexOutOfBoundsException();
-
-		glContextVaoHandles = new HashMap<Long, Integer>();
 
 		this.componentCounts = componentCounts;
 

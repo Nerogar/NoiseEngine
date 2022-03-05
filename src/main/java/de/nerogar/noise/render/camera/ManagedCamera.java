@@ -1,12 +1,10 @@
 package de.nerogar.noise.render.camera;
 
-import de.nerogar.noise.math.Matrix4f;
-import de.nerogar.noise.math.Vector3f;
+import de.nerogar.noise.math.*;
 import de.nerogar.noise.render.IViewRegion;
 import de.nerogar.noise.render.ViewRegionAll;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noiseInterface.math.IMatrix4f;
-import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public class ManagedCamera implements IReadOnlyCamera {
 
@@ -109,6 +107,16 @@ public class ManagedCamera implements IReadOnlyCamera {
 	@Override
 	public void directionToWorldSpace(IVector3f direction) {
 
+	}
+
+	@Override
+	public IVector2f project(IReadonlyVector3f point) {
+		IVector3f pointInScreenSpace = point.transformed(viewMatrix, 1).transform(projectionMatrix, 1);
+
+		return new Vector2f(
+				pointInScreenSpace.getX() / pointInScreenSpace.getZ(),
+				pointInScreenSpace.getY() / pointInScreenSpace.getZ()
+		);
 	}
 
 	@Override

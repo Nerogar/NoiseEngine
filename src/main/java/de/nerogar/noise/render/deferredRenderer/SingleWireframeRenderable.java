@@ -8,18 +8,18 @@ import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
 
 public class SingleWireframeRenderable implements IRenderable {
 
-	private final  int[]  COMPONENT_COUNTS = { 3 };
-	private static Shader shader;
+	private static final int[]  COMPONENT_COUNTS = { 3 };
+	private static final Shader shader;
 
-	private Transformation renderProperties;
+	private Transformation transformation;
 
-	private VertexBufferObject vbo;
-	private Color              color;
-	private float              emission;
-	private boolean            shadeless;
+	private VertexBufferObjectIndexed vbo;
+	private Color                     color;
+	private float                     emission;
+	private boolean                   shadeless;
 
 	public SingleWireframeRenderable(WireframeMesh wireframeMesh, Color color, float emission, boolean shadeless) {
-		renderProperties = new Transformation();
+		transformation = new Transformation();
 
 		vbo = new VertexBufferObjectIndexed(
 				VertexBufferObject.LINES,
@@ -35,26 +35,26 @@ public class SingleWireframeRenderable implements IRenderable {
 		this.shadeless = shadeless;
 	}
 
-	public void setColor(Color color)           { this.color = color; }
+	public void setColor(Color color)           {this.color = color;}
 
-	public void setEmission(float emission)     { this.emission = emission; }
+	public void setEmission(float emission)     {this.emission = emission;}
 
-	public void setShadeless(boolean shadeless) { this.shadeless = shadeless; }
+	public void setShadeless(boolean shadeless) {this.shadeless = shadeless;}
 
 	@Override
 	public Transformation getTransformation() {
-		return renderProperties;
+		return transformation;
 	}
 
 	@Override
-	public void setParentTransformation(Transformation parentRenderProperties) {
-		renderProperties.setParent(parentRenderProperties);
+	public void setParentTransformation(Transformation parentTransformation) {
+		transformation.setParent(parentTransformation);
 	}
 
 	@Override
 	public void renderGeometry(IRenderContext renderContext) {
 		shader.activate();
-		shader.setUniformMat4f("u_mMat", renderProperties.getModelMatrix().asBuffer());
+		shader.setUniformMat4f("u_mMat", transformation.getModelMatrix().asBuffer());
 		shader.setUniformMat4f("u_vMat", renderContext.getCamera().getViewMatrix().asBuffer());
 		shader.setUniformMat4f("u_pMat", renderContext.getCamera().getProjectionMatrix().asBuffer());
 

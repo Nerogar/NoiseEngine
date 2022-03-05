@@ -22,8 +22,8 @@ public class SimpleRenderableContainer extends ArrayList<IRenderable> implements
 	}
 
 	@Override
-	public void setParentTransformation(Transformation parentRenderProperties) {
-		renderProperties.setParent(parentRenderProperties);
+	public void setParentTransformation(Transformation parentTransformation) {
+		renderProperties.setParent(parentTransformation);
 	}
 
 	@Override
