@@ -1,17 +1,13 @@
 package de.nerogar.noise.oldGame.client.gui;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.MouseButtonEvent;
-import de.nerogar.noise.render.Shader;
-import de.nerogar.noise.render.ShaderLoader;
-import de.nerogar.noise.render.VertexBufferObject;
-import de.nerogar.noise.render.VertexBufferObjectStandard;
+import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noiseInterface.math.IMatrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_ONE;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_DST_ALPHA;
 import static org.lwjgl.opengl.GL14.glBlendFuncSeparate;
 
 public class GPanel extends GElementContainer {
@@ -80,8 +76,8 @@ public class GPanel extends GElementContainer {
 		);
 
 		defaultShader = ShaderLoader.loadShader(
-				"<game/gui/panel/panel.vert>",
-				"<game/gui/panel/panel.frag>"
+				FileUtil.get("<game/gui/panel/panel.vert>", FileUtil.SHADER_SUBFOLDER),
+				FileUtil.get("<game/gui/panel/panel.frag>", FileUtil.SHADER_SUBFOLDER)
 		                                       );
 
 	}

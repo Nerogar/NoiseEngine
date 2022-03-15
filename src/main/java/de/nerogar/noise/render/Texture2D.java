@@ -46,6 +46,19 @@ public class Texture2D extends Texture {
 		/** 4 components, 8 bit each, range is [0, 1], input is BGRA */
 		BGRA_8_8_8_8I(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE),
 
+		/** 1 component, 16 bit, range is [0, 1], input is BGRA */
+		BGRA_16I(GL_R16, GL_RGBA, GL_UNSIGNED_SHORT),
+
+		/** 2 components, 16 bit each, range is [0, 1], input is BGRA */
+		BGRA_16_16I(GL_RG16, GL_RGBA, GL_UNSIGNED_SHORT),
+
+		/** 3 components, 16 bit each, range is [0, 1], input is BGRA */
+		BGRA_16_16_16I(GL_RGB16, GL_RGBA, GL_UNSIGNED_SHORT),
+
+		/** 4 components, 16 bit each, range is [0, 1], input is BGRA */
+		BGRA_16_16_16_16I(GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT),
+
+
 		/** 4 components, 10 bits for R, G and B, 2 bits for A, range ist [0, 1], input is BGRA */
 		BGRA_10_10_10_2(GL_RGB10_A2, GL_RGBA, GL_FLOAT),
 

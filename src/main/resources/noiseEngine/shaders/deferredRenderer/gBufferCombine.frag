@@ -1,29 +1,28 @@
 #version 330 core
 
+#include <util/color.glsl>
 #include positionReconstruction.glsl
-#parameter EMISSION_TEXTURE_COUNT
+#parameter BLOOM_TEXTURE_COUNT
 
-uniform sampler2D u_albedoBuffer;
-uniform sampler2D u_normalBuffer;
-uniform sampler2D u_materialBuffer;
 uniform sampler2D u_lightBuffer;
-#if EMISSION_TEXTURE_COUNT > 0
-uniform sampler2D u_emissionBuffer1;
+
+#if BLOOM_TEXTURE_COUNT > 0
+uniform sampler2D u_bloomBuffer1;
 #endif
-#if EMISSION_TEXTURE_COUNT > 1
-uniform sampler2D u_emissionBuffer2;
+#if BLOOM_TEXTURE_COUNT > 1
+uniform sampler2D u_bloomBuffer2;
 #endif
-#if EMISSION_TEXTURE_COUNT > 2
-uniform sampler2D u_emissionBuffer3;
+#if BLOOM_TEXTURE_COUNT > 2
+uniform sampler2D u_bloomBuffer3;
 #endif
-#if EMISSION_TEXTURE_COUNT > 3
-uniform sampler2D u_emissionBuffer4;
+#if BLOOM_TEXTURE_COUNT > 3
+uniform sampler2D u_bloomBuffer4;
 #endif
-#if EMISSION_TEXTURE_COUNT > 4
-uniform sampler2D u_emissionBuffer5;
+#if BLOOM_TEXTURE_COUNT > 4
+uniform sampler2D u_bloomBuffer5;
 #endif
-#if EMISSION_TEXTURE_COUNT > 5
-uniform sampler2D u_emissionBuffer6;
+#if BLOOM_TEXTURE_COUNT > 5
+uniform sampler2D u_bloomBuffer6;
 #endif
 
 layout (location = 0) out vec4 out_color;
@@ -34,65 +33,38 @@ in DATA
 } frag_in;
 
 void main(){
-    vec4 albedoSample = texture(u_albedoBuffer, frag_in.uv);
-    vec4 normalSample = texture(u_normalBuffer, frag_in.uv);
-    vec4 materialSample = texture(u_materialBuffer, frag_in.uv);
-
-    vec3 albedo = albedoSample.rgb;
-    float emissionStrength = albedoSample.a * 20.0;
-
-    vec3 normal = normalSample.xyz;
-
-    float shadeless = normalSample.w;
-    float diffuseStrength = materialSample.a;
+    // input data
+    //float emissionStrength = albedoSample.a * 20.0;
 
     vec3 light = texture(u_lightBuffer, frag_in.uv).rgb;
 
-    // diffuse
-    vec3 diffuse = albedo * diffuseStrength;
+    vec3 color = linearToSrgb(light);
 
-    // emission
-    vec3 emission = albedo * emissionStrength;
-
-    // light
-    float ambient = 0.1;
-    light = pow(max(vec3(ambient), light), vec3(1.0 / 2.2));
-
-    vec3 color = mix(diffuse * light, diffuse, shadeless) + emission;
-
-    // bloom
-    #if EMISSION_TEXTURE_COUNT > 0
-    vec3 emission1 = texture(u_emissionBuffer1, frag_in.uv).rgb;
+    // add bloom to the final output
+    #if BLOOM_TEXTURE_COUNT > 0
+        vec3 bloom1 = texture(u_bloomBuffer1, frag_in.uv).rgb;
+        color += bloom1;
     #endif
-    #if EMISSION_TEXTURE_COUNT > 1
-    vec3 emission2 = texture(u_emissionBuffer2, frag_in.uv).rgb;
+    #if BLOOM_TEXTURE_COUNT > 1
+        vec3 bloom2 = texture(u_bloomBuffer2, frag_in.uv).rgb;
+        color += bloom2;
     #endif
-    #if EMISSION_TEXTURE_COUNT > 2
-    vec3 emission3 = texture(u_emissionBuffer3, frag_in.uv).rgb;
+    #if BLOOM_TEXTURE_COUNT > 2
+        vec3 bloom3 = texture(u_bloomBuffer3, frag_in.uv).rgb;
+        color += bloom3;
     #endif
-    #if EMISSION_TEXTURE_COUNT > 3
-    vec3 emission4 = texture(u_emissionBuffer4, frag_in.uv).rgb;
+    #if BLOOM_TEXTURE_COUNT > 3
+        vec3 bloom4 = texture(u_bloomBuffer4, frag_in.uv).rgb;
+        color += bloom4;
     #endif
-    #if EMISSION_TEXTURE_COUNT > 4
-    vec3 emission5 = texture(u_emissionBuffer5, frag_in.uv).rgb;
+    #if BLOOM_TEXTURE_COUNT > 4
+        vec3 bloom5 = texture(u_bloomBuffer5, frag_in.uv).rgb;
+        color += bloom5;
     #endif
-    #if EMISSION_TEXTURE_COUNT > 5
-    vec3 emission6 = texture(u_emissionBuffer6, frag_in.uv).rgb;
+    #if BLOOM_TEXTURE_COUNT > 5
+        vec3 bloom6 = texture(u_bloomBuffer6, frag_in.uv).rgb;
+        color += bloom6;
     #endif
 
-    #if EMISSION_TEXTURE_COUNT == 0
     out_color.rgb = color;
-    #elif EMISSION_TEXTURE_COUNT == 1
-    out_color.rgb = color + emission1;
-    #elif EMISSION_TEXTURE_COUNT == 2
-    out_color.rgb = color + emission1 + emission2;
-    #elif EMISSION_TEXTURE_COUNT == 3
-    out_color.rgb = color + emission1 + emission2 + emission3;
-    #elif EMISSION_TEXTURE_COUNT == 4
-    out_color.rgb = color + emission1 + emission2 + emission3 + emission4;
-    #elif EMISSION_TEXTURE_COUNT == 5
-    out_color.rgb = color + emission1 + emission2 + emission3 + emission4 + emission5;
-    #elif EMISSION_TEXTURE_COUNT == 6
-    out_color.rgb = color + emission1 + emission2 + emission3 + emission4 + emission5 + emission6;
-    #endif
 }

@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.deferredRenderer;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
@@ -68,7 +69,7 @@ public class SingleWireframeRenderable implements IRenderable {
 	}
 
 	static {
-		shader = ShaderLoader.loadShader("<deferredRenderer/geometry/singleWireframeRenderable.vert>", "<deferredRenderer/geometry/singleWireframeRenderable.frag>");
+		shader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/geometry/singleWireframeRenderable.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/geometry/singleWireframeRenderable.frag>", FileUtil.SHADER_SUBFOLDER));
 	}
 
 }

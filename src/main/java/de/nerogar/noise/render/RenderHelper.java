@@ -1,5 +1,6 @@
 package de.nerogar.noise.render;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Matrix4fUtils;
 import de.nerogar.noiseInterface.math.IMatrix4f;
 
@@ -65,7 +66,7 @@ public class RenderHelper {
 	}
 
 	private static Shader getBlitShader() {
-		Shader shader = ShaderLoader.loadShader("<renderHelper/fullscreenBlit.vert>", "<renderHelper/fullscreenBlit.frag>");
+		Shader shader = ShaderLoader.loadShader(FileUtil.get("<renderHelper/fullscreenBlit.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<renderHelper/fullscreenBlit.frag>", FileUtil.SHADER_SUBFOLDER));
 		shader.activate();
 		shader.setUniform1i("blitTexture", 0);
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());

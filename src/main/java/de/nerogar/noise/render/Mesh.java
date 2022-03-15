@@ -120,9 +120,11 @@ public class Mesh {
 		tangentArray = new float[vertexCount * 3];
 		biTangentArray = new float[vertexCount * 3];
 
+		// edge vectors on the texture
 		IVector2f sRelative = new Vector2f();
 		IVector2f tRelative = new Vector2f();
 
+		// edge vectors on the mesh
 		IVector3f q1Relative = new Vector3f();
 		IVector3f q2Relative = new Vector3f();
 

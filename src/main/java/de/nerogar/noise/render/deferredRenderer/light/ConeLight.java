@@ -150,7 +150,7 @@ public class ConeLight implements ILight {
 	}
 
 	static {
-		shader = ShaderLoader.loadShader("<deferredRenderer/light/cone.vert>", "<deferredRenderer/light/cone.frag>");
+		shader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/light/cone.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/light/cone.frag>", FileUtil.SHADER_SUBFOLDER));
 
 		shader.activate();
 		shader.setUniform1i("u_depthBuffer", DEPTH_BUFFER_SLOT);

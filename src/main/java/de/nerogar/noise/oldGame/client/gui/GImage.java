@@ -1,5 +1,6 @@
 package de.nerogar.noise.oldGame.client.gui;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.MouseButtonEvent;
 import de.nerogar.noise.render.*;
@@ -83,8 +84,8 @@ public class GImage extends GElementContainer {
 		);
 
 		defaultShader = ShaderLoader.loadShader(
-				"<game/gui/image/image.vert>",
-				"<game/gui/image/image.frag>"
+				FileUtil.get("<game/gui/image/image.vert>", FileUtil.SHADER_SUBFOLDER),
+				FileUtil.get("<game/gui/image/image.frag>", FileUtil.SHADER_SUBFOLDER)
 		                                       );
 
 	}

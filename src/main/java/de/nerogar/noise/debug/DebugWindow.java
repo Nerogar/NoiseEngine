@@ -1,6 +1,7 @@
 package de.nerogar.noise.debug;
 
 import de.nerogar.noise.Noise;
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.input.KeyboardKeyEvent;
 import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.math.Matrix4fUtils;
@@ -54,7 +55,7 @@ public class DebugWindow {
 
 		window = new GLWindow("debug", 800, 400, true, 0);
 
-		shader = ShaderLoader.loadShader("<debug/profiler.vert>", "<debug/profiler.frag>");
+		shader = ShaderLoader.loadShader(FileUtil.get("<debug/profiler.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<debug/profiler.frag>", FileUtil.SHADER_SUBFOLDER));
 		vertexList = new VertexList();
 
 		projectionMatrix = new Matrix4f();

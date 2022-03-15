@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.fontRenderer;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noiseInterface.math.IMatrix4f;
@@ -190,7 +191,7 @@ public class FontRenderableString {
 	}
 
 	private static Shader loadFontShader() {
-		Shader shader = ShaderLoader.loadShader("<font/font.vert>", "<font/font.frag>");
+		Shader shader = ShaderLoader.loadShader(FileUtil.get("<font/font.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<font/font.frag>", FileUtil.SHADER_SUBFOLDER));
 		shader.activate();
 		shader.setUniform1i("fontSheet", 0);
 		shader.deactivate();

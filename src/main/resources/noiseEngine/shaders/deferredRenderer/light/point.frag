@@ -9,7 +9,7 @@ uniform sampler2D u_materialBuffer;
 uniform vec3 u_position;
 uniform vec3 u_color;
 uniform float u_radius;
-uniform float u_strength;
+uniform float u_intensity;
 
 // position reconstruction
 uniform vec3 u_unitRayCenterStart;
@@ -40,9 +40,9 @@ void main() {
 	// good tradeoff between performance and quality
 	float distanceGradient = max(0.0, ((u_radius - distance) / u_radius));
 	//distanceGradient = distanceGradient * distanceGradient;
-    float strength = distanceGradient * distanceGradient * u_strength;
+    float strength = distanceGradient * distanceGradient * u_intensity;
 
     vec3 direction = normalize(position - u_position);
 
-	out_light.rgb = max(0.0, dot(-direction, normal)) * u_color * u_strength * strength;
+	out_light.rgb = max(0.0, dot(-direction, normal)) * u_color * u_intensity * strength;
 }

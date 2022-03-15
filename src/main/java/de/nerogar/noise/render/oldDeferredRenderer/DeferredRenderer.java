@@ -356,7 +356,7 @@ public class DeferredRenderer {
 
 		Map<String, String> gBufferShaderParameters = new HashMap<>();
 		gBufferShaderParameters.put("useUniforms", "#define UNIFORM_MATRICES 0");
-		gBufferShader = ShaderLoader.loadShader("<oldDeferredRenderer/gBuffer.vert>", "<oldDeferredRenderer/gBuffer.frag>", gBufferShaderParameters);
+		gBufferShader = ShaderLoader.loadShader(FileUtil.get("<oldDeferredRenderer/gBuffer.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<oldDeferredRenderer/gBuffer.frag>", FileUtil.SHADER_SUBFOLDER), gBufferShaderParameters);
 		gBufferShader.activate();
 		gBufferShader.setUniform1i("textureColor_N", TEXTURE_SLOT_COLOR);
 		gBufferShader.setUniform1i("textureNormal_N", TEXTURE_SLOT_NORMAL);
@@ -364,21 +364,21 @@ public class DeferredRenderer {
 		gBufferShader.deactivate();
 
 		gBufferShaderParameters.put("useUniforms", "#define UNIFORM_MATRICES 1");
-		gBufferShaderSingle = ShaderLoader.loadShader("<oldDeferredRenderer/gBuffer.vert>", "<oldDeferredRenderer/gBuffer.frag>", gBufferShaderParameters);
+		gBufferShaderSingle = ShaderLoader.loadShader(FileUtil.get("<oldDeferredRenderer/gBuffer.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<oldDeferredRenderer/gBuffer.frag>", FileUtil.SHADER_SUBFOLDER), gBufferShaderParameters);
 		gBufferShaderSingle.activate();
 		gBufferShaderSingle.setUniform1i("textureColor_N", TEXTURE_SLOT_COLOR);
 		gBufferShaderSingle.setUniform1i("textureNormal_N", TEXTURE_SLOT_NORMAL);
 		gBufferShaderSingle.setUniform1i("textureLight_N", TEXTURE_SLOT_LIGHT);
 		gBufferShaderSingle.deactivate();
 
-		lightShader = ShaderLoader.loadShader("<oldDeferredRenderer/lights.vert>", "<oldDeferredRenderer/lights.frag>");
+		lightShader = ShaderLoader.loadShader(FileUtil.get("<oldDeferredRenderer/lights.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<oldDeferredRenderer/lights.frag>", FileUtil.SHADER_SUBFOLDER));
 		lightShader.activate();
 		lightShader.setUniform1i("textureNormal", TEXTURE_SLOT_NORMAL);
 		lightShader.setUniform1i("textureDepth", TEXTURE_SLOT_DEPTH);
 		lightShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		lightShader.deactivate();
 
-		finalShader = ShaderLoader.loadShader("<oldDeferredRenderer/final.vert>", "<oldDeferredRenderer/final.frag>", settingsParameter);
+		finalShader = ShaderLoader.loadShader(FileUtil.get("<oldDeferredRenderer/final.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get( "<oldDeferredRenderer/final.frag>", FileUtil.SHADER_SUBFOLDER), settingsParameter);
 		finalShader.activate();
 		finalShader.setUniform1i("textureColor", TEXTURE_SLOT_COLOR);
 		finalShader.setUniform1i("textureNormal", TEXTURE_SLOT_NORMAL);
@@ -391,7 +391,7 @@ public class DeferredRenderer {
 		finalShader.setUniform2f("inverseResolution", 1.0f / width, 1.0f / height);
 		finalShader.deactivate();
 
-		filterShader = ShaderLoader.loadShader("<oldDeferredRenderer/filter.vert>", "<oldDeferredRenderer/filter.frag>");
+		filterShader = ShaderLoader.loadShader(FileUtil.get("<oldDeferredRenderer/filter.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<oldDeferredRenderer/filter.frag>", FileUtil.SHADER_SUBFOLDER));
 		filterShader.activate();
 		filterShader.setUniform1i("textureColor", TEXTURE_SLOT_COLOR);
 		filterShader.setUniformMat4f("projectionMatrix", Matrix4fUtils.getOrthographicProjection(0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f).asBuffer());

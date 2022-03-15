@@ -1,5 +1,6 @@
 package de.nerogar.noise.render.deferredRenderer;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
@@ -54,7 +55,7 @@ public class SingleRenderable implements IRenderable {
 
 	private void tryInitialize() {
 		if (shader == null) {
-			shader = ShaderLoader.loadShader("<deferredRenderer/geometry/singleRenderable.vert>", "<deferredRenderer/geometry/singleRenderable.frag>");
+			shader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/geometry/singleRenderable.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/geometry/singleRenderable.frag>", FileUtil.SHADER_SUBFOLDER));
 		}
 
 		if (!isInitialized) {

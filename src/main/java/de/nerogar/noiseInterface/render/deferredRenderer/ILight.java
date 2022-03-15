@@ -9,10 +9,11 @@ public interface ILight extends IRenderable {
 	Color DEBUG_MESH_COLOR = new Color(0x555555);
 
 	int DEPTH_BUFFER_SLOT    = 0;
-	int NORMAL_BUFFER_SLOT   = 1;
-	int MATERIAL_BUFFER_SLOT = 2;
+	int ALBEDO_BUFFER_SLOT   = 1;
+	int NORMAL_BUFFER_SLOT   = 2;
+	int MATERIAL_BUFFER_SLOT = 3;
 
-	public void renderBatch(IRenderContext renderContext, List<ILight> lights);
+	void renderBatch(IRenderContext renderContext, List<ILight> lights);
 
 	@Override
 	default void getLights(List<ILight> lights) {

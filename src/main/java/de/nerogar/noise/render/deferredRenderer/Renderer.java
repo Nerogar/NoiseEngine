@@ -1,11 +1,9 @@
 package de.nerogar.noise.render.deferredRenderer;
 
+import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.camera.IReadOnlyCamera;
-import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderer;
+import de.nerogar.noiseInterface.render.deferredRenderer.*;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -15,21 +13,35 @@ import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
 import static org.lwjgl.opengl.GL14.GL_CLAMP_TO_EDGE;
 
 /**
- * gBuffer textures:
- *
- * 1. albedo:
- * rgb: (8 bit) base color
- * a: emission power
- *
- * 2. normal:
- * rgb: (10 bit) -> xyz in world space
- * a: (2 bit) shadeless factor
- *
- * 3. material: rgba (8 bit)
- * r: ambient occlusion
- * g: specular factor
- * b: specular exponent in logarithmic scale (0, 1)->(1, 128) or (exponent = 2 ^ (blue * 7))
- * a: diffuse power
+ * buffers:
+ * <ul>
+ *     <li> index - bit distribution - data </li>
+ *     <li> -1 - (32)         - depth </li>
+ *     <li>  0 - (8/8/8/8)    - albedo (rgb), emission power (a) </li>
+ *     <li>  1 - (16/16/16)   - normal (rgb) </li>
+ *     <li>  2 - (8/8/8/8)    - ambient occlusion (r), metalness (g), roughness (b), reflectance (a) </li>
+ *     <li>  3 - (16/16/16)   - light (r/g/b) </li>
+ *     <li> 4+ - (16/16/16)   - bloom passes (r/g/b) </li>
+ * </ul>
+ * <p>
+ * passes:
+ * <ol>
+ *     <li>
+ *         Base properties are copied from mesh surfaces into the base buffers. This includes these buffers: -1, 0, 1, 2
+ *     </li>
+ *     <li>
+ *         Lights are calculated into buffer 3, based on the buffers -1, 0, 1, 2
+ *     </li>
+ *     <li>
+ *         Emission is added to the buffer 3, based on buffer 0
+ *     </li>
+ *     <li>
+ *         Bloom is calculated in buffers 4+, based on buffers 0, 3
+ *     </li>
+ *     <li>
+ *         The final output is calculated and stored in the render target, based on buffers 3, 4+
+ *     </li>
+ * </ol>
  */
 public class Renderer implements IRenderer {
 
@@ -39,18 +51,18 @@ public class Renderer implements IRenderer {
 	private static final int GBUFFER_MATERIAL_SLOT = 2;
 	private static final int LIGHT_LIGHTS_SLOT     = 0;
 
-	private static final int EMISSION_LEVEL_COUNT = 6;
+	private static final int BLOOM_LEVEL_COUNT = 6;
 
 	private static Shader             gBufferCombineShader;
-	private static Shader             downSampleEmission1Shader;
-	private static Shader             downSampleEmissionNShader;
+	private static Shader             downSampleBloomShader;
+	private static Shader             downSampleBloomNShader;
 	private static Shader             blurShader;
 	private static VertexBufferObject fullscreenQuad;
 
 	private final List<IRenderable>     renderables;
 	private final FrameBufferObject     gBuffer;
 	private final FrameBufferObject     lightBuffer;
-	private final FrameBufferObject[][] downSampleEmissionBuffers;
+	private final FrameBufferObject[][] downSampleBloomBuffers;
 
 	private final List<ILight>                  tempLightList;
 	private final List<Class<? extends ILight>> tempProcessedLightsClasses;
@@ -62,7 +74,7 @@ public class Renderer implements IRenderer {
 		gBuffer = new FrameBufferObject(width, height, true);
 		gBuffer.attachTexture(0, new Texture2D("albedo", width, height, null, Texture2D.InterpolationType.LINEAR, Texture2D.DataType.BGRA_8_8_8_8I));
 		gBuffer.getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_EDGE);
-		gBuffer.attachTexture(1, new Texture2D("normal", width, height, null, Texture2D.InterpolationType.NEAREST, Texture2D.DataType.BGRA_10_10_10_2));
+		gBuffer.attachTexture(1, new Texture2D("normal", width, height, null, Texture2D.InterpolationType.NEAREST, Texture2D.DataType.BGRA_16_16_16I));
 		gBuffer.getTextureAttachment(1).setWrapMode(GL_CLAMP_TO_EDGE);
 		gBuffer.attachTexture(2, new Texture2D("material", width, height, null, Texture2D.InterpolationType.NEAREST, Texture2D.DataType.BGRA_8_8_8_8I));
 		gBuffer.getTextureAttachment(2).setWrapMode(GL_CLAMP_TO_EDGE);
@@ -71,20 +83,20 @@ public class Renderer implements IRenderer {
 		                                    Texture2D.DataType.BGRA_16_16_16F
 		);
 
-		downSampleEmissionBuffers = new FrameBufferObject[2][EMISSION_LEVEL_COUNT];
-		for (int i = 0; i < downSampleEmissionBuffers.length; i++) {
-			for (int j = 0; j < downSampleEmissionBuffers[i].length; j++) {
-				downSampleEmissionBuffers[i][j] = new FrameBufferObject(
+		downSampleBloomBuffers = new FrameBufferObject[2][BLOOM_LEVEL_COUNT];
+		for (int i = 0; i < downSampleBloomBuffers.length; i++) {
+			for (int j = 0; j < downSampleBloomBuffers[i].length; j++) {
+				downSampleBloomBuffers[i][j] = new FrameBufferObject(
 						(int) Math.ceil((float) width / (2 << j)),
 						(int) Math.ceil((float) height / (2 << j)),
 						false
 				);
-				downSampleEmissionBuffers[i][j].attachTexture(0, new Texture2D(
+				downSampleBloomBuffers[i][j].attachTexture(0, new Texture2D(
 						"albedo",
-						downSampleEmissionBuffers[i][j].getWidth(), downSampleEmissionBuffers[i][j].getHeight(),
+						downSampleBloomBuffers[i][j].getWidth(), downSampleBloomBuffers[i][j].getHeight(),
 						null, Texture2D.InterpolationType.LINEAR, Texture2D.DataType.BGRA_16_16_16F
 				));
-				downSampleEmissionBuffers[i][j].getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_BORDER);
+				downSampleBloomBuffers[i][j].getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_BORDER);
 			}
 		}
 
@@ -103,12 +115,12 @@ public class Renderer implements IRenderer {
 		gBuffer.setResolution(width, height);
 		lightBuffer.setResolution(width, height);
 
-		for (int i = 0; i < downSampleEmissionBuffers.length; i++) {
-			for (int j = 0; j < downSampleEmissionBuffers[i].length; j++) {
-				downSampleEmissionBuffers[i][j].setResolution(
+		for (int i = 0; i < downSampleBloomBuffers.length; i++) {
+			for (int j = 0; j < downSampleBloomBuffers[i].length; j++) {
+				downSampleBloomBuffers[i][j].setResolution(
 						(int) Math.ceil((float) width / (2 << j)),
 						(int) Math.ceil((float) height / (2 << j))
-				                                             );
+				                                          );
 			}
 		}
 	}
@@ -153,35 +165,35 @@ public class Renderer implements IRenderer {
 
 	private void renderBloom(IRenderTarget renderTarget) {
 		// first down sample step
-		downSampleEmissionBuffers[0][0].bind();
-		gBuffer.getTextureAttachment(GBUFFER_ALBEDO_SLOT).bind(0);
-		downSampleEmission1Shader.activate();
-		downSampleEmission1Shader.setUniform1i("u_albedoBuffer", 0);
-		downSampleEmission1Shader.setUniform2f("u_inverseSourceResolution", 1f / gBuffer.getWidth(), 1f / gBuffer.getHeight());
-		downSampleEmission1Shader.setUniform2f(
+		downSampleBloomBuffers[0][0].bind();
+		lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT).bind(0);
+		downSampleBloomShader.activate();
+		downSampleBloomShader.setUniform1i("u_lightBuffer", 0);
+		downSampleBloomShader.setUniform2f("u_inverseSourceResolution", 1f / gBuffer.getWidth(), 1f / gBuffer.getHeight());
+		downSampleBloomShader.setUniform2f(
 				"u_padSourceTexture",
-				downSampleEmissionBuffers[0][0].getWidth() * 2 > gBuffer.getWidth() ? 1 : 0,
-				downSampleEmissionBuffers[0][0].getHeight() * 2 > gBuffer.getHeight() ? 1 : 0
-		                                      );
+				downSampleBloomBuffers[0][0].getWidth() * 2 > gBuffer.getWidth() ? 1 : 0,
+				downSampleBloomBuffers[0][0].getHeight() * 2 > gBuffer.getHeight() ? 1 : 0
+		                                  );
 		fullscreenQuad.render();
-		downSampleEmission1Shader.deactivate();
+		downSampleBloomShader.deactivate();
 
 		// remaining down sample steps
-		downSampleEmissionNShader.activate();
-		downSampleEmissionNShader.setUniform1i("u_emissionBuffer", 0);
-		for (int i = 1; i < downSampleEmissionBuffers[0].length; i++) {
-			downSampleEmissionBuffers[0][i].bind();
-			downSampleEmissionBuffers[0][i - 1].getTextureAttachment(0).bind(0);
+		downSampleBloomNShader.activate();
+		downSampleBloomNShader.setUniform1i("u_bloomBuffer", 0);
+		for (int i = 1; i < downSampleBloomBuffers[0].length; i++) {
+			downSampleBloomBuffers[0][i].bind();
+			downSampleBloomBuffers[0][i - 1].getTextureAttachment(0).bind(0);
 
-			downSampleEmissionNShader.setUniform2f("u_inverseSourceResolution", 1f / downSampleEmissionBuffers[0][i - 1].getWidth(), 1f / downSampleEmissionBuffers[0][i - 1].getHeight());
-			downSampleEmissionNShader.setUniform2f(
+			downSampleBloomNShader.setUniform2f("u_inverseSourceResolution", 1f / downSampleBloomBuffers[0][i - 1].getWidth(), 1f / downSampleBloomBuffers[0][i - 1].getHeight());
+			downSampleBloomNShader.setUniform2f(
 					"u_padSourceTexture",
-					downSampleEmissionBuffers[0][i].getWidth() * 2 > downSampleEmissionBuffers[0][i - 1].getWidth() ? 1 : 0,
-					downSampleEmissionBuffers[0][i].getHeight() * 2 > downSampleEmissionBuffers[0][i - 1].getHeight() ? 1 : 0
-			                                      );
+					downSampleBloomBuffers[0][i].getWidth() * 2 > downSampleBloomBuffers[0][i - 1].getWidth() ? 1 : 0,
+					downSampleBloomBuffers[0][i].getHeight() * 2 > downSampleBloomBuffers[0][i - 1].getHeight() ? 1 : 0
+			                                   );
 			fullscreenQuad.render();
 		}
-		downSampleEmissionNShader.deactivate();
+		downSampleBloomNShader.deactivate();
 
 		// blur
 		blurShader.activate();
@@ -189,19 +201,19 @@ public class Renderer implements IRenderer {
 
 		// x direction
 		blurShader.setUniform2f("u_blurDirection", 1, 0);
-		for (int i = 0; i < downSampleEmissionBuffers[0].length; i++) {
-			downSampleEmissionBuffers[1][i].bind();
-			downSampleEmissionBuffers[0][i].getTextureAttachment(0).bind(0);
-			blurShader.setUniform2f("u_inverseResolution", 1f / downSampleEmissionBuffers[0][i].getWidth(), 1f / downSampleEmissionBuffers[0][i].getHeight());
+		for (int i = 0; i < downSampleBloomBuffers[0].length; i++) {
+			downSampleBloomBuffers[1][i].bind();
+			downSampleBloomBuffers[0][i].getTextureAttachment(0).bind(0);
+			blurShader.setUniform2f("u_inverseResolution", 1f / downSampleBloomBuffers[0][i].getWidth(), 1f / downSampleBloomBuffers[0][i].getHeight());
 			fullscreenQuad.render();
 		}
 
 		// y direction
 		blurShader.setUniform2f("u_blurDirection", 0, 1);
-		for (int i = 0; i < downSampleEmissionBuffers[0].length; i++) {
-			downSampleEmissionBuffers[0][i].bind();
-			downSampleEmissionBuffers[1][i].getTextureAttachment(0).bind(0);
-			blurShader.setUniform2f("u_inverseResolution", 1f / downSampleEmissionBuffers[0][i].getWidth(), 1f / downSampleEmissionBuffers[0][i].getHeight());
+		for (int i = 0; i < downSampleBloomBuffers[0].length; i++) {
+			downSampleBloomBuffers[0][i].bind();
+			downSampleBloomBuffers[1][i].getTextureAttachment(0).bind(0);
+			blurShader.setUniform2f("u_inverseResolution", 1f / downSampleBloomBuffers[0][i].getWidth(), 1f / downSampleBloomBuffers[0][i].getHeight());
 			fullscreenQuad.render();
 		}
 		blurShader.deactivate();
@@ -231,34 +243,30 @@ public class Renderer implements IRenderer {
 		glBlendFunc(GL_ONE, GL_ONE);
 
 		gBuffer.getTextureAttachment(GBUFFER_DEPTH_SLOT).bind(ILight.DEPTH_BUFFER_SLOT);
+		gBuffer.getTextureAttachment(GBUFFER_ALBEDO_SLOT).bind(ILight.ALBEDO_BUFFER_SLOT);
 		gBuffer.getTextureAttachment(GBUFFER_NORMAL_SLOT).bind(ILight.NORMAL_BUFFER_SLOT);
 		gBuffer.getTextureAttachment(GBUFFER_MATERIAL_SLOT).bind(ILight.MATERIAL_BUFFER_SLOT);
 		renderLights(renderContext);
 		GL11.glCullFace(GL_BACK);
 		GL11.glDisable(GL11.GL_BLEND);
 
+		// bloom
 		renderBloom(renderTarget);
 
 		// combine pass
 		renderTarget.bind();
-		gBuffer.getTextureAttachment(GBUFFER_ALBEDO_SLOT).bind(0);
-		gBuffer.getTextureAttachment(GBUFFER_NORMAL_SLOT).bind(1);
-		gBuffer.getTextureAttachment(GBUFFER_MATERIAL_SLOT).bind(2);
 		lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT).bind(3);
 
-		for (int i = 0; i < EMISSION_LEVEL_COUNT; i++) {
-			downSampleEmissionBuffers[0][i].getTextureAttachment(0).bind(4 + i);
+		for (int i = 0; i < BLOOM_LEVEL_COUNT; i++) {
+			downSampleBloomBuffers[0][i].getTextureAttachment(0).bind(4 + i);
 		}
 
 		gBufferCombineShader.activate();
-		gBufferCombineShader.setUniform1i("u_albedoBuffer", 0);
-		gBufferCombineShader.setUniform1i("u_normalBuffer", 1);
-		gBufferCombineShader.setUniform1i("u_materialBuffer", 2);
-		gBufferCombineShader.setUniform1i("u_lightBuffer", 3);
-		for (int i = 0; i < EMISSION_LEVEL_COUNT; i++) {
-			gBufferCombineShader.setUniform1i("u_emissionBuffer" + (i + 1), 4 + i);
-		}
 
+		gBufferCombineShader.setUniform1i("u_lightBuffer", 3);
+		for (int i = 0; i < BLOOM_LEVEL_COUNT; i++) {
+			gBufferCombineShader.setUniform1i("u_bloomBuffer" + (i + 1), 4 + i);
+		}
 		fullscreenQuad.render();
 
 		gBufferCombineShader.deactivate();
@@ -293,9 +301,9 @@ public class Renderer implements IRenderer {
 			sampleWeights[midPoint - i] = sampleSum;
 		}
 
-		System.out.println(Arrays.toString(normalDistributionKernel));
-		System.out.println(Arrays.toString(samplePositions));
-		System.out.println(Arrays.toString(sampleWeights));
+		//System.out.println(Arrays.toString(normalDistributionKernel));
+		//System.out.println(Arrays.toString(samplePositions));
+		//System.out.println(Arrays.toString(sampleWeights));
 
 		Map<String, String> parameters = new HashMap<>();
 		parameters.put("SAMPLE_COUNT", "#define SAMPLE_COUNT " + samplePositions.length);
@@ -305,25 +313,25 @@ public class Renderer implements IRenderer {
 			if (i > 0) samplePositionsString.append(",");
 			samplePositionsString.append(samplePositions[i]);
 		}
-		parameters.put("SAMPLE_POSITIONS", "#define SAMPLE_POSITIONS " + samplePositionsString.toString());
+		parameters.put("SAMPLE_POSITIONS", "#define SAMPLE_POSITIONS " + samplePositionsString);
 
 		StringBuilder sampleWeightsString = new StringBuilder();
 		for (int i = 0; i < sampleWeights.length; i++) {
 			if (i > 0) sampleWeightsString.append(",");
 			sampleWeightsString.append(sampleWeights[i]);
 		}
-		parameters.put("SAMPLE_WEIGHTS", "#define SAMPLE_WEIGHTS " + sampleWeightsString.toString());
+		parameters.put("SAMPLE_WEIGHTS", "#define SAMPLE_WEIGHTS " + sampleWeightsString);
 
-		blurShader = ShaderLoader.loadShader("<deferredRenderer/blur.vert>", "<deferredRenderer/blur.frag>", parameters);
+		blurShader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/blur.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/blur.frag>", FileUtil.SHADER_SUBFOLDER), parameters);
 	}
 
 	static {
 		Map<String, String> gBufferCombineParameters = new HashMap<>();
-		gBufferCombineParameters.put("EMISSION_TEXTURE_COUNT", "#define EMISSION_TEXTURE_COUNT " + EMISSION_LEVEL_COUNT);
+		gBufferCombineParameters.put("BLOOM_TEXTURE_COUNT", "#define BLOOM_TEXTURE_COUNT " + BLOOM_LEVEL_COUNT);
 
-		gBufferCombineShader = ShaderLoader.loadShader("<deferredRenderer/gBufferCombine.vert>", "<deferredRenderer/gBufferCombine.frag>", gBufferCombineParameters);
-		downSampleEmission1Shader = ShaderLoader.loadShader("<deferredRenderer/downSampleEmission1.vert>", "<deferredRenderer/downSampleEmission1.frag>");
-		downSampleEmissionNShader = ShaderLoader.loadShader("<deferredRenderer/downSampleEmissionN.vert>", "<deferredRenderer/downSampleEmissionN.frag>");
+		gBufferCombineShader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/gBufferCombine.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/gBufferCombine.frag>", FileUtil.SHADER_SUBFOLDER), gBufferCombineParameters);
+		downSampleBloomShader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/downSampleBloom1.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/downSampleBloom1.frag>", FileUtil.SHADER_SUBFOLDER));
+		downSampleBloomNShader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/downSampleBloomN.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/downSampleBloomN.frag>", FileUtil.SHADER_SUBFOLDER));
 		loadBlurShader();
 
 		fullscreenQuad = new VertexBufferObjectIndexed(
