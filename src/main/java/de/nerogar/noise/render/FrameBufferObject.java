@@ -2,9 +2,8 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
-import de.nerogar.noise.render.Texture2D.DataType;
-import de.nerogar.noise.render.Texture2D.InterpolationType;
-import de.nerogar.noise.util.Logger;
+import de.nerogar.noise.render.Texture.DataType;
+import de.nerogar.noise.render.Texture.InterpolationType;
 import de.nerogar.noise.util.NoiseResource;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -43,6 +42,9 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 	private Texture2D[] textures;
 
 	public FrameBufferObject(int width, int height, boolean useDepthTexture, Texture2D.DataType... textures) {
+		this.width = width;
+		this.height = height;
+
 		glContext = GLWindow.getCurrentContext();
 		framebufferID = glGenFramebuffers();
 
@@ -58,12 +60,12 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 		this.textures = new Texture2D[MAX_COLOR_ATTACHEMENTS];
 
 		for (int i = 0; i < textures.length; i++) {
-			this.textures[i] = new Texture2D("", 0, 0, null, InterpolationType.NEAREST, textures[i]);
+			this.textures[i] = new Texture2D("", width, height, null, InterpolationType.NEAREST, textures[i]);
 		}
 	}
 
 	private void createDepthTexture() {
-		depthTexture = new Texture2D("depthStencil", 0, 0, null, InterpolationType.NEAREST, DataType.DEPTH_STENCIL);
+		depthTexture = new Texture2D("depthStencil", width, height, null, InterpolationType.NEAREST, DataType.DEPTH_STENCIL);
 	}
 
 	/**
@@ -118,21 +120,24 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 			Texture2D texture = textures[i];
 
 			if (texture != null) {
-				texture.setWidth(width);
-				texture.setHeight(height);
-				texture.createTexture(null);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, glColorAttachments[i], GL_TEXTURE_2D, texture.getID(), 0);
+				if (texture.getWidth() != width || texture.getHeight() != height) {
+					texture.cleanup();
+					textures[i] = new Texture2D("", width, height, null, texture.getInterpolationType(), texture.getDataType());
+				}
+
+				glFramebufferTexture2D(GL_FRAMEBUFFER, glColorAttachments[i], GL_TEXTURE_2D, textures[i].getName(), 0);
 			} else {
 				glFramebufferTexture2D(GL_FRAMEBUFFER, glColorAttachments[i], GL_TEXTURE_2D, 0, 0);
 			}
 		}
 
 		if (depthTexture != null) {
-			depthTexture.setWidth(width);
-			depthTexture.setHeight(height);
-			depthTexture.createTexture(null);
+			if (depthTexture.getWidth() != width || depthTexture.getHeight() != height) {
+				depthTexture.cleanup();
+				depthTexture = new Texture2D("", width, height, null, depthTexture.getInterpolationType(), depthTexture.getDataType());
+			}
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture.getID(), 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture.getName(), 0);
 		} else {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 		}

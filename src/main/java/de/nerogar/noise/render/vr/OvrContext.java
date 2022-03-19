@@ -1,7 +1,6 @@
 package de.nerogar.noise.render.vr;
 
 import de.nerogar.noise.Noise;
-import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.Joystick;
 import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.math.Matrix4fUtils;
@@ -252,8 +251,8 @@ public class OvrContext extends NoiseResource {
 	}
 
 	public void setTextures(Texture2D leftEyeTexture, Texture2D rightEyeTexture) {
-		leftOvrEye.set(leftEyeTexture.getID(), ETextureType_TextureType_OpenGL, EColorSpace_ColorSpace_Auto);
-		rightOvrEye.set(rightEyeTexture.getID(), ETextureType_TextureType_OpenGL, EColorSpace_ColorSpace_Auto);
+		leftOvrEye.set(leftEyeTexture.getName(), ETextureType_TextureType_OpenGL, EColorSpace_ColorSpace_Auto);
+		rightOvrEye.set(rightEyeTexture.getName(), ETextureType_TextureType_OpenGL, EColorSpace_ColorSpace_Auto);
 
 		VRCompositor.VRCompositor_Submit(EVREye_Eye_Left, leftOvrEye, null, EVRSubmitFlags_Submit_Default);
 		VRCompositor.VRCompositor_Submit(EVREye_Eye_Right, rightOvrEye, null, EVRSubmitFlags_Submit_Default);

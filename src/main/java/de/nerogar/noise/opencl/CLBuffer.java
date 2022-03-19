@@ -28,7 +28,7 @@ public class CLBuffer {
 
 		errorCode = BufferUtils.createIntBuffer(1);
 
-		long bufferPointer = CL10GL.clCreateFromGLTexture2D(clContext.getCLContext(), CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, texture.getID(), errorCode);
+		long bufferPointer = CL10GL.clCreateFromGLTexture2D(clContext.getCLContext(), CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, texture.getName(), errorCode);
 		CLContext.checkCLError(errorCode, ERROR_LOCATION);
 
 		this.bufferPointer = bufferPointer;

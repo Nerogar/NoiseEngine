@@ -118,7 +118,7 @@ public class ConeLight implements ILight {
 		shader.setUniform3f("u_unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
 		shader.setUniform3f("u_unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
 
-		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getgBufferWidth(), 1f / renderContext.getgBufferHeight());
+		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getGBufferWidth(), 1f / renderContext.getGBufferHeight());
 		shader.setUniform4f(
 				"u_inverseDepthFunction",
 				projectionMatrix.get(2, 2),
@@ -128,19 +128,22 @@ public class ConeLight implements ILight {
 		                   );
 		for (ILight light : lights) {
 			if (light instanceof ConeLight) {
-				renderLight((ConeLight) light);
+				renderLight(renderContext, (ConeLight) light);
 			}
 		}
 		shader.deactivate();
 	}
 
-	private static void renderLight(ConeLight light) {
+	private static void renderLight(IRenderContext renderContext, ConeLight light) {
 		shader.setUniform3f("u_position", light.position.getX(), light.position.getY(), light.position.getZ());
 		shader.setUniform3f("u_direction", light.direction.getX(), light.direction.getY(), light.direction.getZ());
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_radius", light.radius);
 		shader.setUniform1f("u_strength", light.strength);
 		shader.setUniform2f("u_angleData", light.cosAngle, light.invertedCosAngle);
+		shader.setUniform1Handle("u_depthBuffer", renderContext.getDepthTexture().getHandle());
+		shader.setUniform1Handle("u_normalBuffer", renderContext.getNormalTexture().getHandle());
+		shader.setUniform1Handle("u_materialBuffer", renderContext.getMaterialTexture().getHandle());
 		sphere.render();
 	}
 
@@ -151,12 +154,6 @@ public class ConeLight implements ILight {
 
 	static {
 		shader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/light/cone.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/light/cone.frag>", FileUtil.SHADER_SUBFOLDER));
-
-		shader.activate();
-		shader.setUniform1i("u_depthBuffer", DEPTH_BUFFER_SLOT);
-		shader.setUniform1i("u_normalBuffer", NORMAL_BUFFER_SLOT);
-		shader.setUniform1i("u_materialBuffer", MATERIAL_BUFFER_SLOT);
-		shader.deactivate();
 
 		Mesh mesh = WavefrontLoader.load(FileUtil.get("<cone.obj>", FileUtil.MESH_SUBFOLDER));
 

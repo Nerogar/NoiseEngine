@@ -2,8 +2,8 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.file.FileUtil;
-import de.nerogar.noise.render.Texture2D.DataType;
-import de.nerogar.noise.render.Texture2D.InterpolationType;
+import de.nerogar.noise.render.Texture.DataType;
+import de.nerogar.noise.render.Texture.InterpolationType;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;

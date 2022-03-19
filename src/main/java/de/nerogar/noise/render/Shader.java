@@ -4,7 +4,7 @@ import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
 import de.nerogar.noise.util.Logger;
 import de.nerogar.noise.util.NoiseResource;
-import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.ARBBindlessTexture;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.GL_FALSE;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL32.GL_GEOMETRY_SHADER;
+import static org.lwjgl.opengl.GL46.*;
 
 public class Shader extends NoiseResource {
 
@@ -52,114 +52,80 @@ public class Shader extends NoiseResource {
 		return location;
 	}
 
-	private boolean checkUniformActiveState() {
-		/*if (!active) {
-			Logger.log(Logger.WARNING, "Tried to set uniform while shader was not active!");
-		}*/
-		return active;
-	}
-
-	//float
+	// float
 	public void setUniformf(String name, float[] values) {
-		FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(values.length);
-		floatBuffer.put(values);
-		floatBuffer.flip();
-		setUniformf(name, floatBuffer);
+		glProgramUniform1fv(shaderHandle, getUniformLocation(name), values);
 	}
 
 	public void setUniformf(String name, FloatBuffer floatBuffer) {
-		if (checkUniformActiveState()) {
-			glUniform1fv(getUniformLocation(name), floatBuffer);
-		}
+		glProgramUniform1fv(shaderHandle, getUniformLocation(name), floatBuffer);
 	}
 
 	public void setUniform1f(String name, float f0) {
-		if (checkUniformActiveState()) {
-			glUniform1f(getUniformLocation(name), f0);
-		}
+		glProgramUniform1f(shaderHandle, getUniformLocation(name), f0);
 	}
 
 	public void setUniform2f(String name, float f0, float f1) {
-		if (checkUniformActiveState()) {
-			glUniform2f(getUniformLocation(name), f0, f1);
-		}
+		glProgramUniform2f(shaderHandle, getUniformLocation(name), f0, f1);
 	}
 
 	public void setUniform3f(String name, float f0, float f1, float f2) {
-		if (checkUniformActiveState()) {
-			glUniform3f(getUniformLocation(name), f0, f1, f2);
-		}
+		glProgramUniform3f(shaderHandle, getUniformLocation(name), f0, f1, f2);
 	}
 
 	public void setUniform4f(String name, float f0, float f1, float f2, float f3) {
-		if (checkUniformActiveState()) {
-			glUniform4f(getUniformLocation(name), f0, f1, f2, f3);
-		}
+		glProgramUniform4f(shaderHandle, getUniformLocation(name), f0, f1, f2, f3);
 	}
 
 	public void setUniformMat2f(String name, FloatBuffer buffer) {
-		if (checkUniformActiveState()) {
-			glUniformMatrix2fv(getUniformLocation(name), true, buffer);
-		}
+		glProgramUniformMatrix2fv(shaderHandle, getUniformLocation(name), true, buffer);
 	}
 
 	public void setUniformMat3f(String name, FloatBuffer buffer) {
-		if (checkUniformActiveState()) {
-			glUniformMatrix3fv(getUniformLocation(name), true, buffer);
-		}
+		glProgramUniformMatrix3fv(shaderHandle, getUniformLocation(name), true, buffer);
 	}
 
 	public void setUniformMat4f(String name, FloatBuffer buffer) {
-		if (checkUniformActiveState()) {
-			glUniformMatrix4fv(getUniformLocation(name), true, buffer);
-		}
+		glProgramUniformMatrix4fv(shaderHandle, getUniformLocation(name), true, buffer);
 	}
 
-	//int
+	// int
 	public void setUniformi(String name, int[] values) {
-		if (checkUniformActiveState()) {
-			IntBuffer intBuffer = BufferUtils.createIntBuffer(values.length);
-			intBuffer.put(values);
-			intBuffer.flip();
-			setUniformi(name, intBuffer);
-		}
+		glProgramUniform1iv(shaderHandle, getUniformLocation(name), values);
 	}
 
 	public void setUniformi(String name, IntBuffer intBuffer) {
-		if (checkUniformActiveState()) {
-			glUniform1iv(getUniformLocation(name), intBuffer);
-		}
+		glProgramUniform1iv(shaderHandle, getUniformLocation(name), intBuffer);
 	}
 
 	public void setUniform1i(String name, int i0) {
-		if (checkUniformActiveState()) {
-			glUniform1i(getUniformLocation(name), i0);
-		}
+		glProgramUniform1i(shaderHandle, getUniformLocation(name), i0);
 	}
 
 	public void setUniform2i(String name, int i0, int i1) {
-		if (checkUniformActiveState()) {
-			glUniform2i(getUniformLocation(name), i0, i1);
-		}
+		glProgramUniform2i(shaderHandle, getUniformLocation(name), i0, i1);
 	}
 
 	public void setUniform3i(String name, int i0, int i1, int i2) {
-		if (checkUniformActiveState()) {
-			glUniform3i(getUniformLocation(name), i0, i1, i2);
-		}
+		glProgramUniform3i(shaderHandle, getUniformLocation(name), i0, i1, i2);
 	}
 
 	public void setUniform4i(String name, int i0, int i1, int i2, int i3) {
-		if (checkUniformActiveState()) {
-			glUniform4i(getUniformLocation(name), i0, i1, i2, i3);
-		}
+		glProgramUniform4i(shaderHandle, getUniformLocation(name), i0, i1, i2, i3);
+	}
+
+	// handle
+	public void setUniformHandle(String name, long[] handles) {
+		ARBBindlessTexture.glProgramUniformHandleui64vARB(shaderHandle, getUniformLocation(name), handles);
+	}
+
+	public void setUniform1Handle(String name, long handle) {
+		ARBBindlessTexture.glProgramUniformHandleui64ARB(shaderHandle, getUniformLocation(name), handle);
 	}
 
 	//boolean
 	public void setUniform1bool(String name, boolean b0) {
-		if (checkUniformActiveState()) {
-			glUniform1i(getUniformLocation(name), b0 ? 1 : 0);
-		}
+		glProgramUniform1i(shaderHandle, getUniformLocation(name), b0 ? 1 : 0);
 	}
 
 	//---[end uniforms]---

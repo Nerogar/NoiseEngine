@@ -166,9 +166,8 @@ public class Renderer implements IRenderer {
 	private void renderBloom(IRenderTarget renderTarget) {
 		// first down sample step
 		downSampleBloomBuffers[0][0].bind();
-		lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT).bind(0);
 		downSampleBloomShader.activate();
-		downSampleBloomShader.setUniform1i("u_lightBuffer", 0);
+		downSampleBloomShader.setUniform1Handle("u_lightBuffer", lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT).getHandle());
 		downSampleBloomShader.setUniform2f("u_inverseSourceResolution", 1f / gBuffer.getWidth(), 1f / gBuffer.getHeight());
 		downSampleBloomShader.setUniform2f(
 				"u_padSourceTexture",
@@ -180,10 +179,9 @@ public class Renderer implements IRenderer {
 
 		// remaining down sample steps
 		downSampleBloomNShader.activate();
-		downSampleBloomNShader.setUniform1i("u_bloomBuffer", 0);
 		for (int i = 1; i < downSampleBloomBuffers[0].length; i++) {
 			downSampleBloomBuffers[0][i].bind();
-			downSampleBloomBuffers[0][i - 1].getTextureAttachment(0).bind(0);
+			downSampleBloomNShader.setUniform1Handle("u_bloomBuffer", downSampleBloomBuffers[0][i - 1].getTextureAttachment(0).getHandle());
 
 			downSampleBloomNShader.setUniform2f("u_inverseSourceResolution", 1f / downSampleBloomBuffers[0][i - 1].getWidth(), 1f / downSampleBloomBuffers[0][i - 1].getHeight());
 			downSampleBloomNShader.setUniform2f(
@@ -197,13 +195,12 @@ public class Renderer implements IRenderer {
 
 		// blur
 		blurShader.activate();
-		blurShader.setUniform1i("u_sourceBuffer", 0);
 
 		// x direction
 		blurShader.setUniform2f("u_blurDirection", 1, 0);
 		for (int i = 0; i < downSampleBloomBuffers[0].length; i++) {
 			downSampleBloomBuffers[1][i].bind();
-			downSampleBloomBuffers[0][i].getTextureAttachment(0).bind(0);
+			blurShader.setUniform1Handle("u_sourceBuffer", downSampleBloomBuffers[0][i].getTextureAttachment(0).getHandle());
 			blurShader.setUniform2f("u_inverseResolution", 1f / downSampleBloomBuffers[0][i].getWidth(), 1f / downSampleBloomBuffers[0][i].getHeight());
 			fullscreenQuad.render();
 		}
@@ -212,16 +209,23 @@ public class Renderer implements IRenderer {
 		blurShader.setUniform2f("u_blurDirection", 0, 1);
 		for (int i = 0; i < downSampleBloomBuffers[0].length; i++) {
 			downSampleBloomBuffers[0][i].bind();
-			downSampleBloomBuffers[1][i].getTextureAttachment(0).bind(0);
+			blurShader.setUniform1Handle("u_sourceBuffer", downSampleBloomBuffers[1][i].getTextureAttachment(0).getHandle());
 			blurShader.setUniform2f("u_inverseResolution", 1f / downSampleBloomBuffers[0][i].getWidth(), 1f / downSampleBloomBuffers[0][i].getHeight());
 			fullscreenQuad.render();
 		}
 		blurShader.deactivate();
 	}
 
+	private Texture2D normalTexture = Texture2DLoader.loadTexture("dist/dirt_1/normal.png", Texture2D.InterpolationType.LINEAR_MIPMAP);
+
 	@Override
 	public void render(IRenderTarget renderTarget, IReadOnlyCamera camera) {
-		IRenderContext renderContext = new RenderContext(camera, gBuffer.getWidth(), gBuffer.getHeight());
+		IRenderContext renderContext = new RenderContext(camera, gBuffer.getWidth(), gBuffer.getHeight(),
+		                                                 gBuffer.getTextureAttachment(GBUFFER_DEPTH_SLOT),
+		                                                 gBuffer.getTextureAttachment(GBUFFER_ALBEDO_SLOT),
+		                                                 gBuffer.getTextureAttachment(GBUFFER_NORMAL_SLOT),
+		                                                 gBuffer.getTextureAttachment(GBUFFER_MATERIAL_SLOT)
+		);
 
 		GL11.glEnable(GL_CULL_FACE);
 		GL11.glCullFace(GL_BACK);
@@ -242,11 +246,8 @@ public class Renderer implements IRenderer {
 		glCullFace(GL_FRONT);
 		glBlendFunc(GL_ONE, GL_ONE);
 
-		gBuffer.getTextureAttachment(GBUFFER_DEPTH_SLOT).bind(ILight.DEPTH_BUFFER_SLOT);
-		gBuffer.getTextureAttachment(GBUFFER_ALBEDO_SLOT).bind(ILight.ALBEDO_BUFFER_SLOT);
-		gBuffer.getTextureAttachment(GBUFFER_NORMAL_SLOT).bind(ILight.NORMAL_BUFFER_SLOT);
-		gBuffer.getTextureAttachment(GBUFFER_MATERIAL_SLOT).bind(ILight.MATERIAL_BUFFER_SLOT);
 		renderLights(renderContext);
+
 		GL11.glCullFace(GL_BACK);
 		GL11.glDisable(GL11.GL_BLEND);
 
@@ -255,17 +256,12 @@ public class Renderer implements IRenderer {
 
 		// combine pass
 		renderTarget.bind();
-		lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT).bind(3);
-
-		for (int i = 0; i < BLOOM_LEVEL_COUNT; i++) {
-			downSampleBloomBuffers[0][i].getTextureAttachment(0).bind(4 + i);
-		}
 
 		gBufferCombineShader.activate();
 
-		gBufferCombineShader.setUniform1i("u_lightBuffer", 3);
+		gBufferCombineShader.setUniform1Handle("u_lightBuffer", lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT).getHandle());
 		for (int i = 0; i < BLOOM_LEVEL_COUNT; i++) {
-			gBufferCombineShader.setUniform1i("u_bloomBuffer" + (i + 1), 4 + i);
+			gBufferCombineShader.setUniform1Handle("u_bloomBuffer" + (i + 1), downSampleBloomBuffers[0][i].getTextureAttachment(0).getHandle());
 		}
 		fullscreenQuad.render();
 
@@ -329,7 +325,8 @@ public class Renderer implements IRenderer {
 		Map<String, String> gBufferCombineParameters = new HashMap<>();
 		gBufferCombineParameters.put("BLOOM_TEXTURE_COUNT", "#define BLOOM_TEXTURE_COUNT " + BLOOM_LEVEL_COUNT);
 
-		gBufferCombineShader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/gBufferCombine.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/gBufferCombine.frag>", FileUtil.SHADER_SUBFOLDER), gBufferCombineParameters);
+		gBufferCombineShader = ShaderLoader.loadShader(
+				FileUtil.get("<deferredRenderer/gBufferCombine.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/gBufferCombine.frag>", FileUtil.SHADER_SUBFOLDER), gBufferCombineParameters);
 		downSampleBloomShader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/downSampleBloom1.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/downSampleBloom1.frag>", FileUtil.SHADER_SUBFOLDER));
 		downSampleBloomNShader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/downSampleBloomN.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/downSampleBloomN.frag>", FileUtil.SHADER_SUBFOLDER));
 		loadBlurShader();

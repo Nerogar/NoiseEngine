@@ -3,7 +3,6 @@ package de.nerogar.noise.render.deferredRenderer.light;
 import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
-import de.nerogar.noise.render.camera.IReadOnlyCamera;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Ray;
 import de.nerogar.noiseInterface.math.IMatrix4f;
@@ -73,7 +72,7 @@ public class SunLight implements ILight {
 		shader.setUniform3f("u_unitRayRightDir", unitRayRight.getDir().getX(), unitRayRight.getDir().getY(), unitRayRight.getDir().getZ());
 		shader.setUniform3f("u_unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
 		shader.setUniform3f("u_unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
-		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getgBufferWidth(), 1f / renderContext.getgBufferHeight());
+		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getGBufferWidth(), 1f / renderContext.getGBufferHeight());
 		shader.setUniform4f(
 				"u_inverseDepthFunction",
 				projectionMatrix.get(2, 2),
@@ -84,29 +83,26 @@ public class SunLight implements ILight {
 
 		for (ILight light : lights) {
 			if (light instanceof SunLight) {
-				renderLight(renderContext.getCamera(), (SunLight) light);
+				renderLight(renderContext, (SunLight) light);
 			}
 		}
 		shader.deactivate();
 	}
 
-	private static void renderLight(IReadOnlyCamera camera, SunLight light) {
+	private static void renderLight(IRenderContext renderContext, SunLight light) {
 		shader.setUniform3f("u_direction", light.direction.getX(), light.direction.getY(), light.direction.getZ());
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_intensity", light.intensity);
-		shader.setUniform3f("u_cameraPosition", camera.getX(), camera.getY(), camera.getZ());
+		shader.setUniform3f("u_cameraPosition", renderContext.getCamera().getX(), renderContext.getCamera().getY(), renderContext.getCamera().getZ());
+		shader.setUniform1Handle("u_depthBuffer", renderContext.getDepthTexture().getHandle());
+		shader.setUniform1Handle("u_albedoBuffer", renderContext.getAlbedoTexture().getHandle());
+		shader.setUniform1Handle("u_normalBuffer", renderContext.getNormalTexture().getHandle());
+		shader.setUniform1Handle("u_materialBuffer", renderContext.getMaterialTexture().getHandle());
 		fullscreenQuad.render();
 	}
 
 	static {
 		shader = ShaderLoader.loadShader(FileUtil.get("<deferredRenderer/light/sun.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<deferredRenderer/light/sun.frag>", FileUtil.SHADER_SUBFOLDER));
-
-		shader.activate();
-		shader.setUniform1i("u_depthBuffer", DEPTH_BUFFER_SLOT);
-		shader.setUniform1i("u_albedoBuffer", ALBEDO_BUFFER_SLOT);
-		shader.setUniform1i("u_normalBuffer", NORMAL_BUFFER_SLOT);
-		shader.setUniform1i("u_materialBuffer", MATERIAL_BUFFER_SLOT);
-		shader.deactivate();
 
 		fullscreenQuad = new VertexBufferObjectIndexed(
 				new int[] { 2, 2 },

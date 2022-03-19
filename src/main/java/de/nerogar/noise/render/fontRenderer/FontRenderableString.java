@@ -153,8 +153,6 @@ public class FontRenderableString {
 	public void render(int left, int bottom) {
 		long currentContext = GLWindow.getCurrentContext();
 
-		font.getTexture().bind(0);
-
 		Shader shader = glContextShaderMap.computeIfAbsent(currentContext, k -> loadFontShader());
 
 		glEnable(GL_BLEND);
@@ -162,6 +160,7 @@ public class FontRenderableString {
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA, GL_ONE);
 
 		shader.activate();
+		shader.setUniform1Handle("fontSheet", font.getTexture().getHandle());
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
 		shader.setUniform2f("pointSize", pointSizeX, pointSizeY);
 		shader.setUniform2f("offset", left - font.getTexturePadding(), bottom);
@@ -191,12 +190,7 @@ public class FontRenderableString {
 	}
 
 	private static Shader loadFontShader() {
-		Shader shader = ShaderLoader.loadShader(FileUtil.get("<font/font.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<font/font.frag>", FileUtil.SHADER_SUBFOLDER));
-		shader.activate();
-		shader.setUniform1i("fontSheet", 0);
-		shader.deactivate();
-
-		return shader;
+		return ShaderLoader.loadShader(FileUtil.get("<font/font.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<font/font.frag>", FileUtil.SHADER_SUBFOLDER));
 	}
 
 	/**

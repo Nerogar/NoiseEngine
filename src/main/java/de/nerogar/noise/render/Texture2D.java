@@ -2,118 +2,29 @@ package de.nerogar.noise.render;
 
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.debug.ResourceProfiler;
+import de.nerogar.noise.exception.InvalidStateException;
+import org.lwjgl.opengl.ARBBindlessTexture;
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL14.GL_DEPTH_COMPONENT32;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL46.*;
 
 public class Texture2D extends Texture {
 
 	public static final float MAX_ANISOTROPIC_FILTERING = glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
 
-	public enum InterpolationType {
-		LINEAR(GL_LINEAR, GL_LINEAR, false),
-		NEAREST(GL_NEAREST, GL_NEAREST, false),
-		LINEAR_MIPMAP(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, true),
-		NEAREST_MIPMAP(GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, true);
+	private int width;
+	private int height;
 
-		public final int     openglConstantMin;
-		public final int     openglConstantMag;
-		public final boolean generateMipMaps;
+	private int     name;
+	private long    handle;
+	private boolean isResident;
 
-		InterpolationType(int openglConstantMin, int openglConstantMag, boolean generateMipMaps) {
-			this.openglConstantMin = openglConstantMin;
-			this.openglConstantMag = openglConstantMag;
-			this.generateMipMaps = generateMipMaps;
-		}
-
-	}
-
-	public enum DataType {
-		/** 1 component, 8 bit, range is [0, 1], input is BGRA */
-		BGRA_8I(GL_R8, GL_RGBA, GL_UNSIGNED_BYTE),
-
-		/** 2 components, 8 bit each, range is [0, 1], input is BGRA */
-		BGRA_8_8I(GL_RG8, GL_RGBA, GL_UNSIGNED_BYTE),
-
-		/** 3 components, 8 bit each, range is [0, 1], input is BGRA */
-		BGRA_8_8_8I(GL_RGB8, GL_RGBA, GL_UNSIGNED_BYTE),
-
-		/** 4 components, 8 bit each, range is [0, 1], input is BGRA */
-		BGRA_8_8_8_8I(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE),
-
-		/** 1 component, 16 bit, range is [0, 1], input is BGRA */
-		BGRA_16I(GL_R16, GL_RGBA, GL_UNSIGNED_SHORT),
-
-		/** 2 components, 16 bit each, range is [0, 1], input is BGRA */
-		BGRA_16_16I(GL_RG16, GL_RGBA, GL_UNSIGNED_SHORT),
-
-		/** 3 components, 16 bit each, range is [0, 1], input is BGRA */
-		BGRA_16_16_16I(GL_RGB16, GL_RGBA, GL_UNSIGNED_SHORT),
-
-		/** 4 components, 16 bit each, range is [0, 1], input is BGRA */
-		BGRA_16_16_16_16I(GL_RGBA16, GL_RGBA, GL_UNSIGNED_SHORT),
-
-
-		/** 4 components, 10 bits for R, G and B, 2 bits for A, range ist [0, 1], input is BGRA */
-		BGRA_10_10_10_2(GL_RGB10_A2, GL_RGBA, GL_FLOAT),
-
-		/** 1 component, 16 bit, half floating point precision, input is BGRA */
-		BGRA_16F(GL_R16F, GL_RGBA, GL_HALF_FLOAT),
-
-		/** 2 components, 16 bit each, half floating point precision, input is BGRA */
-		BGRA_16_16F(GL_RG16F, GL_RGBA, GL_HALF_FLOAT),
-
-		/** 3 components, 16 bit each, half floating point precision, input is BGRA */
-		BGRA_16_16_16F(GL_RGB16F, GL_RGBA, GL_HALF_FLOAT),
-
-		/** 4 components, 16 bit each, half floating point precision, input is BGRA */
-		BGRA_16_16_16_16F(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT),
-
-		/** 1 components, 32 bit, floating point precision, input is R (a single float) */
-		BGRA_32F(GL_R32F, GL_R, GL_FLOAT),
-
-		/** 2 components, 32 bit each, floating point precision, input is RG (2 floats) */
-		BGRA_32_32F(GL_RG32F, GL_RG, GL_FLOAT),
-
-		/** 3 components, 32 bit each, floating point precision, input is RGB (3 floats) */
-		BGRA_32_32_32F(GL_RGB32F, GL_RGB, GL_FLOAT),
-
-		/** 4 components, 32 bit each, floating point precision, input is RGBA (4 floats) */
-		BGRA_32_32_32_32F(GL_RGBA32F, GL_RGBA, GL_FLOAT),
-
-		/** 1 component, 32 bits, only used for depth textures, input is a single float */
-		DEPTH(GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT, GL_FLOAT),
-
-		/** 2 components, 24 bits depth, 8 bit stencil */
-		DEPTH_STENCIL(GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8);
-
-		public final int internal;
-		public final int format;
-		public final int type;
-
-		DataType(int internal, int format, int type) {
-			this.internal = internal;
-			this.format = format;
-			this.type = type;
-		}
-
-	}
-
-	private int               id;
-	private String            name;
-	private int               width;
-	private int               height;
 	private InterpolationType interpolationType;
 	private DataType          dataType;
 	private float             anisotropicFiltering;
 	private int               wrapMode;
-
-	private boolean initialized;
 
 	/**
 	 * Creates an empty Texture
@@ -154,7 +65,6 @@ public class Texture2D extends Texture {
 	public Texture2D(String name, int width, int height, ByteBuffer colorBuffer, InterpolationType interpolationType, DataType dataType, float anisotropicFiltering) {
 		super(name);
 
-		this.name = name;
 		this.width = width;
 		this.height = height;
 		this.interpolationType = interpolationType;
@@ -162,77 +72,40 @@ public class Texture2D extends Texture {
 		this.anisotropicFiltering = anisotropicFiltering;
 		this.wrapMode = GL_REPEAT;
 
-		id = glGenTextures();
+		this.name = glCreateTextures(GL_TEXTURE_2D);
 		createTexture(colorBuffer);
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_COUNT);
 	}
 
-	protected void createTexture(ByteBuffer colorBuffer) {
-		bind(0);
+	private void createTexture(ByteBuffer colorBuffer) {
+		glTextureParameteri(name, GL_TEXTURE_MIN_FILTER, interpolationType.openglConstantMin);
+		glTextureParameteri(name, GL_TEXTURE_MAG_FILTER, interpolationType.openglConstantMag);
+		glTextureParameteri(name, GL_TEXTURE_WRAP_S, wrapMode);
+		glTextureParameteri(name, GL_TEXTURE_WRAP_T, wrapMode);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, interpolationType.openglConstantMin);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, interpolationType.openglConstantMag);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+		int maxDim = Math.max(width, height);
+		int levels = 1 + Integer.numberOfTrailingZeros(Integer.highestOneBit(maxDim));
+		glTextureStorage2D(name, levels, dataType.internal, width, height);
 
-
-		glTexImage2D(GL_TEXTURE_2D, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer);
-
-		if (interpolationType.generateMipMaps) {
-			glGenerateMipmap(GL_TEXTURE_2D);
+		if (colorBuffer != null) {
+			glTextureSubImage2D(name, 0, 0, 0, width, height, dataType.format, dataType.type, colorBuffer);
 		}
 
-		initialized = true;
+		if (interpolationType.generateMipMaps) {
+			glGenerateTextureMipmap(name);
+		}
 
 		setAnisotropicFilteringParameter();
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_UPLOAD_COUNT);
-		if (colorBuffer != null) Noise.getResourceProfiler().addValue(ResourceProfiler.TEXTURE_UPLOAD_SIZE, colorBuffer.remaining());
-	}
-
-	private void setAnisotropicFilteringParameter() {
-		anisotropicFiltering = Math.min(MAX_ANISOTROPIC_FILTERING, anisotropicFiltering);
-
-		if (!initialized) return;
-
-		if (anisotropicFiltering > 1 && GLWindow.getCurrentWindow().getGLContext().getCapabilities().GL_EXT_texture_filter_anisotropic) {
-			glTexParameterf(GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropicFiltering);
-		} else if (anisotropicFiltering <= 1 && GLWindow.getCurrentWindow().getGLContext().getCapabilities().GL_EXT_texture_filter_anisotropic) {
-			glTexParameterf(GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
+		if (colorBuffer != null) {
+			Noise.getResourceProfiler().addValue(ResourceProfiler.TEXTURE_UPLOAD_SIZE, colorBuffer.remaining());
 		}
 	}
 
-	public int getID() {
-		return id;
-	}
-
-	public String getName() {
+	public int getName() {
 		return name;
-	}
-
-	/**
-	 * Sets the new width of this texture.
-	 * The width does not change until {@link Texture2D#createTexture createTexture} is called.
-	 *
-	 * @param width the new width
-	 * @return this Texture2D object
-	 */
-	protected Texture2D setWidth(int width) {
-		this.width = width;
-		return this;
-	}
-
-	/**
-	 * Sets the new height of this texture.
-	 * The height does not change until {@link Texture2D#createTexture createTexture} is called.
-	 *
-	 * @param height the new height
-	 * @return this Texture2D object
-	 */
-	protected Texture2D setHeight(int height) {
-		this.height = height;
-		return this;
 	}
 
 	public int getWidth() {
@@ -241,6 +114,15 @@ public class Texture2D extends Texture {
 
 	public int getHeight() {
 		return height;
+	}
+
+	private void setAnisotropicFilteringParameter() {
+		anisotropicFiltering = Math.min(MAX_ANISOTROPIC_FILTERING, anisotropicFiltering);
+		anisotropicFiltering = Math.max(1, anisotropicFiltering);
+
+		if (anisotropicFiltering > 1 && GLWindow.getCurrentWindow().getGLContext().getCapabilities().GL_EXT_texture_filter_anisotropic) {
+			glTexParameterf(GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropicFiltering);
+		}
 	}
 
 	/**
@@ -252,12 +134,12 @@ public class Texture2D extends Texture {
 	 * @return this Texture2D object
 	 */
 	public Texture2D setAnisotropicFiltering(float anisotropicFiltering) {
+		if (isResident) {
+			throw new InvalidStateException("Resident Textures can not be modified");
+		}
+
 		this.anisotropicFiltering = anisotropicFiltering;
-
-		bind(0);
-
 		setAnisotropicFilteringParameter();
-
 		return this;
 	}
 
@@ -272,29 +154,49 @@ public class Texture2D extends Texture {
 	 * @param wrapMode the OpenGL wrap mode.
 	 */
 	public void setWrapMode(int wrapMode) {
+		if (isResident) {
+			throw new InvalidStateException("Resident Textures can not be modified");
+		}
+
 		this.wrapMode = wrapMode;
-		bind(0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+		glTextureParameteri(name, GL_TEXTURE_WRAP_S, wrapMode);
+		glTextureParameteri(name, GL_TEXTURE_WRAP_T, wrapMode);
 	}
 
 	public int getWrapMode() {
 		return wrapMode;
 	}
 
-	@Override
-	public void bind(int slot) {
-		glActiveTexture(texturePositions[slot]);
-		glBindTexture(GL_TEXTURE_2D, id);
+	public DataType getDataType() {
+		return dataType;
+	}
 
-		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_BINDS);
+	public InterpolationType getInterpolationType() {
+		return interpolationType;
+	}
+
+	private void makeResident() {
+		handle = ARBBindlessTexture.glGetTextureHandleARB(name);
+		ARBBindlessTexture.glMakeTextureHandleResidentARB(handle);
+	}
+
+	public long getHandle() {
+		if (!isResident) {
+			makeResident();
+		}
+		return handle;
 	}
 
 	@Override
 	public boolean cleanup() {
 		if (!super.cleanup()) return false;
-		glDeleteTextures(id);
-		initialized = false;
+
+		if (isResident) {
+			ARBBindlessTexture.glMakeTextureHandleNonResidentARB(handle);
+			handle = 0;
+		}
+		glDeleteTextures(name);
+		name = 0;
 
 		Noise.getResourceProfiler().decrementValue(ResourceProfiler.TEXTURE_COUNT);
 
@@ -303,12 +205,12 @@ public class Texture2D extends Texture {
 
 	@Override
 	public int hashCode() {
-		return id;
+		return name;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof Texture2D) return ((Texture2D) obj).id == id;
+		if (obj instanceof Texture2D) return ((Texture2D) obj).name == name;
 
 		return super.equals(obj);
 	}

@@ -85,12 +85,9 @@ public class SingleRenderable implements IRenderable {
 		shader.setUniformMat4f("u_vMat", renderContext.getCamera().getViewMatrix().asBuffer());
 		shader.setUniformMat4f("u_pMat", renderContext.getCamera().getProjectionMatrix().asBuffer());
 
-		albedo.bind(0);
-		normal.bind(1);
-		material.bind(2);
-		shader.setUniform1i("u_albedoTexture", 0);
-		shader.setUniform1i("u_normalTexture", 1);
-		shader.setUniform1i("u_materialTexture", 2);
+		shader.setUniform1Handle("u_albedoTexture", albedo.getHandle());
+		shader.setUniform1Handle("u_normalTexture", normal.getHandle());
+		shader.setUniform1Handle("u_materialTexture", material.getHandle());
 
 		vbo.render();
 

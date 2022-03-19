@@ -43,7 +43,7 @@ public class TextureCubeMap extends Texture {
 	}
 
 	protected void createTexture(ByteBuffer[] colorBuffer) {
-		bind(0);
+		// TODO: bind(0);
 
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer[0]);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, dataType.internal, width, height, 0, dataType.format, dataType.type, colorBuffer[1]);
@@ -99,6 +99,8 @@ public class TextureCubeMap extends Texture {
 		return height;
 	}
 
+	// TODO: support bindless cube textures
+	/*
 	@Override
 	public void bind(int slot) {
 		glActiveTexture(texturePositions[slot]);
@@ -106,6 +108,7 @@ public class TextureCubeMap extends Texture {
 
 		Noise.getResourceProfiler().incrementValue(ResourceProfiler.TEXTURE_BINDS);
 	}
+	*/
 
 	@Override
 	public boolean cleanup() {

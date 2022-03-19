@@ -32,7 +32,7 @@ public class RenderHelper {
 		}
 
 		shader.activate();
-		texture.bind(0);
+		shader.setUniform1Handle("blitTexture", texture.getHandle());
 		vbo.render();
 		shader.deactivate();
 	}
@@ -67,10 +67,7 @@ public class RenderHelper {
 
 	private static Shader getBlitShader() {
 		Shader shader = ShaderLoader.loadShader(FileUtil.get("<renderHelper/fullscreenBlit.vert>", FileUtil.SHADER_SUBFOLDER), FileUtil.get("<renderHelper/fullscreenBlit.frag>", FileUtil.SHADER_SUBFOLDER));
-		shader.activate();
-		shader.setUniform1i("blitTexture", 0);
 		shader.setUniformMat4f("projectionMatrix", projectionMatrix.asBuffer());
-		shader.deactivate();
 
 		return shader;
 	}

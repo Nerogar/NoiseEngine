@@ -89,13 +89,17 @@ public class GLWindow extends NoiseResource implements IRenderTarget {
 		glfwWindowHint(GLFW_RESIZABLE, resizable ? GL_TRUE : GL_FALSE);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 
+		// todo: move from 3.3 to 4.6
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+
 		windowPointer = glfwCreateWindow(width, height, title, monitor == null ? NULL : monitor.getPointer(), parentWindow == null ? NULL : parentWindow.windowPointer);
 		glfwSetInputMode(windowPointer, GLFW_STICKY_KEYS, GL_TRUE);
 		inputHandler.init(this, windowPointer);
 		glfwJoystickInputHandler = new GlfwJoystickInputHandler(inputHandler);
 
 		GLWindow.makeContextCurrent(windowPointer);
-		glContext = new GLContext(windowPointer);//GLContext.createFromCurrent();
+		glContext = new GLContext(windowPointer);
 
 		setSwapInterval(Math.max(0, swapInterval));
 

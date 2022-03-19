@@ -5,7 +5,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
 import de.nerogar.noise.render.*;
-import de.nerogar.noise.render.Texture2D.InterpolationType;
+import de.nerogar.noise.render.Texture.InterpolationType;
 
 /**
  * a font class used for creating {@link FontRenderableString FontRenderableString}

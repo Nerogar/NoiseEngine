@@ -2,18 +2,16 @@ package de.nerogar.noise.util;
 
 import de.nerogar.noise.Noise;
 
-import java.lang.ref.PhantomReference;
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
+import java.lang.ref.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class NoiseResource {
 
-	private boolean cleaned = false;
+	private boolean                         cleaned = false;
 	private PhantomReference<NoiseResource> reference;
 
-	private String resourceName;
+	private final String resourceName;
 
 	public NoiseResource() {
 		this(null);
@@ -27,6 +25,10 @@ public abstract class NoiseResource {
 
 	public boolean isCleaned() {
 		return cleaned;
+	}
+
+	public String getResourceName() {
+		return resourceName;
 	}
 
 	public String getCleanupError() {
