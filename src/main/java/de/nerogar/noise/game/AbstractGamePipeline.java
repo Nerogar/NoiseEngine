@@ -124,6 +124,11 @@ public abstract class AbstractGamePipeline<T extends IEvent> implements IGamePip
 		methods.clear();
 		methods.addAll(pipelineMethods);
 		isDirty = false;
+
+		Noise.getLogger().log(Logger.INFO, "Pipeline created: " + getClass().getName() + ", with methods:");
+		for (PipelineMethod method : methods) {
+			Noise.getLogger().log(Logger.INFO, "    " + method.name);
+		}
 	}
 
 	private Consumer<T> createPipelineMethodNew(Object object, Method method, EventHub eventHub) throws Throwable {

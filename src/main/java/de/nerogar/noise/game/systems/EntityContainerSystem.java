@@ -41,8 +41,8 @@ public class EntityContainerSystem implements IGameSystem {
 		return entityContainer.getEntityComponent(entityId, componentClass);
 	}
 
-	public <T extends IComponent> void getEntityComponents(int entityId, Class<T> componentClass, List<? super T> components) {
-		entityContainer.getEntityComponents(entityId, componentClass, components);
+	public <T extends IComponent> List<? super T> getEntityComponents(int entityId, Class<T> componentClass, List<? super T> components) {
+		return entityContainer.getEntityComponents(entityId, componentClass, components);
 	}
 
 	public <T extends IComponent> boolean hasEntityComponent(int entityId, Class<T> componentClass) {
@@ -53,8 +53,24 @@ public class EntityContainerSystem implements IGameSystem {
 		return entityContainer.getComponents(entityId);
 	}
 
-	public <T extends IComponent> void getComponents(Class<T> componentClass, List<T> components) {
-		entityContainer.getComponents(componentClass, components);
+	public <T extends IComponent> T getEntityComponent(IComponent component, Class<T> componentClass) {
+		return entityContainer.getEntityComponent(component.getEntityId(), componentClass);
+	}
+
+	public <T extends IComponent> List<? super T> getEntityComponents(IComponent component, Class<T> componentClass, List<? super T> components) {
+		return entityContainer.getEntityComponents(component.getEntityId(), componentClass, components);
+	}
+
+	public <T extends IComponent> boolean hasEntityComponent(IComponent component, Class<T> componentClass) {
+		return entityContainer.getEntityComponent(component.getEntityId(), componentClass) != null;
+	}
+
+	public IComponent[] getComponents(IComponent component) {
+		return entityContainer.getComponents(component.getEntityId());
+	}
+
+	public <T extends IComponent> List<T> getComponents(Class<T> componentClass, List<T> components) {
+		return entityContainer.getComponents(componentClass, components);
 	}
 
 }

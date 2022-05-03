@@ -52,7 +52,7 @@ public class EntityContainer {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends IComponent> void getEntityComponents(int entityId, Class<T> componentClass, List<? super T> components) {
+	public <T extends IComponent> List<? super T> getEntityComponents(int entityId, Class<T> componentClass, List<? super T> components) {
 		IComponent[] allComponents = entities.get(entityId);
 
 		for (IComponent component : allComponents) {
@@ -60,13 +60,15 @@ public class EntityContainer {
 				components.add((T) component);
 			}
 		}
+
+		return components;
 	}
 
 	public IComponent[] getComponents(int entityId) {
 		return entities.get(entityId);
 	}
 
-	public <T extends IComponent> void getComponents(Class<T> componentClass, List<T> components) {
+	public <T extends IComponent> List<T> getComponents(Class<T> componentClass, List<T> components) {
 		for (IComponent[] allComponents : entities.values()) {
 			for (IComponent component : allComponents) {
 				if (component.getClass() == componentClass) {
@@ -74,6 +76,8 @@ public class EntityContainer {
 				}
 			}
 		}
+
+		return components;
 	}
 
 }

@@ -5,6 +5,7 @@ public class VertexList {
 	float[] positionList;
 	float[] uvList;
 	float[] normalList;
+	float[] additionalAttributeList;
 
 	int[] indexList;
 
@@ -17,6 +18,7 @@ public class VertexList {
 		positionList = new float[maxVertices * 3];
 		uvList = new float[maxVertices * 2];
 		normalList = new float[maxVertices * 3];
+		additionalAttributeList = new float[maxVertices * 3];
 
 		indexList = new int[16];
 	}
@@ -48,6 +50,10 @@ public class VertexList {
 
 	public float[] getNormalArray() {
 		return normalList;
+	}
+
+	public float[] getAdditionalAttribute() {
+		return additionalAttributeList;
 	}
 
 	public void addIndex(int index) {
@@ -85,6 +91,12 @@ public class VertexList {
 		return vertexCount++;
 	}
 
+	public void setAdditionalAttribute(float v1, float v2, float v3) {
+		additionalAttributeList[vertexCount * 3 - 3] = v1;
+		additionalAttributeList[vertexCount * 3 - 2] = v2;
+		additionalAttributeList[vertexCount * 3 - 1] = v3;
+	}
+
 	private void ensureVertexCapacity(int newSize) {
 		if (maxVertices < newSize) {
 			newSize = (int) (newSize * 1.5f);
@@ -94,14 +106,17 @@ public class VertexList {
 			float[] newPositionList = new float[newSize * 3];
 			float[] newUVList = new float[newSize * 2];
 			float[] newNormalList = new float[newSize * 3];
+			float[] newAdditionalAttributeList = new float[newSize * 3];
 
 			System.arraycopy(positionList, 0, newPositionList, 0, positionList.length);
 			System.arraycopy(uvList, 0, newUVList, 0, uvList.length);
 			System.arraycopy(normalList, 0, newNormalList, 0, normalList.length);
+			System.arraycopy(additionalAttributeList, 0, newAdditionalAttributeList, 0, additionalAttributeList.length);
 
 			positionList = newPositionList;
 			uvList = newUVList;
 			normalList = newNormalList;
+			additionalAttributeList = newAdditionalAttributeList;
 		}
 	}
 

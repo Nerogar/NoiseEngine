@@ -1,6 +1,8 @@
 package de.nerogar.noise.game;
 
+import de.nerogar.noise.Noise;
 import de.nerogar.noise.event.EventHub;
+import de.nerogar.noise.util.Logger;
 import de.nerogar.noiseInterface.game.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -78,6 +80,10 @@ public class GameSystemContainer implements IGameSystemContainer {
 			}
 		}
 
+		Noise.getLogger().log(Logger.INFO, "GameSystemContainer created with systems:");
+		for (IGameSystem system : gameSystemList) {
+			Noise.getLogger().log(Logger.INFO, "    " + system.getClass().getName());
+		}
 	}
 
 	@SuppressWarnings("unchecked")

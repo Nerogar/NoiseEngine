@@ -1,8 +1,6 @@
 package de.nerogar.noise.math;
 
-import de.nerogar.noiseInterface.math.IMatrix4f;
-import de.nerogar.noiseInterface.math.IReadonlyMatrix4f;
-import de.nerogar.noiseInterface.math.IReadonlyVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public class Transformation {
 
@@ -31,13 +29,6 @@ public class Transformation {
 	protected IMatrix4f normalMatrix;
 
 	private IMatrix4f tempMatrix;
-
-	protected RenderPropertiesListener listener;
-
-	public interface RenderPropertiesListener {
-
-		void update(Transformation transformation, boolean position, boolean rotation, boolean scale);
-	}
 
 	public Transformation() {
 		this(0, 0, 0, 0, 0, 0);
@@ -254,8 +245,6 @@ public class Transformation {
 		yawMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(false, true, false);
 	}
 
 	/**
@@ -275,8 +264,6 @@ public class Transformation {
 		pitchMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(false, true, false);
 	}
 
 	/**
@@ -296,8 +283,6 @@ public class Transformation {
 		rollMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(false, true, false);
 	}
 
 	/**
@@ -322,8 +307,6 @@ public class Transformation {
 	 * @param lookVecZ the z direction to look at
 	 */
 	public void setLookDirection(float lookVecX, float lookVecY, float lookVecZ) {
-		int oldModCount = modCount;
-
 		if (lookVecZ == 0) {
 			float yaw = (lookVecX < 0 ? PI / 2f : -PI / 2f);
 			if (this.yaw != yaw) {
@@ -361,9 +344,74 @@ public class Transformation {
 				modCount++;
 			}
 		}
+	}
 
-		if (modCount != oldModCount) {
-			updateListener(false, true, false);
+	/**
+	 * Sets the rotation such that the local negative y axis points at the point (x, y, z)
+	 *
+	 * @param floorX the x coordinate of the floor
+	 * @param floorY the y coordinate of the floor
+	 * @param floorZ the z coordinate of the floor
+	 */
+	public void setFloor(float floorX, float floorY, float floorZ) {
+		float floorVecX = floorX - x;
+		float floorVecY = floorY - y;
+		float floorVecZ = floorZ - z;
+		setFloorDirection(floorVecX, floorVecY, floorVecZ);
+	}
+
+	/**
+	 * Sets the rotation such that the local negative y axis points in the direction (x, y, z)
+	 *
+	 * @param floorVecX the x direction of the floor
+	 * @param floorVecY the y direction of the floor
+	 * @param floorVecZ the z direction of the floor
+	 */
+	public void setFloorDirection(float floorVecX, float floorVecY, float floorVecZ) {
+		if (floorVecZ == 0) {
+			float yaw = (floorVecX < 0 ? PI / 2f : -PI / 2f);
+			if (this.yaw != yaw) {
+				this.yaw = yaw;
+				yawMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		} else {
+			float sign = floorVecZ > 0 ? PI : 0;
+			float yaw = (float) Math.atan(floorVecX / floorVecZ) + sign;
+			if (this.yaw != yaw) {
+				this.yaw = yaw;
+				yawMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		}
+
+		if (floorVecX == 0 && floorVecZ == 0) {
+			float pitch = floorVecY > 0 ? PI : 0;
+			if (this.pitch != pitch) {
+				this.pitch = pitch;
+				pitchMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		} else {
+			float lengthXZ = (float) Math.sqrt(floorVecX * floorVecX + floorVecZ * floorVecZ);
+			float pitch = (float) -Math.atan(lengthXZ / floorVecY);
+
+			if (floorVecY < 0) {
+				pitch = (float) -Math.atan(lengthXZ / floorVecY);
+			} else if (floorVecY == 0) {
+				pitch = PI / 2;
+			} else if (floorVecY > 0) {
+				pitch = (float) Math.atan((lengthXZ) / (-floorVecY)) + PI;
+			}
+			if (this.pitch != pitch) {
+				this.pitch = pitch;
+				pitchMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
 		}
 	}
 
@@ -378,8 +426,6 @@ public class Transformation {
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(true, false, false);
 	}
 
 	public float getY() {
@@ -393,8 +439,6 @@ public class Transformation {
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(true, false, false);
 	}
 
 	public float getZ() {
@@ -408,8 +452,6 @@ public class Transformation {
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(true, false, false);
 	}
 
 	/**
@@ -424,8 +466,6 @@ public class Transformation {
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(true, false, false);
 	}
 
 	/**
@@ -440,8 +480,6 @@ public class Transformation {
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(true, false, false);
 	}
 
 	/**
@@ -456,8 +494,6 @@ public class Transformation {
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(true, false, false);
 	}
 
 	/**
@@ -472,8 +508,6 @@ public class Transformation {
 		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(true, false, false);
 	}
 
 	/**
@@ -490,8 +524,6 @@ public class Transformation {
 		scaleMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
-
-		updateListener(false, false, true);
 	}
 
 	public float getScaleX() {
@@ -508,23 +540,6 @@ public class Transformation {
 
 	public float getMaxScaleComponent() {
 		return maxScaleComponent;
-	}
-
-	/**
-	 * Set the listener for this renderProperties instance.
-	 * Only one listener can be attached.
-	 * Call {@code setListener(null)} to clear the listener
-	 *
-	 * @param listener the new listener
-	 */
-	public void setListener(RenderPropertiesListener listener) {
-		this.listener = listener;
-	}
-
-	private void updateListener(boolean position, boolean rotation, boolean scale) {
-		if (listener != null) {
-			listener.update(this, position, rotation, scale);
-		}
 	}
 
 	public int getModCount() {

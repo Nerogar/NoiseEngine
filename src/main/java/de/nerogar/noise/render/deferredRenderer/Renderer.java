@@ -17,7 +17,7 @@ import static org.lwjgl.opengl.GL14.GL_CLAMP_TO_EDGE;
  * <ul>
  *     <li> index - bit distribution - data </li>
  *     <li> -1 - (32)         - depth </li>
- *     <li>  0 - (8/8/8/8)    - albedo (rgb), emission power (a) </li>
+ *     <li>  0 - (8/8/8/8)    - albedo (rgb), (unused) </li>
  *     <li>  1 - (16/16/16)   - normal (rgb) </li>
  *     <li>  2 - (8/8/8/8)    - ambient occlusion (r), metalness (g), roughness (b), reflectance (a) </li>
  *     <li>  3 - (16/16/16)   - light (r/g/b) </li>
@@ -27,7 +27,7 @@ import static org.lwjgl.opengl.GL14.GL_CLAMP_TO_EDGE;
  * passes:
  * <ol>
  *     <li>
- *         Base properties are copied from mesh surfaces into the base buffers. This includes these buffers: -1, 0, 1, 2
+ *         Base properties are copied from mesh surfaces into the base buffers. This includes these buffers: -1, 0, 1, 2, 3
  *     </li>
  *     <li>
  *         Lights are calculated into buffer 3, based on the buffers -1, 0, 1, 2
@@ -49,6 +49,7 @@ public class Renderer implements IRenderer {
 	private static final int GBUFFER_ALBEDO_SLOT   = 0;
 	private static final int GBUFFER_NORMAL_SLOT   = 1;
 	private static final int GBUFFER_MATERIAL_SLOT = 2;
+	private static final int GBUFFER_LIGHTS_SLOT   = 3;
 	private static final int LIGHT_LIGHTS_SLOT     = 0;
 
 	private static final int BLOOM_LEVEL_COUNT = 6;
@@ -71,17 +72,18 @@ public class Renderer implements IRenderer {
 	public Renderer(int width, int height) {
 		this.renderables = new ArrayList<>();
 
-		gBuffer = new FrameBufferObject(width, height, true);
-		gBuffer.attachTexture(0, new Texture2D("albedo", width, height, null, Texture2D.InterpolationType.LINEAR, Texture2D.DataType.BGRA_8_8_8_8I));
-		gBuffer.getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_EDGE);
-		gBuffer.attachTexture(1, new Texture2D("normal", width, height, null, Texture2D.InterpolationType.NEAREST, Texture2D.DataType.BGRA_16_16_16I));
-		gBuffer.getTextureAttachment(1).setWrapMode(GL_CLAMP_TO_EDGE);
-		gBuffer.attachTexture(2, new Texture2D("material", width, height, null, Texture2D.InterpolationType.NEAREST, Texture2D.DataType.BGRA_8_8_8_8I));
-		gBuffer.getTextureAttachment(2).setWrapMode(GL_CLAMP_TO_EDGE);
-
 		lightBuffer = new FrameBufferObject(width, height, false,
 		                                    Texture2D.DataType.BGRA_16_16_16F
 		);
+		lightBuffer.getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_EDGE);
+
+		gBuffer = new FrameBufferObject(width, height, true);
+		gBuffer.attachTexture(GBUFFER_ALBEDO_SLOT, new Texture2D("albedo", width, height, null, Texture2D.InterpolationType.LINEAR, Texture2D.DataType.BGRA_8_8_8_8I));
+		gBuffer.getTextureAttachment(GBUFFER_ALBEDO_SLOT).setWrapMode(GL_CLAMP_TO_EDGE);
+		gBuffer.attachTexture(GBUFFER_NORMAL_SLOT, new Texture2D("normal", width, height, null, Texture2D.InterpolationType.NEAREST, Texture2D.DataType.BGRA_16_16_16I));
+		gBuffer.getTextureAttachment(GBUFFER_NORMAL_SLOT).setWrapMode(GL_CLAMP_TO_EDGE);
+		gBuffer.attachTexture(GBUFFER_MATERIAL_SLOT, new Texture2D("material", width, height, null, Texture2D.InterpolationType.NEAREST, Texture2D.DataType.BGRA_8_8_8_8I));
+		gBuffer.getTextureAttachment(GBUFFER_MATERIAL_SLOT).setWrapMode(GL_CLAMP_TO_EDGE);
 
 		downSampleBloomBuffers = new FrameBufferObject[2][BLOOM_LEVEL_COUNT];
 		for (int i = 0; i < downSampleBloomBuffers.length; i++) {
@@ -114,6 +116,8 @@ public class Renderer implements IRenderer {
 	public void setResolution(int width, int height) {
 		gBuffer.setResolution(width, height);
 		lightBuffer.setResolution(width, height);
+
+		gBuffer.attachTexture(GBUFFER_LIGHTS_SLOT, lightBuffer.getTextureAttachment(LIGHT_LIGHTS_SLOT));
 
 		for (int i = 0; i < downSampleBloomBuffers.length; i++) {
 			for (int j = 0; j < downSampleBloomBuffers[i].length; j++) {
@@ -241,7 +245,6 @@ public class Renderer implements IRenderer {
 
 		// light pass
 		lightBuffer.bind();
-		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glEnable(GL11.GL_BLEND);
 		glCullFace(GL_FRONT);
 		glBlendFunc(GL_ONE, GL_ONE);
