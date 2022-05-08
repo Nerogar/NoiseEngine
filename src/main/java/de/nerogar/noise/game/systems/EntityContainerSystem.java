@@ -1,8 +1,7 @@
 package de.nerogar.noise.game.systems;
 
-import de.nerogar.noise.event.EventHub;
 import de.nerogar.noise.game.EntityContainer;
-import de.nerogar.noise.game.events.RemoveEntityEvent;
+import de.nerogar.noise.game.events.DespawnEntityEvent;
 import de.nerogar.noise.game.events.SpawnEntityEvent;
 import de.nerogar.noiseInterface.game.*;
 
@@ -11,15 +10,9 @@ import java.util.List;
 public class EntityContainerSystem implements IGameSystem {
 
 	private final EntityContainer entityContainer;
-	private       EventHub        eventHub;
 
 	public EntityContainerSystem() {
 		entityContainer = new EntityContainer();
-	}
-
-	@Inject
-	public void inject(EventHub eventHub) {
-		this.eventHub = eventHub;
 	}
 
 	public int addEntity(IComponent[] components, IEventProducer<SpawnEntityEvent> spawnEntityEvents) {
@@ -28,9 +21,9 @@ public class EntityContainerSystem implements IGameSystem {
 		return entityId;
 	}
 
-	public void removeEntity(int entityId, IEventProducer<RemoveEntityEvent> removeEntityEvents) {
+	public void removeEntity(int entityId, IEventProducer<DespawnEntityEvent> removeEntityEvents) {
 		IComponent[] removedEntity = entityContainer.removeEntity(entityId);
-		removeEntityEvents.addEvent(new RemoveEntityEvent(entityId, removedEntity));
+		removeEntityEvents.addEvent(new DespawnEntityEvent(entityId, removedEntity));
 	}
 
 	public IEntity getEntity(int entityId) {

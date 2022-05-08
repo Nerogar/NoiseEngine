@@ -17,26 +17,35 @@ public class SingleRenderable implements IRenderable {
 	private VertexBufferObject vbo;
 	private Texture2D          albedo;
 	private Texture2D          normal;
-	private Texture2D          material;
+	private Texture2D          ambientOcclusion;
+	private Texture2D          metalness;
+	private Texture2D          roughness;
+	private Texture2D          reflectance;
 	private Mesh               mesh;
 
-	public SingleRenderable(VertexBufferObject vbo, Texture2D albedo, Texture2D normal) {
+	public SingleRenderable(VertexBufferObject vbo, Texture2D albedo, Texture2D normal, Texture2D ambientOcclusion, Texture2D metalness, Texture2D roughness, Texture2D reflectance) {
 		this.renderProperties = new Transformation();
 
 		this.vbo = vbo;
 		this.isInitialized = true;
 		this.albedo = albedo;
 		this.normal = normal;
-		this.material = albedo;
+		this.ambientOcclusion = ambientOcclusion;
+		this.metalness = metalness;
+		this.roughness = roughness;
+		this.reflectance = reflectance;
 	}
 
-	public SingleRenderable(Mesh mesh, Texture2D albedo, Texture2D normal) {
+	public SingleRenderable(Mesh mesh, Texture2D albedo, Texture2D normal, Texture2D ambientOcclusion, Texture2D metalness, Texture2D roughness, Texture2D reflectance) {
 		this.renderProperties = new Transformation();
 
 		this.mesh = mesh;
 		this.albedo = albedo;
 		this.normal = normal;
-		this.material = albedo;
+		this.ambientOcclusion = ambientOcclusion;
+		this.metalness = metalness;
+		this.roughness = roughness;
+		this.reflectance = reflectance;
 	}
 
 	public static VertexBufferObject createVbo(Mesh mesh) {
@@ -87,7 +96,10 @@ public class SingleRenderable implements IRenderable {
 
 		shader.setUniform1Handle("u_albedoTexture", albedo.getHandle());
 		shader.setUniform1Handle("u_normalTexture", normal.getHandle());
-		shader.setUniform1Handle("u_materialTexture", material.getHandle());
+		shader.setUniform1Handle("u_ambientOcclusionTexture", ambientOcclusion.getHandle());
+		shader.setUniform1Handle("u_metalnessTexture", metalness.getHandle());
+		shader.setUniform1Handle("u_roughnessTexture", roughness.getHandle());
+		shader.setUniform1Handle("u_reflectanceTexture", reflectance.getHandle());
 
 		vbo.render();
 
@@ -110,9 +122,21 @@ public class SingleRenderable implements IRenderable {
 			normal.cleanup();
 			normal = null;
 		}
-		if (material != null) {
-			material.cleanup();
-			material = null;
+		if (ambientOcclusion != null) {
+			ambientOcclusion.cleanup();
+			ambientOcclusion = null;
+		}
+		if (metalness != null) {
+			metalness.cleanup();
+			metalness = null;
+		}
+		if (roughness != null) {
+			roughness.cleanup();
+			roughness = null;
+		}
+		if (reflectance != null) {
+			reflectance.cleanup();
+			reflectance = null;
 		}
 	}
 

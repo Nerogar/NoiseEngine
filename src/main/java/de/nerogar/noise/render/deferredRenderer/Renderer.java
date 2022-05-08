@@ -113,6 +113,11 @@ public class Renderer implements IRenderer {
 	}
 
 	@Override
+	public void removeObject(IRenderable renderable) {
+		renderables.remove(renderable);
+	}
+
+	@Override
 	public void setResolution(int width, int height) {
 		gBuffer.setResolution(width, height);
 		lightBuffer.setResolution(width, height);
@@ -219,8 +224,6 @@ public class Renderer implements IRenderer {
 		}
 		blurShader.deactivate();
 	}
-
-	private Texture2D normalTexture = Texture2DLoader.loadTexture("dist/dirt_1/normal.png", Texture2D.InterpolationType.LINEAR_MIPMAP);
 
 	@Override
 	public void render(IRenderTarget renderTarget, IReadOnlyCamera camera) {

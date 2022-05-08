@@ -2,14 +2,6 @@ package de.nerogar.noise.game.events;
 
 import de.nerogar.noiseInterface.event.IEvent;
 
-public class UpdateEvent implements IEvent {
+public record UpdateEvent(float delta, double runtime) implements IEvent {
 
-	public final float  delta;
-	public final double runtime;
-
-	public UpdateEvent(float delta, double runtime) {
-
-		this.delta = delta;
-		this.runtime = runtime;
-	}
 }

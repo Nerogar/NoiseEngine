@@ -7,6 +7,8 @@ public interface IRenderer {
 
 	void addObject(IRenderable renderable);
 
+	void removeObject(IRenderable renderable);
+
 	void setResolution(int width, int height);
 
 	void render(IRenderTarget renderTarget, IReadOnlyCamera camera);
