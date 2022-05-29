@@ -7,8 +7,7 @@ import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.deferredRenderer.SingleWireframeRenderable;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Ray;
-import de.nerogar.noiseInterface.math.IMatrix4f;
-import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.*;
 import de.nerogar.noiseInterface.render.deferredRenderer.*;
 
 import java.util.List;
@@ -22,13 +21,13 @@ public class PointLight implements ILight {
 	private       IRenderable debugRenderable;
 	private final IMatrix4f   viewProjectionMatrix;
 
-	private Transformation renderProperties;
-	private Color          color;
-	private float          radius;
-	private float          intensity;
+	private ITransformation transformation;
+	private Color           color;
+	private float           radius;
+	private float           intensity;
 
 	public PointLight(IVector3f position, Color color, float radius, float intensity) {
-		this.renderProperties = new Transformation(0, 0, 0, position.getX(), position.getY(), position.getZ());
+		this.transformation = new Transformation(0, 0, 0, position.getX(), position.getY(), position.getZ());
 		this.viewProjectionMatrix = new Matrix4f();
 		setPosition(position.clone());
 		setColor(color);
@@ -36,35 +35,35 @@ public class PointLight implements ILight {
 		setRadius(radius);
 
 		debugRenderable = new SingleWireframeRenderable(debugMesh, DEBUG_MESH_COLOR, 0.0f, true);
-		debugRenderable.setParentTransformation(renderProperties);
 	}
 
 	@Override
-	public Transformation getTransformation() {
-		return renderProperties;
+	public ITransformation getTransformation() {
+		return transformation;
 	}
 
 	@Override
-	public void setParentTransformation(Transformation parentTransformation) {
-		renderProperties.setParent(parentTransformation);
+	public void setTransformation(ITransformation transformation) {
+		this.transformation = transformation;
+		debugRenderable.getTransformation().setParent(transformation);
 	}
 
-	public void setPosition(IVector3f position)        {renderProperties.setXYZ(position);}
+	public void setPosition(IVector3f position)        {transformation.setPosition(position);}
 
-	public void setPosition(float x, float y, float z) {renderProperties.setXYZ(x, y, z);}
+	public void setPosition(float x, float y, float z) {transformation.setPosition(x, y, z);}
 
 	public void setColor(Color color)                  {this.color = color;}
 
-	public void setRadius(float radius)                {this.radius = radius; renderProperties.setScale(radius, radius, radius);}
+	public void setRadius(float radius)                {this.radius = radius; transformation.setScale(radius, radius, radius);}
 
 	public void setIntensity(float intensity)          {this.intensity = intensity;}
 
 	private static void renderLight(PointLight light) {
 		shader.setUniform3f(
 				"u_position",
-				light.renderProperties.getModelMatrix().get(0, 3),
-				light.renderProperties.getModelMatrix().get(1, 3),
-				light.renderProperties.getModelMatrix().get(2, 3)
+				light.transformation.getModelMatrix().get(0, 3),
+				light.transformation.getModelMatrix().get(1, 3),
+				light.transformation.getModelMatrix().get(2, 3)
 		                   );
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_radius", light.radius);

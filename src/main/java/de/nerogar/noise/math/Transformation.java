@@ -2,173 +2,338 @@ package de.nerogar.noise.math;
 
 import de.nerogar.noiseInterface.math.*;
 
-public class Transformation {
+public class Transformation implements ITransformation {
 
 	private static final float PI = (float) Math.PI;
 
-	protected float yaw, pitch, roll;
 	protected float x, y, z;
-	protected float scaleX, scaleY, scaleZ, maxScaleComponent;
-	protected Transformation parent;
+	protected float yaw, pitch, roll;
+	protected float scaleX, scaleY, scaleZ;
+	protected ITransformation parent;
+
+	protected int modCount;
+	protected int parentModCount;
 
 	protected boolean   positionMatrixDirty = true;
 	protected IMatrix4f positionMatrix;
+	protected boolean   rotationMatrixDirty = true;
+	protected IMatrix4f rotationMatrix;
 	protected boolean   scaleMatrixDirty    = true;
 	protected IMatrix4f scaleMatrix;
-	protected boolean   yawMatrixDirty      = true;
-	protected IMatrix4f yawMatrix;
-	protected boolean   pitchMatrixDirty    = true;
-	protected IMatrix4f pitchMatrix;
-	protected boolean   rollMatrixDirty     = true;
-	protected IMatrix4f rollMatrix;
-	protected int       modCount;
-	protected int       parentModCount;
 
 	protected boolean   modelMatrixDirty = true;
 	protected IMatrix4f modelMatrix;
 	protected IMatrix4f normalMatrix;
 
-	private IMatrix4f tempMatrix;
+	protected IMatrix4f tempMatrix;
 
-	public Transformation() {
-		this(0, 0, 0, 0, 0, 0);
-	}
-
-	public Transformation(float yaw, float pitch, float roll, float x, float y, float z) {
-		this(yaw, pitch, roll, x, y, z, 1, 1, 1);
-	}
-
-	public Transformation(float yaw, float pitch, float roll, float x, float y, float z, float scaleX, float scaleY, float scaleZ) {
-		this.yaw = yaw;
-		this.pitch = pitch;
-		this.roll = roll;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
-		this.scaleZ = scaleZ;
+	public Transformation(float x, float y, float z, float yaw, float pitch, float roll, float scaleX, float scaleY, float scaleZ) {
+		setPosition(x, y, z);
+		setRotation(yaw, pitch, roll);
+		setScale(scaleX, scaleY, scaleZ);
 
 		init();
 	}
 
+	public Transformation(float x, float y, float z, float yaw, float pitch, float roll) {
+		this(x, y, z, yaw, pitch, roll, 1, 1, 1);
+	}
+
+	public Transformation(float x, float y, float z) {
+		this(x, y, z, 0, 0, 0);
+	}
+
+	public Transformation() {
+		this(0, 0, 0);
+	}
+
 	public Transformation(IReadonlyMatrix4f modelMatrix) {
 		setFromMatrix(modelMatrix);
-
 		init();
 	}
 
 	private void init() {
 		positionMatrix = new Matrix4f();
 		scaleMatrix = new Matrix4f();
-		yawMatrix = new Matrix4f();
-		pitchMatrix = new Matrix4f();
-		rollMatrix = new Matrix4f();
+		rotationMatrix = new Matrix4f();
 		modelMatrix = new Matrix4f();
 		normalMatrix = new Matrix4f();
 
 		tempMatrix = new Matrix4f();
 
-		maxScaleComponent = Math.max(scaleX, Math.max(scaleY, scaleZ));
-
 		setPositionMatrix();
 		setScaleMatrix();
-		setYawMatrix();
-		setPitchMatrix();
-		setRollMatrix();
+		setRotationMatrix();
 	}
 
-	public void setParent(Transformation parent) {
-		this.parent = parent;
+	// position
+
+	@Override
+	public float getX() {
+		return x;
+	}
+
+	@Override
+	public float getY() {
+		return y;
+	}
+
+	@Override
+	public float getZ() {
+		return z;
+	}
+
+	@Override
+	public void setX(float x) {
+		if (this.x == x) return;
+		this.x = x;
+
+		positionMatrixDirty = true;
 		modelMatrixDirty = true;
 		modCount++;
+	}
 
-		if (parent != null) {
-			parentModCount = parent.modCount;
+	@Override
+	public void setY(float y) {
+		if (this.y == y) return;
+		this.y = y;
+
+		positionMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setZ(float z) {
+		if (this.z == z) return;
+		this.z = z;
+
+		positionMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setPosition(float x, float y, float z) {
+		if (this.x == x && this.y == y && this.z == z) return;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+
+		positionMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setPosition(IReadonlyVector3f v) {
+		if (this.x == v.getX() && this.y == v.getY() && this.z == v.getZ()) return;
+		this.x = v.getX();
+		this.y = v.getY();
+		this.z = v.getZ();
+
+		positionMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	// rotation
+
+	@Override
+	public float getYaw() {
+		return yaw;
+	}
+
+	@Override
+	public float getPitch() {
+		return pitch;
+	}
+
+	@Override
+	public float getRoll() {
+		return roll;
+	}
+
+	@Override
+	public void setYaw(float yaw) {
+		if (this.yaw == yaw) return;
+		this.yaw = yaw;
+
+		rotationMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setPitch(float pitch) {
+		if (this.pitch == pitch) return;
+		this.pitch = pitch;
+
+		rotationMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setRoll(float roll) {
+		if (this.roll == roll) return;
+		this.roll = roll;
+
+		rotationMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setRotation(float yaw, float pitch, float roll) {
+		if (this.yaw == yaw && this.pitch == pitch && this.roll == roll) return;
+		this.yaw = yaw;
+		this.pitch = pitch;
+		this.roll = roll;
+
+		rotationMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setLookAt(float x, float y, float z) {
+		float lookVecX = x - this.x;
+		float lookVecY = y - this.y;
+		float lookVecZ = z - this.z;
+		setLookDirection(lookVecX, lookVecY, lookVecZ);
+	}
+
+	@Override
+	public void setLookAt(IReadonlyVector3f lookAt) {
+		setLookAt(lookAt.getX(), lookAt.getY(), lookAt.getZ());
+	}
+
+	@Override
+	public void setLookDirection(float dirX, float dirY, float dirZ) {
+		if (dirZ == 0) {
+			float yaw = (dirX < 0 ? PI / 2f : -PI / 2f);
+			if (this.yaw != yaw) {
+				this.yaw = yaw;
+				rotationMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		} else {
+			float sign = dirZ > 0 ? PI : 0;
+			float yaw = (float) Math.atan(dirX / dirZ) + sign;
+			if (this.yaw != yaw) {
+				this.yaw = yaw;
+				rotationMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		}
+
+		if (dirX == 0 && dirZ == 0) {
+			float pitch = dirY > 0 ? PI / 2f : -PI / 2f;
+			if (this.pitch != pitch) {
+				this.pitch = pitch;
+				rotationMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
+		} else {
+			float lengthXZ = (float) Math.sqrt(dirX * dirX + dirZ * dirZ);
+			float pitch = (float) Math.atan(dirY / lengthXZ);
+			if (this.pitch != pitch) {
+				this.pitch = pitch;
+				rotationMatrixDirty = true;
+				modelMatrixDirty = true;
+				modCount++;
+			}
 		}
 	}
 
-	private boolean hasParentChanged() {
-		if (parent == null) return false;
-		return parent.modCount != parentModCount || parent.hasParentChanged();
+	@Override
+	public void setLookDirection(IReadonlyVector3f lookADir) {
+		setLookDirection(lookADir.getX(), lookADir.getY(), lookADir.getZ());
 	}
 
-	public IMatrix4f getModelMatrix() {
-		if (modelMatrixDirty || hasParentChanged()) setModelMatrix();
-		return modelMatrix;
+	// scale
+
+	@Override
+	public float getScaleX() {
+		return scaleX;
 	}
 
-	public IMatrix4f getNormalMatrix() {
-		if (modelMatrixDirty || hasParentChanged()) setModelMatrix();
-		return normalMatrix;
+	@Override
+	public float getScaleY() {
+		return scaleY;
 	}
 
-	protected void setPositionMatrix() {
-		Matrix4fUtils.setPositionMatrix(positionMatrix, x, y, z);
-		positionMatrixDirty = false;
+	@Override
+	public float getScaleZ() {
+		return scaleZ;
 	}
 
-	protected void setScaleMatrix() {
-		Matrix4fUtils.setScaleMatrix(scaleMatrix, scaleX, scaleY, scaleZ);
-		scaleMatrixDirty = false;
-	}
+	@Override
+	public void setScaleX(float scaleX) {
+		if (this.scaleX == scaleX) return;
+		this.scaleX = scaleX;
 
-	protected void setYawMatrix() {
-		Matrix4fUtils.setYawMatrix(yawMatrix, yaw);
-		yawMatrixDirty = false;
-	}
-
-	protected void setPitchMatrix() {
-		Matrix4fUtils.setPitchMatrix(pitchMatrix, pitch);
-		pitchMatrixDirty = false;
-	}
-
-	protected void setRollMatrix() {
-		Matrix4fUtils.setRollMatrix(rollMatrix, roll);
-		rollMatrixDirty = false;
-	}
-
-	protected void setModelMatrix() {
-		if (positionMatrixDirty) setPositionMatrix();
-		if (scaleMatrixDirty) setScaleMatrix();
-		if (yawMatrixDirty) setYawMatrix();
-		if (pitchMatrixDirty) setPitchMatrix();
-		if (rollMatrixDirty) setRollMatrix();
-
-		tempMatrix.set(positionMatrix);
-		tempMatrix.multiplyRight(yawMatrix);
-		tempMatrix.multiplyRight(pitchMatrix);
-		tempMatrix.multiplyRight(rollMatrix);
-
-		//model matrix
-		modelMatrix.set(tempMatrix).multiplyRight(scaleMatrix);
-		if (parent != null) modelMatrix.multiplyLeft(parent.getModelMatrix());
-
-		//normal matrix (rotations * scale^-1)
-		scaleMatrix.set(0, 0, 1f / scaleX);
-		scaleMatrix.set(1, 1, 1f / scaleY);
-		scaleMatrix.set(2, 2, 1f / scaleZ);
-
-		normalMatrix.set(tempMatrix).multiplyRight(scaleMatrix);
-		if (parent != null) normalMatrix.multiplyLeft(parent.getNormalMatrix());
-
-		//reset scale matrix
-		scaleMatrix.set(0, 0, scaleX);
-		scaleMatrix.set(1, 1, scaleY);
-		scaleMatrix.set(2, 2, scaleZ);
-
-		modelMatrixDirty = false;
-		if (parent != null) parentModCount = parent.modCount;
+		scaleMatrixDirty = true;
+		modelMatrixDirty = true;
 		modCount++;
 	}
 
+	@Override
+	public void setScaleY(float scaleY) {
+		if (this.scaleY == scaleY) return;
+		this.scaleY = scaleY;
+
+		scaleMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setScaleZ(float scaleZ) {
+		if (this.scaleZ == scaleZ) return;
+		this.scaleZ = scaleZ;
+
+		scaleMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setScale(float scaleX, float scaleY, float scaleZ) {
+		if (this.scaleX == scaleX && this.scaleY == scaleY && this.scaleZ == scaleZ) return;
+		this.scaleX = scaleX;
+		this.scaleY = scaleY;
+		this.scaleZ = scaleZ;
+
+		scaleMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	@Override
+	public void setScale(IReadonlyVector3f scale) {
+		if (this.scaleX == scale.getX() && this.scaleY == scale.getY() && this.scaleZ == scale.getZ()) return;
+		this.scaleX = scale.getX();
+		this.scaleY = scale.getY();
+		this.scaleZ = scale.getZ();
+
+		scaleMatrixDirty = true;
+		modelMatrixDirty = true;
+		modCount++;
+	}
+
+	// misc
+
+	@Override
 	public void setFromMatrix(IReadonlyMatrix4f modelMatrix) {
 		modelMatrixDirty = true;
 		positionMatrixDirty = true;
 		scaleMatrixDirty = true;
-		yawMatrixDirty = true;
-		pitchMatrixDirty = true;
-		rollMatrixDirty = true;
+		rotationMatrixDirty = true;
 		modCount++;
 
 		float x0 = modelMatrix.get(0, 0);
@@ -228,322 +393,97 @@ public class Transformation {
 		}
 	}
 
-	/**
-	 * @return the yaw
-	 */
-	public float getYaw() {
-		return yaw;
+	// parent
+
+	@Override
+	public ITransformation getParent() {
+		return parent;
 	}
 
-	/**
-	 * Sets the yaw in radians
-	 */
-	public void setYaw(float yaw) {
-		if (this.yaw == yaw) return;
-		this.yaw = yaw;
-
-		yawMatrixDirty = true;
+	@Override
+	public void setParent(ITransformation parent) {
+		this.parent = parent;
 		modelMatrixDirty = true;
 		modCount++;
-	}
 
-	/**
-	 * @return the pitch
-	 */
-	public float getPitch() {
-		return pitch;
-	}
-
-	/**
-	 * Sets the pitch in radians
-	 */
-	public void setPitch(float pitch) {
-		if (this.pitch == pitch) return;
-		this.pitch = pitch;
-
-		pitchMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	/**
-	 * @return the roll
-	 */
-	public float getRoll() {
-		return roll;
-	}
-
-	/**
-	 * Sets the roll in radians
-	 */
-	public void setRoll(float roll) {
-		if (this.roll == roll) return;
-		this.roll = roll;
-
-		rollMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	/**
-	 * Sets the rotation such that the local negative z axis points at the point (x, y, z)
-	 *
-	 * @param lookX the x coordinate to look at
-	 * @param lookY the y coordinate to look at
-	 * @param lookZ the z coordinate to look at
-	 */
-	public void setLookAt(float lookX, float lookY, float lookZ) {
-		float lookVecX = lookX - x;
-		float lookVecY = lookY - y;
-		float lookVecZ = lookZ - z;
-		setLookDirection(lookVecX, lookVecY, lookVecZ);
-	}
-
-	/**
-	 * Sets the rotation such that the local negative z axis points in the direction (x, y, z)
-	 *
-	 * @param lookVecX the x direction to look at
-	 * @param lookVecY the y direction to look at
-	 * @param lookVecZ the z direction to look at
-	 */
-	public void setLookDirection(float lookVecX, float lookVecY, float lookVecZ) {
-		if (lookVecZ == 0) {
-			float yaw = (lookVecX < 0 ? PI / 2f : -PI / 2f);
-			if (this.yaw != yaw) {
-				this.yaw = yaw;
-				yawMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
-		} else {
-			float sign = lookVecZ > 0 ? PI : 0;
-			float yaw = (float) Math.atan(lookVecX / lookVecZ) + sign;
-			if (this.yaw != yaw) {
-				this.yaw = yaw;
-				yawMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
-		}
-
-		if (lookVecX == 0 && lookVecZ == 0) {
-			float pitch = lookVecY > 0 ? PI / 2f : -PI / 2f;
-			if (this.pitch != pitch) {
-				this.pitch = pitch;
-				pitchMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
-		} else {
-			float lengthXZ = (float) Math.sqrt(lookVecX * lookVecX + lookVecZ * lookVecZ);
-			float pitch = (float) Math.atan(lookVecY / lengthXZ);
-			if (this.pitch != pitch) {
-				this.pitch = pitch;
-				pitchMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
+		if (parent != null) {
+			parentModCount = parent.getModCount();
 		}
 	}
 
-	/**
-	 * Sets the rotation such that the local negative y axis points at the point (x, y, z)
-	 *
-	 * @param floorX the x coordinate of the floor
-	 * @param floorY the y coordinate of the floor
-	 * @param floorZ the z coordinate of the floor
-	 */
-	public void setFloor(float floorX, float floorY, float floorZ) {
-		float floorVecX = floorX - x;
-		float floorVecY = floorY - y;
-		float floorVecZ = floorZ - z;
-		setFloorDirection(floorVecX, floorVecY, floorVecZ);
-	}
-
-	/**
-	 * Sets the rotation such that the local negative y axis points in the direction (x, y, z)
-	 *
-	 * @param floorVecX the x direction of the floor
-	 * @param floorVecY the y direction of the floor
-	 * @param floorVecZ the z direction of the floor
-	 */
-	public void setFloorDirection(float floorVecX, float floorVecY, float floorVecZ) {
-		if (floorVecZ == 0) {
-			float yaw = (floorVecX < 0 ? PI / 2f : -PI / 2f);
-			if (this.yaw != yaw) {
-				this.yaw = yaw;
-				yawMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
-		} else {
-			float sign = floorVecZ > 0 ? PI : 0;
-			float yaw = (float) Math.atan(floorVecX / floorVecZ) + sign;
-			if (this.yaw != yaw) {
-				this.yaw = yaw;
-				yawMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
-		}
-
-		if (floorVecX == 0 && floorVecZ == 0) {
-			float pitch = floorVecY > 0 ? PI : 0;
-			if (this.pitch != pitch) {
-				this.pitch = pitch;
-				pitchMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
-		} else {
-			float lengthXZ = (float) Math.sqrt(floorVecX * floorVecX + floorVecZ * floorVecZ);
-			float pitch = (float) -Math.atan(lengthXZ / floorVecY);
-
-			if (floorVecY < 0) {
-				pitch = (float) -Math.atan(lengthXZ / floorVecY);
-			} else if (floorVecY == 0) {
-				pitch = PI / 2;
-			} else if (floorVecY > 0) {
-				pitch = (float) Math.atan((lengthXZ) / (-floorVecY)) + PI;
-			}
-			if (this.pitch != pitch) {
-				this.pitch = pitch;
-				pitchMatrixDirty = true;
-				modelMatrixDirty = true;
-				modCount++;
-			}
-		}
-	}
-
-	public float getX() {
-		return x;
-	}
-
-	public void setX(float x) {
-		if (this.x == x) return;
-		this.x = x;
-
-		positionMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	public float getY() {
-		return y;
-	}
-
-	public void setY(float y) {
-		if (this.y == y) return;
-		this.y = y;
-
-		positionMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	public float getZ() {
-		return z;
-	}
-
-	public void setZ(float z) {
-		if (this.z == z) return;
-		this.z = z;
-
-		positionMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	/**
-	 * sets the x, y and z properties
-	 */
-	public void setXYZ(float x, float y, float z) {
-		if (this.x == x && this.y == y && this.z == z) return;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-
-		positionMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	/**
-	 * sets the x, y and z properties
-	 */
-	public void setXYZ(IReadonlyVector3f v) {
-		if (this.x == v.getX() && this.y == v.getY() && this.z == v.getZ()) return;
-		this.x = v.getX();
-		this.y = v.getY();
-		this.z = v.getZ();
-
-		positionMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	/**
-	 * adds to the x, y and z properties
-	 */
-	public void addXYZ(float x, float y, float z) {
-		if (x == 0 && y == 0 && z == 0) return;
-		this.x += x;
-		this.y += y;
-		this.z += z;
-
-		positionMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	/**
-	 * adds to the x, y and z properties
-	 */
-	public void addXYZ(IReadonlyVector3f v) {
-		if (v.getX() == 0 && v.getY() == 0 && v.getZ() == 0) return;
-		this.x += v.getX();
-		this.y += v.getY();
-		this.z += v.getZ();
-
-		positionMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	/**
-	 * sets the x, y and z scale properties
-	 */
-	public void setScale(float scaleX, float scaleY, float scaleZ) {
-		if (this.scaleX == scaleX && this.scaleY == scaleY && this.scaleZ == scaleZ) return;
-		this.scaleX = scaleX;
-		this.scaleY = scaleY;
-		this.scaleZ = scaleZ;
-
-		maxScaleComponent = Math.max(scaleX, Math.max(scaleY, scaleZ));
-
-		scaleMatrixDirty = true;
-		modelMatrixDirty = true;
-		modCount++;
-	}
-
-	public float getScaleX() {
-		return scaleX;
-	}
-
-	public float getScaleY() {
-		return scaleY;
-	}
-
-	public float getScaleZ() {
-		return scaleZ;
-	}
-
-	public float getMaxScaleComponent() {
-		return maxScaleComponent;
-	}
-
+	@Override
 	public int getModCount() {
 		return modCount;
+	}
+
+	@Override
+	public boolean hasParentChanged() {
+		if (parent == null) return false;
+		return parent.getModCount() != parentModCount || parent.hasParentChanged();
+	}
+
+	// output matrices
+
+	public IMatrix4f getModelMatrix() {
+		if (modelMatrixDirty || hasParentChanged()) setModelMatrix();
+		return modelMatrix;
+	}
+
+	public IMatrix4f getNormalMatrix() {
+		if (modelMatrixDirty || hasParentChanged()) setModelMatrix();
+		return normalMatrix;
+	}
+
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+
+	protected void setPositionMatrix() {
+		Matrix4fUtils.setPositionMatrix(positionMatrix, x, y, z);
+		positionMatrixDirty = false;
+	}
+
+	protected void setScaleMatrix() {
+		Matrix4fUtils.setScaleMatrix(scaleMatrix, scaleX, scaleY, scaleZ);
+		scaleMatrixDirty = false;
+	}
+
+	protected void setRotationMatrix() {
+		Matrix4fUtils.setRotationMatrix(rotationMatrix, yaw, pitch, roll);
+		rotationMatrixDirty = false;
+	}
+
+	protected void setModelMatrix() {
+		if (positionMatrixDirty) setPositionMatrix();
+		if (scaleMatrixDirty) setScaleMatrix();
+		if (rotationMatrixDirty) setRotationMatrix();
+
+		tempMatrix.set(positionMatrix);
+		tempMatrix.multiplyRight(rotationMatrix);
+
+		//model matrix
+		modelMatrix.set(tempMatrix).multiplyRight(scaleMatrix);
+		if (parent != null) modelMatrix.multiplyLeft(parent.getModelMatrix());
+
+		//normal matrix (rotations * scale^-1)
+		scaleMatrix.set(0, 0, 1f / scaleX);
+		scaleMatrix.set(1, 1, 1f / scaleY);
+		scaleMatrix.set(2, 2, 1f / scaleZ);
+
+		normalMatrix.set(tempMatrix).multiplyRight(scaleMatrix);
+		if (parent != null) normalMatrix.multiplyLeft(parent.getNormalMatrix());
+
+		//reset scale matrix
+		scaleMatrix.set(0, 0, scaleX);
+		scaleMatrix.set(1, 1, scaleY);
+		scaleMatrix.set(2, 2, scaleZ);
+
+		modelMatrixDirty = false;
+		if (parent != null) parentModCount = parent.getModCount();
+		modCount++;
 	}
 
 	@Override

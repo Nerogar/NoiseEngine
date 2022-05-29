@@ -1,29 +1,30 @@
 package de.nerogar.noise.render.deferredRenderer;
 
-import de.nerogar.noise.math.Transformation;
-import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
+import de.nerogar.noiseInterface.math.ITransformation;
+import de.nerogar.noiseInterface.render.deferredRenderer.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleRenderableContainer extends ArrayList<IRenderable> implements IRenderable {
 
-	private Transformation renderProperties;
+	private ITransformation transformation;
 
-	public SimpleRenderableContainer() {
-		renderProperties = new Transformation();
+	@Override
+	public ITransformation getTransformation() {
+		return transformation;
 	}
 
 	@Override
-	public Transformation getTransformation() {
-		return renderProperties;
-	}
+	public void setTransformation(ITransformation transformation) {
+		this.transformation = transformation;
+		for (IRenderable renderable : this) {
+			ITransformation childTransformation = renderable.getTransformation();
 
-	@Override
-	public void setParentTransformation(Transformation parentTransformation) {
-		renderProperties.setParent(parentTransformation);
+			if (childTransformation != null) {
+				childTransformation.setParent(transformation);
+			}
+		}
 	}
 
 	@Override

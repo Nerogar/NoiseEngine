@@ -1,12 +1,11 @@
 package de.nerogar.noise.math;
 
-import de.nerogar.noiseInterface.math.IBounding;
-import de.nerogar.noiseInterface.math.IReadonlyVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public class BoundingAll implements IBounding {
 
-	private final Vector3f       origin;
-	private       Transformation transformation;
+	private final Vector3f        origin;
+	private       ITransformation transformation;
 
 	/**
 	 * create a new bounding that collides with everything
@@ -16,12 +15,12 @@ public class BoundingAll implements IBounding {
 	}
 
 	@Override
-	public void setTransformation(Transformation transformation) {
+	public void setTransformation(ITransformation transformation) {
 		this.transformation = transformation;
 	}
 
 	@Override
-	public Transformation getTransformation() {
+	public ITransformation getTransformation() {
 		return transformation;
 	}
 

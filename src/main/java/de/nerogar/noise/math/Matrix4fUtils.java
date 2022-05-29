@@ -45,6 +45,22 @@ public final class Matrix4fUtils {
 		);
 	}
 
+	public static void setRotationMatrix(IMatrix4f m, float yawRadians, float pitchRadians, float rollRadians) {
+		float sy = (float) Math.sin(yawRadians);
+		float cy = (float) Math.cos(yawRadians);
+		float sp = (float) Math.sin(-pitchRadians);
+		float cp = (float) Math.cos(-pitchRadians);
+		float sr = (float) Math.sin(rollRadians);
+		float cr = (float) Math.cos(rollRadians);
+
+		m.set(
+				cy*cr + sy*sp*sr,             cy*sr - sy*sp*cr,             sy*cp,                        0,
+				-cp*sr,                       cp*cr,                        sp,                           0,
+				-sy*cr + cy*sp*sr,            -sy*sr - cy*sp*cr,            cy*cp,                        0,
+				0,                            0,                            0,                            1
+		     );
+	}
+
 	public static void setRotationMatrixByUnitQuaternion(IMatrix4f m, IReadonlyQuaternion quaternion) {
 		float x = quaternion.getX();
 		float y = quaternion.getY();
@@ -111,6 +127,12 @@ public final class Matrix4fUtils {
 	public static IMatrix4f getRollMatrix(float radians) {
 		Matrix4f mat = new Matrix4f();
 		setRollMatrix(mat, radians);
+		return mat;
+	}
+
+	public static IMatrix4f getRotationMatrix(float yawRadians, float pitchRadians, float rollRadians) {
+		Matrix4f mat = new Matrix4f();
+		setRotationMatrix(mat, yawRadians, pitchRadians, rollRadians);
 		return mat;
 	}
 

@@ -1,8 +1,9 @@
 package de.nerogar.noise.render.deferredRenderer;
 
 import de.nerogar.noise.file.FileUtil;
-import de.nerogar.noise.math.Transformation;
+import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.render.*;
+import de.nerogar.noiseInterface.math.ITransformation;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
 
@@ -13,7 +14,7 @@ public class SingleRenderable implements IRenderable {
 	private static Shader shader;
 
 	private boolean            isInitialized = false;
-	private Transformation     renderProperties;
+	private ITransformation    transformation;
 	private VertexBufferObject vbo;
 	private Texture2D          albedo;
 	private Texture2D          normal;
@@ -24,8 +25,6 @@ public class SingleRenderable implements IRenderable {
 	private Mesh               mesh;
 
 	public SingleRenderable(VertexBufferObject vbo, Texture2D albedo, Texture2D normal, Texture2D ambientOcclusion, Texture2D metalness, Texture2D roughness, Texture2D reflectance) {
-		this.renderProperties = new Transformation();
-
 		this.vbo = vbo;
 		this.isInitialized = true;
 		this.albedo = albedo;
@@ -37,8 +36,6 @@ public class SingleRenderable implements IRenderable {
 	}
 
 	public SingleRenderable(Mesh mesh, Texture2D albedo, Texture2D normal, Texture2D ambientOcclusion, Texture2D metalness, Texture2D roughness, Texture2D reflectance) {
-		this.renderProperties = new Transformation();
-
 		this.mesh = mesh;
 		this.albedo = albedo;
 		this.normal = normal;
@@ -75,13 +72,13 @@ public class SingleRenderable implements IRenderable {
 	}
 
 	@Override
-	public Transformation getTransformation() {
-		return renderProperties;
+	public ITransformation getTransformation() {
+		return transformation;
 	}
 
 	@Override
-	public void setParentTransformation(Transformation parentTransformation) {
-		renderProperties.setParent(parentTransformation);
+	public void setTransformation(ITransformation transformation) {
+		this.transformation = transformation;
 	}
 
 	@Override
@@ -89,8 +86,13 @@ public class SingleRenderable implements IRenderable {
 		tryInitialize();
 
 		shader.activate();
-		shader.setUniformMat4f("u_mMat", renderProperties.getModelMatrix().asBuffer());
-		shader.setUniformMat4f("u_nMat", renderProperties.getNormalMatrix().asBuffer());
+		if (transformation != null) {
+			shader.setUniformMat4f("u_mMat", transformation.getModelMatrix().asBuffer());
+			shader.setUniformMat4f("u_nMat", transformation.getNormalMatrix().asBuffer());
+		} else {
+			shader.setUniformMat4f("u_mMat", Matrix4f.UNIT_MATRIX.asBuffer());
+			shader.setUniformMat4f("u_nMat", Matrix4f.UNIT_MATRIX.asBuffer());
+		}
 		shader.setUniformMat4f("u_vMat", renderContext.getCamera().getViewMatrix().asBuffer());
 		shader.setUniformMat4f("u_pMat", renderContext.getCamera().getProjectionMatrix().asBuffer());
 

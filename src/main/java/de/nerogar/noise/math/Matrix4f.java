@@ -9,6 +9,8 @@ import java.util.Arrays;
 
 public class Matrix4f implements IMatrix4f {
 
+	public static final IReadonlyMatrix4f UNIT_MATRIX = new Matrix4f();
+
 	private float[] components;
 
 	private FloatBuffer buffer;

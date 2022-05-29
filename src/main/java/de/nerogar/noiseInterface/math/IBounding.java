@@ -1,12 +1,10 @@
 package de.nerogar.noiseInterface.math;
 
-import de.nerogar.noise.math.Transformation;
-
 public interface IBounding extends Cloneable {
 
-	void setTransformation(Transformation transformation);
+	void setTransformation(ITransformation transformation);
 
-	Transformation getTransformation();
+	ITransformation getTransformation();
 
 	/**
 	 * returns a single point in this bounding

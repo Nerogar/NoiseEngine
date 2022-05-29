@@ -1,13 +1,11 @@
 package de.nerogar.noise.math;
 
-import de.nerogar.noiseInterface.math.IBounding;
-import de.nerogar.noiseInterface.math.IReadonlyVector3f;
-import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public class BoundingAABB implements IBounding {
 
 	private IVector3f position, size;
-	private Transformation transformation;
+	private ITransformation transformation;
 
 	/**
 	 * create an axis aligned bounding box, saved as two vectors,
@@ -76,12 +74,12 @@ public class BoundingAABB implements IBounding {
 	}
 
 	@Override
-	public void setTransformation(Transformation transformation) {
+	public void setTransformation(ITransformation transformation) {
 		this.transformation = transformation;
 	}
 
 	@Override
-	public Transformation getTransformation() {
+	public ITransformation getTransformation() {
 		return transformation;
 	}
 
@@ -90,7 +88,7 @@ public class BoundingAABB implements IBounding {
 		if (transformation == null) {
 			return position;
 		} else {
-			return position.clone().addX(transformation.x).addY(transformation.y).addZ(transformation.z);
+			return position.clone().addX(transformation.getX()).addY(transformation.getY()).addZ(transformation.getZ());
 		}
 	}
 
@@ -101,9 +99,9 @@ public class BoundingAABB implements IBounding {
 					&& y >= position.getY() && y < position.getY() + size.getY()
 					&& z >= position.getZ() && z < position.getZ() + size.getZ();
 		} else {
-			return x >= position.getX() + transformation.x && x < position.getX() + transformation.x + (size.getX() * transformation.scaleX)
-					&& y >= position.getY() + transformation.y && y < position.getY() + transformation.y + (size.getY() * transformation.scaleY)
-					&& z >= position.getZ() + transformation.z && z < position.getZ() + transformation.z + (size.getZ() * transformation.scaleZ);
+			return x >= position.getX() + transformation.getX() && x < position.getX() + transformation.getX() + (size.getX() * transformation.getScaleX())
+					&& y >= position.getY() + transformation.getY() && y < position.getY() + transformation.getY() + (size.getY() * transformation.getScaleY())
+					&& z >= position.getZ() + transformation.getZ() && z < position.getZ() + transformation.getZ() + (size.getZ() * transformation.getScaleZ());
 		}
 	}
 
@@ -114,9 +112,9 @@ public class BoundingAABB implements IBounding {
 					&& position.getY() >= minY && position.getY() + size.getY() <= maxY
 					&& position.getZ() >= minZ && position.getZ() + size.getZ() <= maxZ;
 		} else {
-			return position.getX() + transformation.x >= minX && position.getX() + transformation.x + (size.getX() * transformation.scaleX) <= maxX
-					&& position.getY() + transformation.y >= minY && position.getY() + transformation.y + (size.getY() * transformation.scaleY) <= maxY
-					&& position.getZ() + transformation.z >= minZ && position.getZ() + transformation.z + (size.getZ() * transformation.scaleZ) <= maxZ;
+			return position.getX() + transformation.getX() >= minX && position.getX() + transformation.getX() + (size.getX() * transformation.getScaleX()) <= maxX
+					&& position.getY() + transformation.getY() >= minY && position.getY() + transformation.getY() + (size.getY() * transformation.getScaleY()) <= maxY
+					&& position.getZ() + transformation.getZ() >= minZ && position.getZ() + transformation.getZ() + (size.getZ() * transformation.getScaleZ()) <= maxZ;
 		}
 	}
 
@@ -127,9 +125,9 @@ public class BoundingAABB implements IBounding {
 					&& minY >= position.getY() && maxY <= position.getY() + size.getY()
 					&& minZ >= position.getZ() && maxZ <= position.getZ() + size.getZ();
 		} else {
-			return minX >= position.getX() + transformation.x && maxX <= position.getX() + transformation.x + (size.getX() * transformation.scaleX)
-					&& minY >= position.getY() + transformation.y && maxY <= position.getY() + transformation.y + (size.getY() * transformation.scaleY)
-					&& minZ >= position.getZ() + transformation.z && maxZ <= position.getZ() + transformation.z + (size.getZ() * transformation.scaleZ);
+			return minX >= position.getX() + transformation.getX() && maxX <= position.getX() + transformation.getX() + (size.getX() * transformation.getScaleX())
+					&& minY >= position.getY() + transformation.getY() && maxY <= position.getY() + transformation.getY() + (size.getY() * transformation.getScaleY())
+					&& minZ >= position.getZ() + transformation.getZ() && maxZ <= position.getZ() + transformation.getZ() + (size.getZ() * transformation.getScaleZ());
 		}
 	}
 
@@ -140,9 +138,9 @@ public class BoundingAABB implements IBounding {
 					&& (position.getY() < maxY && position.getY() + size.getY() > minY)
 					&& (position.getZ() < maxZ && position.getZ() + size.getZ() > minZ);
 		} else {
-			return (position.getX() + transformation.x < maxX && position.getX() + transformation.x + (size.getX() * transformation.scaleX) > minX)
-					&& (position.getY() + transformation.y < maxY && position.getY() + transformation.y + (size.getY() * transformation.scaleY) > minY)
-					&& (position.getZ() + transformation.z < maxZ && position.getZ() + transformation.z + (size.getZ() * transformation.scaleZ) > minZ);
+			return (position.getX() + transformation.getX() < maxX && position.getX() + transformation.getX() + (size.getX() * transformation.getScaleX()) > minX)
+					&& (position.getY() + transformation.getY() < maxY && position.getY() + transformation.getY() + (size.getY() * transformation.getScaleY()) > minY)
+					&& (position.getZ() + transformation.getZ() < maxZ && position.getZ() + transformation.getZ() + (size.getZ() * transformation.getScaleZ()) > minZ);
 		}
 	}
 
@@ -151,7 +149,7 @@ public class BoundingAABB implements IBounding {
 		if (transformation == null) {
 			return position.getX() <= xValue && position.getX() + size.getX() >= xValue;
 		} else {
-			return position.getX() + transformation.x <= xValue && position.getX() + transformation.x + (size.getX() * transformation.scaleX) >= xValue;
+			return position.getX() + transformation.getX() <= xValue && position.getX() + transformation.getX() + (size.getX() * transformation.getScaleX()) >= xValue;
 		}
 	}
 
@@ -160,7 +158,7 @@ public class BoundingAABB implements IBounding {
 		if (transformation == null) {
 			return position.getY() <= yValue && position.getY() + size.getY() >= yValue;
 		} else {
-			return position.getY() + transformation.y <= yValue && position.getY() + transformation.y + (size.getY() * transformation.scaleY) >= yValue;
+			return position.getY() + transformation.getY() <= yValue && position.getY() + transformation.getY() + (size.getY() * transformation.getScaleY()) >= yValue;
 		}
 	}
 
@@ -169,7 +167,7 @@ public class BoundingAABB implements IBounding {
 		if (transformation == null) {
 			return position.getZ() <= zValue && position.getZ() + size.getZ() >= zValue;
 		} else {
-			return position.getZ() + transformation.z <= zValue && position.getZ() + transformation.z + (size.getZ() * transformation.z) >= zValue;
+			return position.getZ() + transformation.getZ() <= zValue && position.getZ() + transformation.getZ() + (size.getZ() * transformation.getZ()) >= zValue;
 		}
 	}
 

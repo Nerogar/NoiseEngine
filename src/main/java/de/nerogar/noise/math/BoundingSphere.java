@@ -1,14 +1,12 @@
 package de.nerogar.noise.math;
 
-import de.nerogar.noiseInterface.math.IBounding;
-import de.nerogar.noiseInterface.math.IReadonlyVector3f;
-import de.nerogar.noiseInterface.math.IVector3f;
+import de.nerogar.noiseInterface.math.*;
 
 public class BoundingSphere implements IBounding {
 
-	private IVector3f      center;
-	private float          radius;
-	private Transformation transformation;
+	private IVector3f       center;
+	private float           radius;
+	private ITransformation transformation;
 
 	/**
 	 * create a new bounding in the shape of a sphere
@@ -69,12 +67,12 @@ public class BoundingSphere implements IBounding {
 	}
 
 	@Override
-	public void setTransformation(Transformation transformation) {
+	public void setTransformation(ITransformation transformation) {
 		this.transformation = transformation;
 	}
 
 	@Override
-	public Transformation getTransformation() {
+	public ITransformation getTransformation() {
 		return transformation;
 	}
 
