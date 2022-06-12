@@ -113,7 +113,8 @@ public class PerspectiveCamera extends DefaultCamera {
 
 	@Override
 	public String toString() {
-		return String.format(Locale.US, "PerspectiveCamera(fov: %.2f, aspect: %.2f, yaw:%.2f, pitch:%.2f, roll:%.2f, x:%.2f, y:%.2f, z:%.2f)", fov, aspect, yaw, pitch, roll, x, y, z);
+		return String.format(Locale.US, "PerspectiveCamera(fov: %.2f, aspect: %.2f, yaw:%.2f, pitch:%.2f, roll:%.2f, x:%.2f, y:%.2f, z:%.2f)", fov, aspect,
+		                     transformation.getYaw(), transformation.getPitch(), transformation.getRoll(), transformation.getX(), transformation.getY(), transformation.getZ());
 	}
 
 }

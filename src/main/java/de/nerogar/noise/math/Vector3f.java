@@ -287,9 +287,12 @@ public class Vector3f implements IVector3f {
 
 	@Override
 	public Vector3f setLength(float length) {
-		multiply(length / getLength());
-		this.length = length;
-		isLengthDirty = false;
+		float oldLength = getLength();
+		if (oldLength != 0) {
+			multiply(length / oldLength);
+			this.length = length;
+			isLengthDirty = false;
+		}
 		return this;
 	}
 

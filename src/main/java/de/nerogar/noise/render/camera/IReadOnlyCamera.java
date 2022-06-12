@@ -14,26 +14,7 @@ public interface IReadOnlyCamera extends IMultiCamera {
 
 	IViewRegion getViewRegion();
 
-	/**
-	 * @return The camera yaw in radiants
-	 */
-	float getYaw();
-
-	/**
-	 * @return The camera pitch in radiants
-	 */
-	float getPitch();
-
-	/**
-	 * @return The camera roll in radiants
-	 */
-	float getRoll();
-
-	float getX();
-
-	float getY();
-
-	float getZ();
+	IReadOnlyTransformation getTransformation();
 
 	/**
 	 * Transform a point in world space to view space.

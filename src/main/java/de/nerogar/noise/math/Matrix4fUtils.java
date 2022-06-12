@@ -61,6 +61,21 @@ public final class Matrix4fUtils {
 		     );
 	}
 
+	public static void setRotationMatrix(IMatrix4f m, float x, float y, float z, float angle) {
+		float cos = (float) Math.cos(angle);
+		float sin = (float) Math.sin(angle);
+		float x2 = x*x;
+		float y2 = y*y;
+		float z2 = z*z;
+
+		m.set(
+				cos + x2*(1-cos),             x*y*(1-cos) - z*sin,          x*z*(1-cos) + y*sin,          0,
+				y*x*(1-cos) + z*sin,          cos + y2*(1-cos),             y*z*(1-cos) - x*sin,          0,
+				z*x*(1-cos) - y*sin,          z*y*(1-cos) + x*sin,          cos + z2*(1-cos),             0,
+				0,                            0,                            0,                            1
+		     );
+	}
+
 	public static void setRotationMatrixByUnitQuaternion(IMatrix4f m, IReadonlyQuaternion quaternion) {
 		float x = quaternion.getX();
 		float y = quaternion.getY();
@@ -133,6 +148,12 @@ public final class Matrix4fUtils {
 	public static IMatrix4f getRotationMatrix(float yawRadians, float pitchRadians, float rollRadians) {
 		Matrix4f mat = new Matrix4f();
 		setRotationMatrix(mat, yawRadians, pitchRadians, rollRadians);
+		return mat;
+	}
+
+	public static IMatrix4f getRotationMatrix(float x, float y, float z, float angle) {
+		Matrix4f mat = new Matrix4f();
+		setRotationMatrix(mat, x, y, z, angle);
 		return mat;
 	}
 

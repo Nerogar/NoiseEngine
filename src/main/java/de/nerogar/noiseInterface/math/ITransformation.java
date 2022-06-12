@@ -1,23 +1,8 @@
 package de.nerogar.noiseInterface.math;
 
-public interface ITransformation {
+public interface ITransformation extends IReadOnlyTransformation {
 
 	// position
-
-	/**
-	 * @return the x component of the position
-	 */
-	float getX();
-
-	/**
-	 * @return the y component of the position
-	 */
-	float getY();
-
-	/**
-	 * @return the z component of the position
-	 */
-	float getZ();
 
 	/**
 	 * Sets the x component of the position
@@ -45,21 +30,6 @@ public interface ITransformation {
 	void setPosition(IReadonlyVector3f position);
 
 	// rotation
-
-	/**
-	 * @return the yaw component of the rotation in radians
-	 */
-	float getYaw();
-
-	/**
-	 * @return the pitch component of the rotation in radians
-	 */
-	float getPitch();
-
-	/**
-	 * @return the roll component of the rotation in radians
-	 */
-	float getRoll();
 
 	/**
 	 * Sets the yaw component of the rotation in radians
@@ -106,21 +76,6 @@ public interface ITransformation {
 	// scale
 
 	/**
-	 * @return the x component of the scale
-	 */
-	float getScaleX();
-
-	/**
-	 * @return the y component of the scale
-	 */
-	float getScaleY();
-
-	/**
-	 * @return the z component of the scale
-	 */
-	float getScaleZ();
-
-	/**
 	 * Sets the x component of the scale
 	 */
 	void setScaleX(float scaleX);
@@ -151,18 +106,8 @@ public interface ITransformation {
 
 	// parent
 
-	ITransformation getParent();
-
 	void setParent(ITransformation parent);
 
-	int getModCount();
-
-	boolean hasParentChanged();
-
 	// output matrices
-
-	IMatrix4f getModelMatrix();
-
-	IMatrix4f getNormalMatrix();
 
 }

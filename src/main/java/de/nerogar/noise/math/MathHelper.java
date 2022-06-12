@@ -562,4 +562,21 @@ public class MathHelper {
 		return dot0 > dot01 && dot1 > dot01;
 	}
 
+	public static float signedAngleBetween(
+			float v0X, float v0Y, float v0Z,
+			float v1X, float v1Y, float v1Z,
+			float nX, float nY, float nZ
+	                                      ) {
+			// todo: use non allocating code
+			Vector3f v0 = new Vector3f(v0X, v0Y, v0Z);
+			Vector3f v1 = new Vector3f(v1X, v1Y, v1Z);
+			Vector3f normal = new Vector3f(nX, nY, nZ);
+
+			return (float) Math.atan2(
+					v0.crossed(v1).dot(normal),
+					v0.dot(v1)
+			                              );
+
+	}
+
 }

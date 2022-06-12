@@ -89,10 +89,12 @@ public class SunLight implements ILight {
 	}
 
 	private static void renderLight(IRenderContext renderContext, SunLight light) {
+		IReadOnlyTransformation cameraTransformation = renderContext.getCamera().getTransformation();
+
 		shader.setUniform3f("u_direction", light.direction.getX(), light.direction.getY(), light.direction.getZ());
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_intensity", light.intensity);
-		shader.setUniform3f("u_cameraPosition", renderContext.getCamera().getX(), renderContext.getCamera().getY(), renderContext.getCamera().getZ());
+		shader.setUniform3f("u_cameraPosition", cameraTransformation.getEffectiveX(), cameraTransformation.getEffectiveY(), cameraTransformation.getEffectiveZ());
 		shader.setUniform1Handle("u_depthBuffer", renderContext.getDepthTexture().getHandle());
 		shader.setUniform1Handle("u_albedoBuffer", renderContext.getAlbedoTexture().getHandle());
 		shader.setUniform1Handle("u_normalBuffer", renderContext.getNormalTexture().getHandle());

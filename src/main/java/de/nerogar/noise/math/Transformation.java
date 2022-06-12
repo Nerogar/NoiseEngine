@@ -137,6 +137,21 @@ public class Transformation implements ITransformation {
 		modCount++;
 	}
 
+	@Override
+	public float getEffectiveX() {
+		return getModelMatrix().get(0, 3);
+	}
+
+	@Override
+	public float getEffectiveY() {
+		return getModelMatrix().get(1, 3);
+	}
+
+	@Override
+	public float getEffectiveZ() {
+		return getModelMatrix().get(2, 3);
+	}
+
 	// rotation
 
 	@Override

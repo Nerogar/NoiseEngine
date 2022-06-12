@@ -1,7 +1,7 @@
 package de.nerogar.noise.render.camera;
 
-import de.nerogar.noise.render.ViewBox;
 import de.nerogar.noise.math.Matrix4fUtils;
+import de.nerogar.noise.render.ViewBox;
 
 import java.util.Locale;
 
@@ -25,10 +25,10 @@ public class OrthographicCamera extends DefaultCamera {
 	protected void setUnitRays() {
 
 		// set rays in view space
-		unitRayTop.getStart().set(0, height/2, 0);
+		unitRayTop.getStart().set(0, height / 2, 0);
 		unitRayRight.getDir().set(0, 0, -1);
 
-		unitRayRight.getStart().set(height * aspect/2, 0, 0);
+		unitRayRight.getStart().set(height * aspect / 2, 0, 0);
 		unitRayTop.getDir().set(0, 0, -1);
 
 		unitRayCenter.getStart().set(0, 0, 0);
@@ -109,7 +109,9 @@ public class OrthographicCamera extends DefaultCamera {
 
 	@Override
 	public String toString() {
-		return String.format(Locale.US, "OrthographicCamera(height: %.2f, aspect: %.2f, yaw:%.2f, pitch:%.2f, roll:%.2f, x:%.2f, y:%.2f, z:%.2f)", height, aspect, yaw, pitch, roll, x, y, z);
+		return String.format(Locale.US, "OrthographicCamera(height: %.2f, aspect: %.2f, yaw:%.2f, pitch:%.2f, roll:%.2f, x:%.2f, y:%.2f, z:%.2f)", height, aspect,
+		                     transformation.getYaw(), transformation.getPitch(), transformation.getRoll(), transformation.getX(), transformation.getY(), transformation.getZ()
+		                    );
 	}
 
 }

@@ -9,16 +9,11 @@ public abstract class DefaultCamera extends Camera {
 
 	protected static final float PI = (float) Math.PI;
 
-	protected float yaw, pitch, roll;
-	protected float x, y, z;
+	protected ITransformation transformation;
+	protected int             directionsModCount;
 
-	protected IMatrix4f positionMatrix;
-	protected IMatrix4f yawMatrix;
-	protected IMatrix4f pitchMatrix;
-	protected IMatrix4f rollMatrix;
-
-	protected boolean   viewMatrixDirty = true;
-	protected IMatrix4f viewMatrix;
+	private   Matrix4f viewMatrix;
+	protected int      viewMatrixModCount;
 
 	protected boolean   projectionMatrixDirty = true;
 	protected IMatrix4f projectionMatrix;
@@ -39,11 +34,10 @@ public abstract class DefaultCamera extends Camera {
 	public DefaultCamera(IViewRegion viewRegion) {
 		cameraAsArray = new IReadOnlyCamera[] { this };
 
-		positionMatrix = new Matrix4f();
-		yawMatrix = new Matrix4f();
-		pitchMatrix = new Matrix4f();
-		rollMatrix = new Matrix4f();
+		transformation = new Transformation();
+		directionsModCount = transformation.getModCount();
 		viewMatrix = new Matrix4f();
+		viewMatrixModCount = transformation.getModCount();
 
 		directionRight = new Vector3f();
 		directionUp = new Vector3f();
@@ -56,72 +50,45 @@ public abstract class DefaultCamera extends Camera {
 		projectionMatrix = new Matrix4f();
 
 		this.viewRegion = viewRegion;
-
-		setPositionMatrix();
-		setYawMatrix();
-		setPitchMatrix();
-		setRollMatrix();
 	}
 
 	@Override
-	public IReadOnlyCamera[] cameras() { return cameraAsArray; }
+	public IReadOnlyCamera[] cameras() {return cameraAsArray;}
 
-	public abstract void setAspect(float aspect);
+	@Override
+	public void setTransformation(ITransformation transformation) {this.transformation = transformation;}
 
-	public abstract float getAspect();
-
-	private void setPositionMatrix() {
-		Matrix4fUtils.setPositionMatrix(positionMatrix, -x, -y, -z);
-		viewMatrixDirty = true;
-	}
-
-	private void setYawMatrix() {
-		Matrix4fUtils.setYawMatrix(yawMatrix, -yaw);
-		viewMatrixDirty = true;
-	}
-
-	private void setPitchMatrix() {
-		Matrix4fUtils.setPitchMatrix(pitchMatrix, -pitch);
-		viewMatrixDirty = true;
-	}
-
-	private void setRollMatrix() {
-		Matrix4fUtils.setRollMatrix(rollMatrix, -roll);
-		viewMatrixDirty = true;
-	}
-
-	private void setViewMatrix() {
-		viewMatrixDirty = false;
-
-		viewMatrix.set(positionMatrix);
-		viewMatrix.multiplyLeft(yawMatrix);
-		viewMatrix.multiplyLeft(pitchMatrix);
-		viewMatrix.multiplyLeft(rollMatrix);
-
-		setDirections();
-
-		viewRegion.setPlanes(this);
-	}
+	@Override
+	public ITransformation getTransformation() {return transformation;}
 
 	protected abstract void setUnitRays();
 
 	private void setDirections() {
-		// world space directions
-		directionRight.set(1.0f, 0.0f, 0.0f);
-		directionToWorldSpace(directionRight);
+		if (directionsModCount != transformation.getModCount()) {
+			// world space directions
+			directionRight.set(1.0f, 0.0f, 0.0f);
+			directionToWorldSpace(directionRight);
 
-		directionUp.set(0.0f, 1.0f, 0.0f);
-		directionToWorldSpace(directionUp);
+			directionUp.set(0.0f, 1.0f, 0.0f);
+			directionToWorldSpace(directionUp);
 
-		directionAt.set(0.0f, 0.0f, -1.0f);
-		directionToWorldSpace(directionAt);
+			directionAt.set(0.0f, 0.0f, -1.0f);
+			directionToWorldSpace(directionAt);
 
-		// unit distance rays
-		setUnitRays();
+			// unit distance rays
+			setUnitRays();
+
+			viewRegion.setPlanes(this);
+
+			directionsModCount = transformation.getModCount();
+		}
 	}
 
 	public IMatrix4f getViewMatrix() {
-		if (viewMatrixDirty) setViewMatrix();
+		if (viewMatrixModCount != transformation.getModCount() || transformation.hasParentChanged()) {
+			viewMatrix.set(transformation.getModelMatrix()).invert();
+			viewMatrixModCount = transformation.getModCount();
+		}
 
 		return viewMatrix;
 	}
@@ -135,118 +102,10 @@ public abstract class DefaultCamera extends Camera {
 	}
 
 	public IViewRegion getViewRegion() {
-		if (viewMatrixDirty) setViewMatrix();
 		if (projectionMatrixDirty) setProjectionMatrix();
+		setDirections();
 
 		return viewRegion;
-	}
-
-	/**
-	 * Sets the camera yaw in radiants
-	 */
-	public void setYaw(float yaw) {
-		if (this.yaw == yaw) return;
-		this.yaw = yaw;
-		setYawMatrix();
-	}
-
-	/**
-	 * @return The camera yaw in radiants
-	 */
-	public float getYaw() {
-		return yaw;
-	}
-
-	/**
-	 * Sets the camera pitch in radiants
-	 */
-	public void setPitch(float pitch) {
-		if (this.pitch == pitch) return;
-		this.pitch = pitch;
-		setPitchMatrix();
-	}
-
-	/**
-	 * @return The camera pitch in radiants
-	 */
-	public float getPitch() {
-		return pitch;
-	}
-
-	/**
-	 * Sets the camera roll in radiants
-	 */
-	public void setRoll(float roll) {
-		if (this.roll == roll) return;
-		this.roll = roll;
-		setRollMatrix();
-	}
-
-	/**
-	 * @return The camera roll in radiants
-	 */
-	public float getRoll() {
-		return roll;
-	}
-
-	public void setX(float x) {
-		if (this.x == x) return;
-		this.x = x;
-		setPositionMatrix();
-	}
-
-	public float getX() {
-		return x;
-	}
-
-	public void setY(float y) {
-		if (this.y == y) return;
-		this.y = y;
-		setPositionMatrix();
-	}
-
-	public float getY() {
-		return y;
-	}
-
-	public void setZ(float z) {
-		if (this.z == z) return;
-		this.z = z;
-		setPositionMatrix();
-	}
-
-	public float getZ() {
-		return z;
-	}
-
-	public void setXYZ(float x, float y, float z) {
-		if (this.x == x && this.y == y && this.z == z) return;
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		setPositionMatrix();
-	}
-
-	public void setLookAt(float lookX, float lookY, float lookZ) {
-		float lookVecX = lookX - x;
-		float lookVecY = lookY - y;
-		float lookVecZ = lookZ - z;
-
-		if (lookVecZ == 0) {
-			setYaw(lookVecX > 0 ? PI / 2f : -PI / 2f);
-		} else {
-			float sign = lookVecZ > 0 ? PI : 0;
-
-			setYaw((float) Math.atan(lookVecX / lookVecZ) + sign);
-		}
-
-		if (lookVecX == 0 && lookVecZ == 0) {
-			setPitch(lookVecY > 0 ? PI / 2f : -PI / 2f);
-		} else {
-			float lengthXZ = (float) Math.sqrt(lookVecX * lookVecX + lookVecZ * lookVecZ);
-
-			setPitch((float) Math.atan(lookVecY / lengthXZ));
-		}
 	}
 
 	/**
@@ -257,7 +116,9 @@ public abstract class DefaultCamera extends Camera {
 	public void pointToViewSpace(IVector3f point) {
 		float newX, newY, newZ;
 
-		newX = point.getX() * getViewMatrix().get(0, 0);
+		IMatrix4f viewMatrix = getViewMatrix();
+
+		newX = point.getX() * viewMatrix.get(0, 0);
 		newY = point.getX() * viewMatrix.get(1, 0);
 		newZ = point.getX() * viewMatrix.get(2, 0);
 
@@ -286,7 +147,9 @@ public abstract class DefaultCamera extends Camera {
 	public void directionToViewSpace(IVector3f direction) {
 		float newX, newY, newZ;
 
-		newX = direction.getX() * getViewMatrix().get(0, 0);
+		IMatrix4f viewMatrix = getViewMatrix();
+
+		newX = direction.getX() * viewMatrix.get(0, 0);
 		newY = direction.getX() * viewMatrix.get(1, 0);
 		newZ = direction.getX() * viewMatrix.get(2, 0);
 
@@ -311,7 +174,9 @@ public abstract class DefaultCamera extends Camera {
 	public void pointToWorldSpace(IVector3f point) {
 		float newX, newY, newZ;
 
-		point.addX(-getViewMatrix().get(0, 3));
+		IMatrix4f viewMatrix = getViewMatrix();
+
+		point.addX(-viewMatrix.get(0, 3));
 		point.addY(-viewMatrix.get(1, 3));
 		point.addZ(-viewMatrix.get(2, 3));
 
@@ -340,7 +205,9 @@ public abstract class DefaultCamera extends Camera {
 	public void directionToWorldSpace(IVector3f direction) {
 		float newX, newY, newZ;
 
-		newX = direction.getX() * getViewMatrix().get(0, 0);
+		IMatrix4f viewMatrix = getViewMatrix();
+
+		newX = direction.getX() * viewMatrix.get(0, 0);
 		newY = direction.getX() * viewMatrix.get(0, 1);
 		newZ = direction.getX() * viewMatrix.get(0, 2);
 
@@ -359,6 +226,8 @@ public abstract class DefaultCamera extends Camera {
 
 	@Override
 	public IVector2f project(IReadonlyVector3f point) {
+		IMatrix4f viewMatrix = getViewMatrix();
+
 		IVector3f pointInScreenSpace = point.transformed(viewMatrix, 1).transform(projectionMatrix, 1);
 
 		return new Vector2f(
@@ -383,15 +252,15 @@ public abstract class DefaultCamera extends Camera {
 	 */
 	public Ray unproject(float x, float y) {
 		IVector3f start = new Vector3f(
-				unitRayCenter.getStart().getX() + unitRayRight.getStart().getX() * x + unitRayTop.getStart().getX() * y,
-				unitRayCenter.getStart().getY() + unitRayRight.getStart().getY() * x + unitRayTop.getStart().getY() * y,
-				unitRayCenter.getStart().getZ() + unitRayRight.getStart().getZ() * x + unitRayTop.getStart().getZ() * y
+				getUnitRayCenter().getStart().getX() + getUnitRayRight().getStart().getX() * x + getUnitRayTop().getStart().getX() * y,
+				getUnitRayCenter().getStart().getY() + getUnitRayRight().getStart().getY() * x + getUnitRayTop().getStart().getY() * y,
+				getUnitRayCenter().getStart().getZ() + getUnitRayRight().getStart().getZ() * x + getUnitRayTop().getStart().getZ() * y
 		);
 
 		IVector3f dir = new Vector3f(
-				unitRayCenter.getDir().getX() + unitRayRight.getDir().getX() * x + unitRayTop.getDir().getX() * y,
-				unitRayCenter.getDir().getY() + unitRayRight.getDir().getY() * x + unitRayTop.getDir().getY() * y,
-				unitRayCenter.getDir().getZ() + unitRayRight.getDir().getZ() * x + unitRayTop.getDir().getZ() * y
+				getUnitRayCenter().getDir().getX() + getUnitRayRight().getDir().getX() * x + getUnitRayTop().getDir().getX() * y,
+				getUnitRayCenter().getDir().getY() + getUnitRayRight().getDir().getY() * x + getUnitRayTop().getDir().getY() * y,
+				getUnitRayCenter().getDir().getZ() + getUnitRayRight().getDir().getZ() * x + getUnitRayTop().getDir().getZ() * y
 		);
 
 		return new Ray(start, dir);
@@ -407,19 +276,19 @@ public abstract class DefaultCamera extends Camera {
 	}
 
 	public IVector3f getDirectionRight() {
-		if (viewMatrixDirty) setViewMatrix();
+		setDirections();
 
 		return directionRight;
 	}
 
 	public IVector3f getDirectionUp() {
-		if (viewMatrixDirty) setViewMatrix();
+		setDirections();
 
 		return directionUp;
 	}
 
 	public IVector3f getDirectionAt() {
-		if (viewMatrixDirty) setViewMatrix();
+		setDirections();
 
 		return directionAt;
 	}
@@ -430,7 +299,7 @@ public abstract class DefaultCamera extends Camera {
 	 * @return the ray
 	 */
 	public Ray getUnitRayRight() {
-		if (viewMatrixDirty) setViewMatrix();
+		setDirections();
 
 		return unitRayRight;
 	}
@@ -441,7 +310,7 @@ public abstract class DefaultCamera extends Camera {
 	 * @return the ray
 	 */
 	public Ray getUnitRayTop() {
-		if (viewMatrixDirty) setViewMatrix();
+		setDirections();
 
 		return unitRayTop;
 	}
@@ -452,7 +321,7 @@ public abstract class DefaultCamera extends Camera {
 	 * @return the ray
 	 */
 	public Ray getUnitRayCenter() {
-		if (viewMatrixDirty) setViewMatrix();
+		setDirections();
 
 		return unitRayCenter;
 	}

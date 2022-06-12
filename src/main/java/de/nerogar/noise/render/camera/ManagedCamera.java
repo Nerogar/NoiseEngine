@@ -8,6 +8,8 @@ import de.nerogar.noiseInterface.math.*;
 
 public class ManagedCamera implements IReadOnlyCamera {
 
+	private Transformation transformation;
+
 	private IMatrix4f viewMatrix;
 	private IMatrix4f projectionMatrix;
 
@@ -18,6 +20,7 @@ public class ManagedCamera implements IReadOnlyCamera {
 	private       ViewRegionAll     viewRegionAll;
 
 	public ManagedCamera() {
+		this.transformation = new Transformation();
 		this.viewMatrix = new Matrix4f();
 		this.projectionMatrix = new Matrix4f();
 
@@ -37,6 +40,8 @@ public class ManagedCamera implements IReadOnlyCamera {
 
 		inverseProjectionMatrix.set(projectionMatrix);
 		inverseProjectionMatrix.invert();
+
+		transformation.setFromMatrix(viewMatrix);
 	}
 
 	@Override
@@ -60,33 +65,8 @@ public class ManagedCamera implements IReadOnlyCamera {
 	}
 
 	@Override
-	public float getYaw() {
-		return 0;
-	}
-
-	@Override
-	public float getPitch() {
-		return 0;
-	}
-
-	@Override
-	public float getRoll() {
-		return 0;
-	}
-
-	@Override
-	public float getX() {
-		return 0;
-	}
-
-	@Override
-	public float getY() {
-		return 0;
-	}
-
-	@Override
-	public float getZ() {
-		return 0;
+	public ITransformation getTransformation() {
+		return transformation;
 	}
 
 	@Override
