@@ -9,7 +9,7 @@ public class Transformation implements ITransformation {
 	protected float x, y, z;
 	protected float yaw, pitch, roll;
 	protected float scaleX, scaleY, scaleZ;
-	protected ITransformation parent;
+	protected IReadOnlyTransformation parent;
 
 	protected int modCount;
 	protected int parentModCount;
@@ -411,12 +411,12 @@ public class Transformation implements ITransformation {
 	// parent
 
 	@Override
-	public ITransformation getParent() {
+	public IReadOnlyTransformation getParent() {
 		return parent;
 	}
 
 	@Override
-	public void setParent(ITransformation parent) {
+	public void setParent(IReadOnlyTransformation parent) {
 		this.parent = parent;
 		modelMatrixDirty = true;
 		modCount++;

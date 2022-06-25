@@ -9,48 +9,17 @@ import org.lwjgl.opengl.GL11;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
 import static org.lwjgl.opengl.GL14.GL_CLAMP_TO_EDGE;
 
-/**
- * buffers:
- * <ul>
- *     <li> index - bit distribution - data </li>
- *     <li> -1 - (32)         - depth </li>
- *     <li>  0 - (8/8/8/8)    - albedo (rgb), (unused) </li>
- *     <li>  1 - (16/16/16)   - normal (rgb) </li>
- *     <li>  2 - (8/8/8/8)    - ambient occlusion (r), metalness (g), roughness (b), reflectance (a) </li>
- *     <li>  3 - (16/16/16)   - light (r/g/b) </li>
- *     <li> 4+ - (16/16/16)   - bloom passes (r/g/b) </li>
- * </ul>
- * <p>
- * passes:
- * <ol>
- *     <li>
- *         Base properties are copied from mesh surfaces into the base buffers. This includes these buffers: -1, 0, 1, 2, 3
- *     </li>
- *     <li>
- *         Lights are calculated into buffer 3, based on the buffers -1, 0, 1, 2
- *     </li>
- *     <li>
- *         Emission is added to the buffer 3, based on buffer 0
- *     </li>
- *     <li>
- *         Bloom is calculated in buffers 4+, based on buffers 0, 3
- *     </li>
- *     <li>
- *         The final output is calculated and stored in the render target, based on buffers 3, 4+
- *     </li>
- * </ol>
- */
-public class Renderer implements IRenderer {
+public class Renderer extends SimpleRenderableContainer implements IRenderer {
 
-	private static final int GBUFFER_DEPTH_SLOT    = -1;
-	private static final int GBUFFER_ALBEDO_SLOT   = 0;
-	private static final int GBUFFER_NORMAL_SLOT   = 1;
-	private static final int GBUFFER_MATERIAL_SLOT = 2;
-	private static final int GBUFFER_LIGHTS_SLOT   = 3;
-	private static final int LIGHT_LIGHTS_SLOT     = 0;
+	private static final int GBUFFER_DEPTH_SLOT               = -1;
+	private static final int GBUFFER_ALBEDO_SLOT              = 0;
+	private static final int GBUFFER_NORMAL_SLOT              = 1;
+	private static final int GBUFFER_MATERIAL_SLOT            = 2;
+	private static final int GBUFFER_LIGHTS_SLOT              = 3;
+	private static final int GBUFFER_TRANSPARENTS_LIGHTS_SLOT = 4;
+	private static final int LIGHT_LIGHTS_SLOT                = 0;
 
 	private static final int BLOOM_LEVEL_COUNT = 6;
 
@@ -60,22 +29,24 @@ public class Renderer implements IRenderer {
 	private static Shader             blurShader;
 	private static VertexBufferObject fullscreenQuad;
 
-	private final List<IRenderable>     renderables;
 	private final FrameBufferObject     gBuffer;
 	private final FrameBufferObject     lightBuffer;
+	private final FrameBufferObject     transparentsLightBuffer;
 	private final FrameBufferObject[][] downSampleBloomBuffers;
 
-	private final List<ILight>                  tempLightList;
-	private final List<Class<? extends ILight>> tempProcessedLightsClasses;
-	private final List<List<ILight>>            tempProcessedLights;
+	private final MapByClass<IRenderableGeometry> geometryMapByClass;
+	private final MapByClass<ILight>              lightMapByClass;
 
 	public Renderer(int width, int height) {
-		this.renderables = new ArrayList<>();
-
 		lightBuffer = new FrameBufferObject(width, height, false,
 		                                    Texture2D.DataType.BGRA_16_16_16F
 		);
 		lightBuffer.getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_EDGE);
+
+		transparentsLightBuffer = new FrameBufferObject(width, height, false,
+		                                                Texture2D.DataType.BGRA_16_16_16F
+		);
+		transparentsLightBuffer.getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_EDGE);
 
 		gBuffer = new FrameBufferObject(width, height, true);
 		gBuffer.attachTexture(GBUFFER_ALBEDO_SLOT, new Texture2D("albedo", width, height, null, Texture2D.InterpolationType.LINEAR, Texture2D.DataType.BGRA_8_8_8_8I));
@@ -98,23 +69,12 @@ public class Renderer implements IRenderer {
 						downSampleBloomBuffers[i][j].getWidth(), downSampleBloomBuffers[i][j].getHeight(),
 						null, Texture2D.InterpolationType.LINEAR, Texture2D.DataType.BGRA_16_16_16F
 				));
-				downSampleBloomBuffers[i][j].getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_BORDER);
+				downSampleBloomBuffers[i][j].getTextureAttachment(0).setWrapMode(GL_CLAMP_TO_EDGE);
 			}
 		}
 
-		tempLightList = new ArrayList<>();
-		tempProcessedLightsClasses = new ArrayList<>();
-		tempProcessedLights = new ArrayList<>();
-	}
-
-	@Override
-	public void addObject(IRenderable renderable) {
-		renderables.add(renderable);
-	}
-
-	@Override
-	public void removeObject(IRenderable renderable) {
-		renderables.remove(renderable);
+		geometryMapByClass = new MapByClass<>();
+		lightMapByClass = new MapByClass<>();
 	}
 
 	@Override
@@ -135,39 +95,12 @@ public class Renderer implements IRenderer {
 	}
 
 	private void renderLights(IRenderContext renderContext) {
-		tempLightList.clear();
-		for (List<ILight> tempProcessedLight : tempProcessedLights) {
-			tempProcessedLight.clear();
-		}
+		lightMapByClass.clear();
+		getLights(renderContext, lightMapByClass.getAdder());
 
-		// collect all lights
-		for (IRenderable renderable : renderables) {
-			renderable.getLights(tempLightList);
-		}
-
-		// build lists of lights sorted by their class
-		for (ILight light : tempLightList) {
-			boolean added = false;
-			for (int i = 0; i < tempProcessedLightsClasses.size(); i++) {
-				if (tempProcessedLightsClasses.get(i) == light.getClass()) {
-					tempProcessedLights.get(i).add(light);
-					added = true;
-					break;
-				}
-			}
-
-			if (!added) {
-				tempProcessedLightsClasses.add(light.getClass());
-				ArrayList<ILight> lights = new ArrayList<>();
-				lights.add(light);
-				tempProcessedLights.add(lights);
-			}
-		}
-
-		// render the lights
-		for (int i = 0; i < tempProcessedLightsClasses.size(); i++) {
-			if (!tempProcessedLights.get(i).isEmpty()) {
-				tempProcessedLights.get(i).get(0).renderBatch(renderContext, tempProcessedLights.get(i));
+		for (List<ILight> list : lightMapByClass.getLists()) {
+			if (!list.isEmpty()) {
+				list.get(0).renderBatch(renderContext, list);
 			}
 		}
 	}
@@ -241,8 +174,13 @@ public class Renderer implements IRenderer {
 		gBuffer.bind();
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		for (IRenderable renderable : renderables) {
-			renderable.renderGeometry(renderContext);
+		geometryMapByClass.clear();
+
+		getGeometry(renderContext, geometryMapByClass.getAdder());
+		for (List<IRenderableGeometry> list : geometryMapByClass.getLists()) {
+			for (IRenderableGeometry geometry : list) {
+				geometry.renderGeometry(renderContext);
+			}
 		}
 		GL11.glDisable(GL11.GL_DEPTH_TEST);
 

@@ -106,7 +106,7 @@ public interface ITransformation extends IReadOnlyTransformation {
 
 	// parent
 
-	void setParent(ITransformation parent);
+	void setParent(IReadOnlyTransformation parent);
 
 	// output matrices
 

@@ -62,7 +62,7 @@ public interface IReadOnlyTransformation {
 	 */
 	float getScaleZ();
 
-	ITransformation getParent();
+	IReadOnlyTransformation getParent();
 
 	int getModCount();
 

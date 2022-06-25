@@ -3,26 +3,26 @@ package de.nerogar.noise.render.deferredRenderer;
 import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.render.*;
-import de.nerogar.noiseInterface.math.ITransformation;
+import de.nerogar.noiseInterface.math.IReadOnlyTransformation;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
+import de.nerogar.noiseInterface.render.deferredRenderer.IRenderableGeometry;
 
-public class SingleRenderable implements IRenderable {
+public class SingleRenderable implements IRenderableGeometry {
 
 	private static final int[] COMPONENT_COUNTS = { 3, 3, 3, 3, 2 };
 
 	private static Shader shader;
 
-	private boolean            isInitialized = false;
-	private ITransformation    transformation;
-	private VertexBufferObject vbo;
-	private Texture2D          albedo;
-	private Texture2D          normal;
-	private Texture2D          ambientOcclusion;
-	private Texture2D          metalness;
-	private Texture2D          roughness;
-	private Texture2D          reflectance;
-	private Mesh               mesh;
+	private boolean                 isInitialized = false;
+	private IReadOnlyTransformation transformation;
+	private VertexBufferObject      vbo;
+	private Texture2D               albedo;
+	private Texture2D               normal;
+	private Texture2D               ambientOcclusion;
+	private Texture2D               metalness;
+	private Texture2D               roughness;
+	private Texture2D               reflectance;
+	private Mesh                    mesh;
 
 	public SingleRenderable(VertexBufferObject vbo, Texture2D albedo, Texture2D normal, Texture2D ambientOcclusion, Texture2D metalness, Texture2D roughness, Texture2D reflectance) {
 		this.vbo = vbo;
@@ -43,6 +43,16 @@ public class SingleRenderable implements IRenderable {
 		this.metalness = metalness;
 		this.roughness = roughness;
 		this.reflectance = reflectance;
+	}
+
+	@Override
+	public IReadOnlyTransformation getTransformation() {
+		return transformation;
+	}
+
+	@Override
+	public void setTransformation(IReadOnlyTransformation transformation) {
+		this.transformation = transformation;
 	}
 
 	public static VertexBufferObject createVbo(Mesh mesh) {
@@ -69,16 +79,6 @@ public class SingleRenderable implements IRenderable {
 			this.mesh = null;
 			isInitialized = true;
 		}
-	}
-
-	@Override
-	public ITransformation getTransformation() {
-		return transformation;
-	}
-
-	@Override
-	public void setTransformation(ITransformation transformation) {
-		this.transformation = transformation;
 	}
 
 	@Override

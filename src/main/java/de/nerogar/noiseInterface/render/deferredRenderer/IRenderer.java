@@ -5,9 +5,9 @@ import de.nerogar.noise.render.camera.IReadOnlyCamera;
 
 public interface IRenderer {
 
-	void addObject(IRenderable renderable);
+	void addContainer(IRenderableContainer container);
 
-	void removeObject(IRenderable renderable);
+	void removeContainer(IRenderableContainer container);
 
 	void setResolution(int width, int height);
 

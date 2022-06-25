@@ -7,9 +7,9 @@ public interface IRenderContext {
 
 	IReadOnlyCamera getCamera();
 
-	int getGBufferWidth();
+	int getBufferWidth();
 
-	int getGBufferHeight();
+	int getBufferHeight();
 
 	Texture2D getDepthTexture();
 

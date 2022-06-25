@@ -4,6 +4,7 @@ import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
+import de.nerogar.noise.render.deferredRenderer.RenderContext;
 import de.nerogar.noise.render.deferredRenderer.SingleWireframeRenderable;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Ray;
@@ -11,52 +12,52 @@ import de.nerogar.noiseInterface.math.*;
 import de.nerogar.noiseInterface.render.deferredRenderer.*;
 
 import java.util.List;
+import java.util.function.Consumer;
 
-public class PointLight implements ILight {
+public class PointLight implements ILight, IRenderableContainer {
 
 	private static VertexBufferObject sphere;
 	private static Shader             shader;
 	private static WireframeMesh      debugMesh;
 
-	private       IRenderable debugRenderable;
-	private final IMatrix4f   viewProjectionMatrix;
+	private final IRenderableGeometry debugRenderable;
+	private final ITransformation     debugTransformation;
+	private final IMatrix4f           viewProjectionMatrix;
 
-	private ITransformation transformation;
-	private Color           color;
-	private float           radius;
-	private float           intensity;
+	private IReadOnlyTransformation transformation;
+	private Color                   color;
+	private float                   radius;
+	private float                   intensity;
 
-	public PointLight(IVector3f position, Color color, float radius, float intensity) {
-		this.transformation = new Transformation(0, 0, 0, position.getX(), position.getY(), position.getZ());
+	public PointLight(IReadOnlyTransformation transformation, Color color, float radius, float intensity) {
+		this.transformation = transformation;
 		this.viewProjectionMatrix = new Matrix4f();
-		setPosition(position.clone());
 		setColor(color);
 		setIntensity(intensity);
 		setRadius(radius);
 
-		debugRenderable = new SingleWireframeRenderable(debugMesh, DEBUG_MESH_COLOR, 0.0f, true);
+		// debug display
+		this.debugRenderable = new SingleWireframeRenderable(debugMesh, DEBUG_MESH_COLOR, 0.0f, true);
+		this.debugTransformation = new Transformation();
+		this.debugRenderable.setTransformation(debugTransformation);
+		this.debugTransformation.setParent(transformation);
 	}
 
 	@Override
-	public ITransformation getTransformation() {
+	public IReadOnlyTransformation getTransformation() {
 		return transformation;
 	}
 
 	@Override
-	public void setTransformation(ITransformation transformation) {
+	public void setTransformation(IReadOnlyTransformation transformation) {
 		this.transformation = transformation;
-		debugRenderable.getTransformation().setParent(transformation);
 	}
 
-	public void setPosition(IVector3f position)        {transformation.setPosition(position);}
+	public void setColor(Color color)         {this.color = color;}
 
-	public void setPosition(float x, float y, float z) {transformation.setPosition(x, y, z);}
+	public void setRadius(float radius)       {this.radius = radius;}
 
-	public void setColor(Color color)                  {this.color = color;}
-
-	public void setRadius(float radius)                {this.radius = radius; transformation.setScale(radius, radius, radius);}
-
-	public void setIntensity(float intensity)          {this.intensity = intensity;}
+	public void setIntensity(float intensity) {this.intensity = intensity;}
 
 	private static void renderLight(PointLight light) {
 		shader.setUniform3f(
@@ -95,7 +96,7 @@ public class PointLight implements ILight {
 		shader.setUniform3f("u_unitRayRightDir", unitRayRight.getDir().getX(), unitRayRight.getDir().getY(), unitRayRight.getDir().getZ());
 		shader.setUniform3f("u_unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
 		shader.setUniform3f("u_unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
-		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getGBufferWidth(), 1f / renderContext.getGBufferHeight());
+		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getBufferWidth(), 1f / renderContext.getBufferHeight());
 		shader.setUniform4f(
 				"u_inverseDepthFunction",
 				projectionMatrix.get(2, 2),
@@ -117,8 +118,8 @@ public class PointLight implements ILight {
 	}
 
 	@Override
-	public void renderGeometry(IRenderContext renderContext) {
-		debugRenderable.renderGeometry(renderContext);
+	public void getGeometry(IRenderContext renderContext, Consumer<IRenderableGeometry> adder) {
+		adder.accept(debugRenderable);
 	}
 
 	static {

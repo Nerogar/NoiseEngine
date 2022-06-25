@@ -2,92 +2,77 @@ package de.nerogar.noise.render.deferredRenderer.light;
 
 import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Matrix4f;
-import de.nerogar.noise.math.Vector3f;
+import de.nerogar.noise.math.Transformation;
 import de.nerogar.noise.render.*;
+import de.nerogar.noise.render.deferredRenderer.RenderContext;
 import de.nerogar.noise.render.deferredRenderer.SingleWireframeRenderable;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Ray;
 import de.nerogar.noiseInterface.math.*;
-import de.nerogar.noiseInterface.render.deferredRenderer.ILight;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
+import de.nerogar.noiseInterface.render.deferredRenderer.*;
 
 import java.util.List;
+import java.util.function.Consumer;
 
-public class ConeLight implements ILight {
+public class ConeLight implements ILight, IRenderableContainer {
 
 	private static VertexBufferObject sphere;
 	private static Shader             shader;
 	private static WireframeMesh      debugMesh;
 
-	private       IRenderable debugRenderable;
-	private final IMatrix4f   viewProjectionMatrix;
+	private       IRenderableGeometry debugRenderable;
+	private final ITransformation     debugTransformation;
+	private final IMatrix4f           viewProjectionMatrix;
 
-	private ITransformation transformation;
-	private IVector3f       position;
-	private IVector3f      direction;
-	private Color          color;
-	private float          radius;
-	private float          strength;
-	private float          angle;
-	private float          cosAngle;
-	private float          invertedCosAngle;
+	private IReadOnlyTransformation transformation;
+	private Color                   color;
+	private float                   radius;
+	private float                   strength;
+	private float                   angle;
+	private float                   cosAngle;
+	private float                   invertedCosAngle;
+	private float                   scale;
 
-	public ConeLight(IVector3f position, IVector3f direction, Color color, float radius, float strength, float angle) {
-		this.position = new Vector3f();
-		this.direction = new Vector3f();
+	public ConeLight(IReadOnlyTransformation transformation, Color color, float radius, float strength, float angle) {
 		this.viewProjectionMatrix = new Matrix4f();
-		setPosition(position.clone());
-		setDirection(direction.normalized());
 		setColor(color);
 		setStrength(strength);
 		setRadius(radius);
 		setAngle(angle);
 
-		debugRenderable = new SingleWireframeRenderable(debugMesh, DEBUG_MESH_COLOR, 0.0f, true);
+		this.debugRenderable = new SingleWireframeRenderable(debugMesh, DEBUG_MESH_COLOR, 0.0f, true);
+		this.debugTransformation = new Transformation();
+		this.debugRenderable.setTransformation(debugTransformation);
+		this.debugTransformation.setParent(transformation);
+
 	}
 
 	@Override
-	public ITransformation getTransformation() {
+	public IReadOnlyTransformation getTransformation() {
 		return transformation;
 	}
 
 	@Override
-	public void setTransformation(ITransformation transformation) {
+	public void setTransformation(IReadOnlyTransformation transformation) {
 		this.transformation = transformation;
-		debugRenderable.getTransformation().setParent(transformation);
 	}
 
-	public void setPosition(IVector3f position)        { this.position.set(position); transformation.setPosition(position); }
-
-	public void setPosition(float x, float y, float z) { this.position.set(x, y, z); transformation.setPosition(x, y, z); }
-
-	public void setDirection(IVector3f direction) {
-		this.direction.set(direction).normalize();
-		transformation.setLookDirection(direction.getX(), direction.getY(), direction.getZ());
-	}
-
-	public void setDirection(float x, float y, float z) {
-		this.direction.set(x, y, z).normalize();
-		transformation.setLookDirection(x, y, z);
-	}
-
-	public void setColor(Color color) { this.color = color; }
+	public void setColor(Color color) {this.color = color;}
 
 	public void setRadius(float radius) {
 		this.radius = radius;
 		float tan = (float) Math.tan((angle / 360.0) * Math.PI);
-		transformation.setScale(tan * radius, tan * radius, radius);
+		this.scale = tan * radius;
 	}
 
-	public void setStrength(float strength) { this.strength = strength; }
+	public void setStrength(float strength) {this.strength = strength;}
 
 	public void setAngle(float angle) {
 		this.angle = angle;
 		this.cosAngle = (float) Math.cos((angle / 360.0) * Math.PI);
 		this.invertedCosAngle = (float) (1.0 / (1.0 - cosAngle));
 		float tan = (float) Math.tan((angle / 360.0) * Math.PI);
-		transformation.setScale(tan * radius, tan * radius, radius);
+		this.scale = tan * radius;
 	}
 
 	@Override
@@ -115,7 +100,7 @@ public class ConeLight implements ILight {
 		shader.setUniform3f("u_unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
 		shader.setUniform3f("u_unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
 
-		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getGBufferWidth(), 1f / renderContext.getGBufferHeight());
+		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getBufferWidth(), 1f / renderContext.getBufferHeight());
 		shader.setUniform4f(
 				"u_inverseDepthFunction",
 				projectionMatrix.get(2, 2),
@@ -132,12 +117,13 @@ public class ConeLight implements ILight {
 	}
 
 	private static void renderLight(IRenderContext renderContext, ConeLight light) {
-		shader.setUniform3f("u_position", light.position.getX(), light.position.getY(), light.position.getZ());
-		shader.setUniform3f("u_direction", light.direction.getX(), light.direction.getY(), light.direction.getZ());
+		IMatrix4f modelMatrix = light.transformation.getModelMatrix();
+		shader.setUniform3f("u_position", modelMatrix.get(0, 3), modelMatrix.get(1, 3), modelMatrix.get(2, 3));
+		shader.setUniform3f("u_direction", -modelMatrix.get(0, 2), -modelMatrix.get(1, 2), -modelMatrix.get(2, 2));
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_radius", light.radius);
 		shader.setUniform1f("u_strength", light.strength);
-		shader.setUniform2f("u_angleData", light.cosAngle, light.invertedCosAngle);
+		shader.setUniform3f("u_angleData", light.cosAngle, light.invertedCosAngle, light.scale); // TODO: use the scale to scale the cone mesh in x and y direction
 		shader.setUniform1Handle("u_depthBuffer", renderContext.getDepthTexture().getHandle());
 		shader.setUniform1Handle("u_normalBuffer", renderContext.getNormalTexture().getHandle());
 		shader.setUniform1Handle("u_materialBuffer", renderContext.getMaterialTexture().getHandle());
@@ -145,8 +131,8 @@ public class ConeLight implements ILight {
 	}
 
 	@Override
-	public void renderGeometry(IRenderContext renderContext) {
-		debugRenderable.renderGeometry(renderContext);
+	public void getGeometry(IRenderContext renderContext, Consumer<IRenderableGeometry> adder) {
+		adder.accept(debugRenderable);
 	}
 
 	static {

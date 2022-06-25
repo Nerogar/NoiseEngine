@@ -34,12 +34,12 @@ public class RenderContext implements IRenderContext {
 	}
 
 	@Override
-	public int getGBufferWidth() {
+	public int getBufferWidth() {
 		return gBufferWidth;
 	}
 
 	@Override
-	public int getGBufferHeight() {
+	public int getBufferHeight() {
 		return gBufferHeight;
 	}
 

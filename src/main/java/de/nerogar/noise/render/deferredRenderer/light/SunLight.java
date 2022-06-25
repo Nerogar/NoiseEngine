@@ -26,12 +26,12 @@ public class SunLight implements ILight {
 	}
 
 	@Override
-	public ITransformation getTransformation() {
+	public IReadOnlyTransformation getTransformation() {
 		return null;
 	}
 
 	@Override
-	public void setTransformation(ITransformation transformation) {
+	public void setTransformation(IReadOnlyTransformation transformation) {
 	}
 
 	public void setDirection(IVector3f direction) {
@@ -71,7 +71,7 @@ public class SunLight implements ILight {
 		shader.setUniform3f("u_unitRayRightDir", unitRayRight.getDir().getX(), unitRayRight.getDir().getY(), unitRayRight.getDir().getZ());
 		shader.setUniform3f("u_unitRayTopStart", unitRayTop.getStart().getX(), unitRayTop.getStart().getY(), unitRayTop.getStart().getZ());
 		shader.setUniform3f("u_unitRayTopDir", unitRayTop.getDir().getX(), unitRayTop.getDir().getY(), unitRayTop.getDir().getZ());
-		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getGBufferWidth(), 1f / renderContext.getGBufferHeight());
+		shader.setUniform2f("u_inverseResolution", 1f / renderContext.getBufferWidth(), 1f / renderContext.getBufferHeight());
 		shader.setUniform4f(
 				"u_inverseDepthFunction",
 				projectionMatrix.get(2, 2),

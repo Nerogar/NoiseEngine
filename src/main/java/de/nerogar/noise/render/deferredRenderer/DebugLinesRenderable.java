@@ -1,18 +1,17 @@
 package de.nerogar.noise.render.deferredRenderer;
 
 import de.nerogar.noise.file.FileUtil;
-import de.nerogar.noise.math.MathHelper;
 import de.nerogar.noise.math.Vector3f;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
 import de.nerogar.noiseInterface.math.*;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
+import de.nerogar.noiseInterface.render.deferredRenderer.IRenderableGeometry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DebugLinesRenderable implements IRenderable {
+public class DebugLinesRenderable implements IRenderableGeometry {
 
 	private static final int[]                     COMPONENT_COUNTS = { 1 };
 	private static final Shader                    shader;
@@ -66,12 +65,12 @@ public class DebugLinesRenderable implements IRenderable {
 	}
 
 	@Override
-	public ITransformation getTransformation() {
+	public IReadOnlyTransformation getTransformation() {
 		return null;
 	}
 
 	@Override
-	public void setTransformation(ITransformation transformation) {
+	public void setTransformation(IReadOnlyTransformation transformation) {
 	}
 
 	@Override

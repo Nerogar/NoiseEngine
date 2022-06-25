@@ -1,15 +1,15 @@
 package de.nerogar.noise.game.components;
 
 import de.nerogar.noise.game.AbstractComponent;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
+import de.nerogar.noiseInterface.render.deferredRenderer.IRenderableContainer;
 
 public class RenderableComponent extends AbstractComponent {
 
-	private IRenderable renderable;
+	private IRenderableContainer renderable;
 
-	public RenderableComponent(IRenderable renderable) {
+	public RenderableComponent(IRenderableContainer renderable) {
 		this.renderable = renderable;
 	}
 
-	public IRenderable getRenderable() { return renderable; }
+	public IRenderableContainer getRenderableContainer() {return renderable;}
 }

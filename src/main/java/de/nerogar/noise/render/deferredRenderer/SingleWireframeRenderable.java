@@ -4,16 +4,16 @@ import de.nerogar.noise.file.FileUtil;
 import de.nerogar.noise.math.Matrix4f;
 import de.nerogar.noise.render.*;
 import de.nerogar.noise.util.Color;
-import de.nerogar.noiseInterface.math.ITransformation;
+import de.nerogar.noiseInterface.math.IReadOnlyTransformation;
 import de.nerogar.noiseInterface.render.deferredRenderer.IRenderContext;
-import de.nerogar.noiseInterface.render.deferredRenderer.IRenderable;
+import de.nerogar.noiseInterface.render.deferredRenderer.IRenderableGeometry;
 
-public class SingleWireframeRenderable implements IRenderable {
+public class SingleWireframeRenderable implements IRenderableGeometry {
 
 	private static final int[]  COMPONENT_COUNTS = { 3 };
 	private static final Shader shader;
 
-	private ITransformation transformation;
+	private IReadOnlyTransformation transformation;
 
 	private VertexBufferObjectIndexed vbo;
 	private Color                     color;
@@ -41,13 +41,11 @@ public class SingleWireframeRenderable implements IRenderable {
 
 	public void setShadeless(boolean shadeless) {this.shadeless = shadeless;}
 
-	@Override
-	public ITransformation getTransformation() {
+	public IReadOnlyTransformation getTransformation() {
 		return transformation;
 	}
 
-	@Override
-	public void setTransformation(ITransformation transformation) {
+	public void setTransformation(IReadOnlyTransformation transformation) {
 		this.transformation = transformation;
 	}
 
