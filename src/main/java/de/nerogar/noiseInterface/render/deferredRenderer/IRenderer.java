@@ -5,12 +5,13 @@ import de.nerogar.noise.render.camera.IReadOnlyCamera;
 
 public interface IRenderer {
 
-	void addContainer(IRenderableContainer container);
+	void addRenderPass();
 
-	void removeContainer(IRenderableContainer container);
+	IRenderPass getRenderPass(int index);
 
 	void setResolution(int width, int height);
 
 	void render(IRenderTarget renderTarget, IReadOnlyCamera camera);
+
 
 }

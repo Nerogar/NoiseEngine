@@ -10,22 +10,29 @@ public class RenderContext implements IRenderContext {
 	private final int             gBufferWidth;
 	private final int             gBufferHeight;
 
-	private final Texture2D depthTexture;
-	private final Texture2D albedoTexture;
-	private final Texture2D normalTexture;
-	private final Texture2D materialTexture;
+	private final Texture2D gBufferDepthTexture;
+	private final Texture2D gBufferAlbedoTexture;
+	private final Texture2D gBufferNormalTexture;
+	private final Texture2D gBufferMaterialTexture;
+	private final Texture2D gBufferLightsTexture;
+	private final Texture2D lBufferLightsTexture;
 
 	public RenderContext(
 			IReadOnlyCamera camera, int gBufferWidth, int gBufferHeight,
-			Texture2D depthTexture, Texture2D albedoTexture, Texture2D normalTexture, Texture2D materialTexture
-	                    ) {
+			Texture2D gBufferDepthTexture, Texture2D gBufferAlbedoTexture, Texture2D gBufferNormalTexture, Texture2D gBufferMaterialTexture, Texture2D gBufferLightsTexture,
+			Texture2D lBufferLightsTexture) {
+
 		this.camera = camera;
 		this.gBufferWidth = gBufferWidth;
 		this.gBufferHeight = gBufferHeight;
-		this.depthTexture = depthTexture;
-		this.albedoTexture = albedoTexture;
-		this.normalTexture = normalTexture;
-		this.materialTexture = materialTexture;
+
+		this.gBufferDepthTexture = gBufferDepthTexture;
+		this.gBufferAlbedoTexture = gBufferAlbedoTexture;
+		this.gBufferNormalTexture = gBufferNormalTexture;
+		this.gBufferMaterialTexture = gBufferMaterialTexture;
+		this.gBufferLightsTexture = gBufferLightsTexture;
+
+		this.lBufferLightsTexture = lBufferLightsTexture;
 	}
 
 	@Override
@@ -44,22 +51,32 @@ public class RenderContext implements IRenderContext {
 	}
 
 	@Override
-	public Texture2D getDepthTexture() {
-		return depthTexture;
+	public Texture2D getGBufferDepthTexture() {
+		return gBufferDepthTexture;
 	}
 
 	@Override
-	public Texture2D getAlbedoTexture() {
-		return albedoTexture;
+	public Texture2D getGBufferAlbedoTexture() {
+		return gBufferAlbedoTexture;
 	}
 
 	@Override
-	public Texture2D getNormalTexture() {
-		return normalTexture;
+	public Texture2D getGBufferNormalTexture() {
+		return gBufferNormalTexture;
 	}
 
 	@Override
-	public Texture2D getMaterialTexture() {
-		return materialTexture;
+	public Texture2D getGBufferMaterialTexture() {
+		return gBufferMaterialTexture;
+	}
+
+	@Override
+	public Texture2D getGBufferLightsTexture() {
+		return gBufferLightsTexture;
+	}
+
+	@Override
+	public Texture2D getLBufferLightsTexture() {
+		return lBufferLightsTexture;
 	}
 }

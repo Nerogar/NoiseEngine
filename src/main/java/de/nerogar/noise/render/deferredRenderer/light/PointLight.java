@@ -105,9 +105,9 @@ public class PointLight implements ILight, IRenderableContainer {
 				projectionMatrix.get(3, 3)
 		                   );
 
-		shader.setUniform1Handle("u_depthBuffer", renderContext.getDepthTexture().getHandle());
-		shader.setUniform1Handle("u_normalBuffer", renderContext.getNormalTexture().getHandle());
-		shader.setUniform1Handle("u_materialBuffer", renderContext.getMaterialTexture().getHandle());
+		shader.setUniform1Handle("u_depthBuffer", renderContext.getGBufferDepthTexture().getHandle());
+		shader.setUniform1Handle("u_normalBuffer", renderContext.getGBufferNormalTexture().getHandle());
+		shader.setUniform1Handle("u_materialBuffer", renderContext.getGBufferMaterialTexture().getHandle());
 
 		for (ILight light : lights) {
 			if (light instanceof PointLight) {

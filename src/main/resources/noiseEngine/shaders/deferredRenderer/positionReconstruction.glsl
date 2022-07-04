@@ -18,6 +18,15 @@ with:
 inverseDepthFunction = (a, b, c, d)
 */
 
+float getLinearDepth(float depthSample, vec4 inverseDepthFunction, vec2 uv){
+	// transform to unit cube (-1, 1)
+	depthSample = depthSample * 2 - 1;
+
+	// inverse depth buffer function
+	return -(inverseDepthFunction.w * depthSample - inverseDepthFunction.y)
+	/(inverseDepthFunction.x - inverseDepthFunction.z * depthSample);
+}
+
 float getLinearDepth(sampler2D textureDepth, vec4 inverseDepthFunction, vec2 uv){
 	// transform to unit cube (-1, 1)
 	float depthSample = texture(textureDepth, uv).x * 2 - 1;

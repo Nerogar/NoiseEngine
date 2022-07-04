@@ -124,9 +124,9 @@ public class ConeLight implements ILight, IRenderableContainer {
 		shader.setUniform1f("u_radius", light.radius);
 		shader.setUniform1f("u_strength", light.strength);
 		shader.setUniform3f("u_angleData", light.cosAngle, light.invertedCosAngle, light.scale); // TODO: use the scale to scale the cone mesh in x and y direction
-		shader.setUniform1Handle("u_depthBuffer", renderContext.getDepthTexture().getHandle());
-		shader.setUniform1Handle("u_normalBuffer", renderContext.getNormalTexture().getHandle());
-		shader.setUniform1Handle("u_materialBuffer", renderContext.getMaterialTexture().getHandle());
+		shader.setUniform1Handle("u_depthBuffer", renderContext.getGBufferDepthTexture().getHandle());
+		shader.setUniform1Handle("u_normalBuffer", renderContext.getGBufferNormalTexture().getHandle());
+		shader.setUniform1Handle("u_materialBuffer", renderContext.getGBufferMaterialTexture().getHandle());
 		sphere.render();
 	}
 

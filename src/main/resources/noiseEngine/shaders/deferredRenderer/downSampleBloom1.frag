@@ -44,4 +44,5 @@ void main(){
 	);
 
 	out_color.rgb = color;
+	out_color.rgb = vec3(0.0);
 }

@@ -9,14 +9,12 @@ import java.util.function.Consumer;
 
 public class SimpleRenderableContainer implements IRenderableContainer {
 
-	private List<IRenderableGeometry>            geometry;
-	private List<IRenderableTransparentGeometry> transparentGeometry;
-	private List<ILight>                         lights;
-	private List<IRenderableContainer>           containers;
+	private List<IRenderableGeometry>  geometry;
+	private List<ILight>               lights;
+	private List<IRenderableContainer> containers;
 
 	public SimpleRenderableContainer() {
 		geometry = new ArrayList<>();
-		transparentGeometry = new ArrayList<>();
 		lights = new ArrayList<>();
 		containers = new ArrayList<>();
 	}
@@ -65,17 +63,6 @@ public class SimpleRenderableContainer implements IRenderableContainer {
 	}
 
 	@Override
-	public void getTransparentGeometry(IRenderContext renderContext, Consumer<IRenderableTransparentGeometry> adder) {
-		for (IRenderableTransparentGeometry t : transparentGeometry) {
-			adder.accept(t);
-		}
-
-		for (IRenderableContainer c : containers) {
-			c.getTransparentGeometry(renderContext, adder);
-		}
-	}
-
-	@Override
 	public void getLights(IRenderContext renderContext, Consumer<ILight> adder) {
 		for (ILight l : lights) {
 			adder.accept(l);
@@ -90,10 +77,6 @@ public class SimpleRenderableContainer implements IRenderableContainer {
 	public void setTransformation(IReadOnlyTransformation transformation) {
 		for (IRenderableGeometry g : geometry) {
 			g.setTransformation(transformation);
-		}
-
-		for (IRenderableTransparentGeometry t : transparentGeometry) {
-			t.setTransformation(transformation);
 		}
 
 		for (ILight l : lights) {

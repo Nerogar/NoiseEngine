@@ -122,7 +122,7 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 			if (texture != null) {
 				if (texture.getWidth() != width || texture.getHeight() != height) {
 					texture.cleanup();
-					textures[i] = new Texture2D("", width, height, null, texture.getInterpolationType(), texture.getDataType());
+					textures[i] = new Texture2D(texture.getResourceName(), width, height, null, texture.getInterpolationType(), texture.getDataType());
 				}
 
 				glFramebufferTexture2D(GL_FRAMEBUFFER, glColorAttachments[i], GL_TEXTURE_2D, textures[i].getName(), 0);
@@ -134,7 +134,7 @@ public class FrameBufferObject extends NoiseResource implements IRenderTarget {
 		if (depthTexture != null) {
 			if (depthTexture.getWidth() != width || depthTexture.getHeight() != height) {
 				depthTexture.cleanup();
-				depthTexture = new Texture2D("", width, height, null, depthTexture.getInterpolationType(), depthTexture.getDataType());
+				depthTexture = new Texture2D(depthTexture.getResourceName(), width, height, null, depthTexture.getInterpolationType(), depthTexture.getDataType());
 			}
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture.getName(), 0);

@@ -11,12 +11,16 @@ public interface IRenderContext {
 
 	int getBufferHeight();
 
-	Texture2D getDepthTexture();
+	Texture2D getGBufferDepthTexture();
 
-	Texture2D getAlbedoTexture();
+	Texture2D getGBufferAlbedoTexture();
 
-	Texture2D getNormalTexture();
+	Texture2D getGBufferNormalTexture();
 
-	Texture2D getMaterialTexture();
+	Texture2D getGBufferMaterialTexture();
+
+	Texture2D getGBufferLightsTexture();
+
+	Texture2D getLBufferLightsTexture();
 
 }

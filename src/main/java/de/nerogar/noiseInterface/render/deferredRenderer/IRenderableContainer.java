@@ -6,11 +6,9 @@ import java.util.function.Consumer;
 
 public interface IRenderableContainer {
 
-	default void getGeometry(IRenderContext renderContext, Consumer<IRenderableGeometry> adder)                       {}
+	default void getGeometry(IRenderContext renderContext, Consumer<IRenderableGeometry> adder) {}
 
-	default void getTransparentGeometry(IRenderContext renderContext, Consumer<IRenderableTransparentGeometry> adder) {}
-
-	default void getLights(IRenderContext renderContext, Consumer<ILight> adder)                                      {}
+	default void getLights(IRenderContext renderContext, Consumer<ILight> adder)                {}
 
 	void setTransformation(IReadOnlyTransformation transformation);
 

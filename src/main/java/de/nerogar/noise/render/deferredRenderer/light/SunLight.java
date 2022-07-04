@@ -95,10 +95,10 @@ public class SunLight implements ILight {
 		shader.setUniform3f("u_color", light.color.getR(), light.color.getG(), light.color.getB());
 		shader.setUniform1f("u_intensity", light.intensity);
 		shader.setUniform3f("u_cameraPosition", cameraTransformation.getEffectiveX(), cameraTransformation.getEffectiveY(), cameraTransformation.getEffectiveZ());
-		shader.setUniform1Handle("u_depthBuffer", renderContext.getDepthTexture().getHandle());
-		shader.setUniform1Handle("u_albedoBuffer", renderContext.getAlbedoTexture().getHandle());
-		shader.setUniform1Handle("u_normalBuffer", renderContext.getNormalTexture().getHandle());
-		shader.setUniform1Handle("u_materialBuffer", renderContext.getMaterialTexture().getHandle());
+		shader.setUniform1Handle("u_depthBuffer", renderContext.getGBufferDepthTexture().getHandle());
+		shader.setUniform1Handle("u_albedoBuffer", renderContext.getGBufferAlbedoTexture().getHandle());
+		shader.setUniform1Handle("u_normalBuffer", renderContext.getGBufferNormalTexture().getHandle());
+		shader.setUniform1Handle("u_materialBuffer", renderContext.getGBufferMaterialTexture().getHandle());
 		fullscreenQuad.render();
 	}
 
