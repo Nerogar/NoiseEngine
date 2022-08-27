@@ -102,13 +102,14 @@ public abstract class AbstractGamePipeline<T extends IEvent> implements IGamePip
 					pipelineMethod.name = object.getClass().getName() + "." + method.getName();
 					pipelineMethod.consumer = createPipelineMethodNew(object, method, eventHub);
 
-					Type[] parameterTypes = method.getGenericParameterTypes();
+					Type[] parameterTypes = method.getParameterTypes();
+					Type[] genericParameterTypes = method.getGenericParameterTypes();
 					for (int i = 0; i < parameterTypes.length - 1; i++) {
 						if (parameterTypes[i].equals(IEventConsumer.class)) {
-							Class<? extends IEvent> typeArgument = (Class<? extends IEvent>) ((ParameterizedType) parameterTypes[i]).getActualTypeArguments()[0];
+							Class<? extends IEvent> typeArgument = (Class<? extends IEvent>) ((ParameterizedType) genericParameterTypes[i]).getActualTypeArguments()[0];
 							pipelineMethod.consumedEvents.add(typeArgument);
 						} else if (parameterTypes[i].equals(IEventProducer.class)) {
-							Class<? extends IEvent> typeArgument = (Class<? extends IEvent>) ((ParameterizedType) parameterTypes[i]).getActualTypeArguments()[0];
+							Class<? extends IEvent> typeArgument = (Class<? extends IEvent>) ((ParameterizedType) genericParameterTypes[i]).getActualTypeArguments()[0];
 							pipelineMethod.producedEvents.add(typeArgument);
 						}
 					}

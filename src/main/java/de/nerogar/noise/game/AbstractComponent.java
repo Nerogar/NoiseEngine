@@ -4,7 +4,7 @@ import de.nerogar.noiseInterface.game.IComponent;
 
 public class AbstractComponent implements IComponent {
 
-	private int             entityId;
+	private int entityId;
 
 	@Override
 	public void setEntityId(int entityId) {
