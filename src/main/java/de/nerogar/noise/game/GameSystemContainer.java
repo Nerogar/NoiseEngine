@@ -41,6 +41,10 @@ public class GameSystemContainer implements IGameSystemContainer {
 		injectionObjects.put(object.getClass(), object);
 	}
 
+	public <T> void addInjectionObject(Class<T> objectClass, T object) {
+		injectionObjects.put(objectClass, object);
+	}
+
 	private void addDefaultInjectionObjects() {
 		addInjectionObject(this);
 		addInjectionObject(eventHub);
@@ -71,9 +75,6 @@ public class GameSystemContainer implements IGameSystemContainer {
 						e.printStackTrace();
 					}
 				} else if (method.isAnnotationPresent(Pipeline.class)) {
-					Object[] params = new Object[method.getParameterCount()];
-					Class<?>[] parameterTypes = method.getParameterTypes();
-
 					IGamePipeline<?> pipeline = gamePipelineMap.get(method.getAnnotation(Pipeline.class).value());
 					pipeline.register(gameSystem);
 				}
@@ -84,11 +85,6 @@ public class GameSystemContainer implements IGameSystemContainer {
 		for (IGameSystem system : gameSystemList) {
 			Noise.getLogger().log(Logger.INFO, "    " + system.getClass().getName());
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends IGameSystem> T getGameSystem(Class<T> gameSystemClass) {
-		return (T) gameSystemMap.get(gameSystemClass);
 	}
 
 	public EventHub getEventHub() {

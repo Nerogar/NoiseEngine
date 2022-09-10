@@ -5,7 +5,7 @@ import de.nerogar.noise.game.events.DespawnEntityEvent;
 import de.nerogar.noise.game.events.SpawnEntityEvent;
 import de.nerogar.noiseInterface.game.*;
 
-import java.util.List;
+import java.util.*;
 
 public class EntityContainerSystem implements IGameSystem {
 
@@ -15,55 +15,45 @@ public class EntityContainerSystem implements IGameSystem {
 		entityContainer = new EntityContainer();
 	}
 
-	public int addEntity(IComponent[] components, IEventProducer<SpawnEntityEvent> spawnEntityEvents) {
-		int entityId = entityContainer.addEntity(components);
-		spawnEntityEvents.addEvent(new SpawnEntityEvent(entityId, components));
-		return entityId;
+	public long initEntity(long entity, IComponent[] components, IEventProducer<SpawnEntityEvent> events) {
+		entityContainer.initEntity(entity, components);
+		events.addEvent(new SpawnEntityEvent(entity, List.of(components)));
+		return entity;
 	}
 
-	public void removeEntity(int entityId, IEventProducer<DespawnEntityEvent> removeEntityEvents) {
-		IComponent[] removedEntity = entityContainer.removeEntity(entityId);
-		removeEntityEvents.addEvent(new DespawnEntityEvent(entityId, removedEntity));
+	public long addEntity(short typeId, IComponent[] components, IEventProducer<SpawnEntityEvent> events) {
+		long entity = entityContainer.addEntity(typeId, components);
+		events.addEvent(new SpawnEntityEvent(entity, List.of(components)));
+		return entity;
 	}
 
-	public IEntity getEntity(int entityId) {
-		return entityContainer.getEntity(entityId);
+	public void clearEntities(IEventProducer<DespawnEntityEvent> events) {
+		Collection<Long> entities = entityContainer.getEntities();
+		for (Long entity : entities) {
+			events.addEvent(new DespawnEntityEvent(entity, entityContainer.get(entity)));
+		}
+		entityContainer.clearEntities();
 	}
 
-	public <T extends IComponent> T getEntityComponent(int entityId, Class<T> componentClass) {
-		return entityContainer.getEntityComponent(entityId, componentClass);
+	public void removeEntity(long entity, IEventProducer<DespawnEntityEvent> events) {
+		Iterable<IComponent> removedEntity = entityContainer.removeEntity(entity);
+		events.addEvent(new DespawnEntityEvent(entity, removedEntity));
 	}
 
-	public <T extends IComponent> List<? super T> getEntityComponents(int entityId, Class<T> componentClass, List<? super T> components) {
-		return entityContainer.getEntityComponents(entityId, componentClass, components);
+	public Collection<Long> getEntities() {
+		return entityContainer.getEntities();
 	}
 
-	public <T extends IComponent> boolean hasEntityComponent(int entityId, Class<T> componentClass) {
-		return entityContainer.getEntityComponent(entityId, componentClass) != null;
+	public <T extends IComponent> T get(long entity, Class<T> componentClass) {
+		return entityContainer.get(entity, componentClass);
 	}
 
-	public IComponent[] getComponents(int entityId) {
-		return entityContainer.getComponents(entityId);
+	public Collection<IComponent> get(long entity) {
+		return entityContainer.get(entity);
 	}
 
-	public <T extends IComponent> T getEntityComponent(IComponent component, Class<T> componentClass) {
-		return entityContainer.getEntityComponent(component.getEntityId(), componentClass);
-	}
-
-	public <T extends IComponent> List<? super T> getEntityComponents(IComponent component, Class<T> componentClass, List<? super T> components) {
-		return entityContainer.getEntityComponents(component.getEntityId(), componentClass, components);
-	}
-
-	public <T extends IComponent> boolean hasEntityComponent(IComponent component, Class<T> componentClass) {
-		return entityContainer.getEntityComponent(component.getEntityId(), componentClass) != null;
-	}
-
-	public IComponent[] getComponents(IComponent component) {
-		return entityContainer.getComponents(component.getEntityId());
-	}
-
-	public <T extends IComponent> List<T> getComponents(Class<T> componentClass, List<T> components) {
-		return entityContainer.getComponents(componentClass, components);
+	public <T extends IComponent> Collection<T> get(Class<T> componentClass) {
+		return entityContainer.get(componentClass);
 	}
 
 }

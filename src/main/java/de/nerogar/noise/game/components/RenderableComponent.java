@@ -8,19 +8,21 @@ public class RenderableComponent extends AbstractComponent {
 	private int                  renderPassIndex;
 	private IRenderableContainer renderable;
 
-	public RenderableComponent(IRenderableContainer renderable, int renderPassIndex) {
+	public RenderableComponent() { }
+
+	public RenderableComponent init(IRenderableContainer renderable, int renderPassIndex) {
 		this.renderable = renderable;
 		this.renderPassIndex = renderPassIndex;
+
+		return this;
 	}
 
-	public RenderableComponent(IRenderableContainer renderable) {
-		this(renderable, 0);
+	public RenderableComponent init(IRenderableContainer renderable) {
+		return init(renderable, 0);
 	}
 
-	public IRenderableContainer getRenderableContainer() {return renderable;}
+	public IRenderableContainer getRenderableContainer() { return renderable; }
 
-	public int getRenderPassIndex() {
-		return renderPassIndex;
-	}
+	public int getRenderPassIndex()                      { return renderPassIndex; }
 
 }

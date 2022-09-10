@@ -27,14 +27,6 @@ public class SimpleRenderableContainer implements IRenderableContainer {
 		this.geometry.remove(geometry);
 	}
 
-	public void addTransparentGeometry(IRenderableGeometry transparentGeometry) {
-		this.geometry.add(transparentGeometry);
-	}
-
-	public void removeTransparentGeometry(IRenderableGeometry transparentGeometry) {
-		this.geometry.remove(transparentGeometry);
-	}
-
 	public void addLight(ILight light) {
 		lights.add(light);
 	}
@@ -49,6 +41,12 @@ public class SimpleRenderableContainer implements IRenderableContainer {
 
 	public void removeContainer(IRenderableContainer container) {
 		containers.add(container);
+	}
+
+	public void clear() {
+		geometry.clear();
+		lights.clear();
+		containers.clear();
 	}
 
 	@Override
@@ -87,4 +85,5 @@ public class SimpleRenderableContainer implements IRenderableContainer {
 			c.setTransformation(transformation);
 		}
 	}
+
 }

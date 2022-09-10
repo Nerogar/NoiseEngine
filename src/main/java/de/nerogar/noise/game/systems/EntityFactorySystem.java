@@ -1,23 +1,30 @@
 package de.nerogar.noise.game.systems;
 
-import de.nerogar.noiseInterface.game.IComponent;
+import de.nerogar.noise.game.entityFactories.IEntityFactory;
 import de.nerogar.noiseInterface.game.IGameSystem;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class EntityFactorySystem implements IGameSystem {
 
-	public void setEntityDefinitions() {
+	private Map<Short, IEntityFactory> entityFactories;
+
+	public EntityFactorySystem() {
+		this.entityFactories = new HashMap<>();
 	}
 
-	public IComponent[] createEntity(int entityTypeId) {
-		return null;
+	public void addEntityFactory(short entityTypeId, IEntityFactory entityFactory) {
+		entityFactories.put(entityTypeId, entityFactory);
 	}
 
-	public IComponent[] getBlueprint(int entityTypeId) {
-		return null;
+	@SuppressWarnings("unchecked")
+	private <T extends IEntityFactory> T getEntityFactory(short entityTypeId, Class<T> entityFactoryClass) {
+		return (T) entityFactories.get(entityTypeId);
 	}
 
-	public <T extends IComponent> T getBlueprintComponent(int entityTypeId, Class<T> componentClass) {
-		return null;
+	public IEntityFactory getEntityFactory(short entityTypeId) {
+		return entityFactories.get(entityTypeId);
 	}
 
 }

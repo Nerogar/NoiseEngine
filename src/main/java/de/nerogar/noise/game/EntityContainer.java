@@ -1,42 +1,108 @@
 package de.nerogar.noise.game;
 
 import de.nerogar.noiseInterface.game.IComponent;
-import de.nerogar.noiseInterface.game.IEntity;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+/**
+ * Container for entities. An entity is a long in the format {@code EEEE-EEEE-TTTT-UUUU} where:
+ * - E is the entityId
+ * - T is the typeId
+ * - U is currently unused
+ */
 public class EntityContainer {
 
-	private Map<Integer, IComponent[]> entities;
-	private int                        maxId = 1;
+	/**Current max id of existing entities*/
+	private int maxEntityId = 0;
+
+	private HashSet<Long>                                     entities;
+	private Map<Long, List<IComponent>>                       componentsByEntity;
+	private Map<Class<? extends IComponent>, Set<IComponent>> componentsByComponentType;
 
 	public EntityContainer() {
-		this.entities = new HashMap<>();
+		this.entities = new HashSet<>();
+		this.componentsByEntity = new HashMap<>();
+		this.componentsByComponentType = new HashMap<>();
 	}
 
-	public int addEntity(IComponent[] components) {
-		int entityId = maxId++;
+	public static long getEntity(int entityId, short typeId) {
+		return ((long) entityId << 32) | ((long) typeId << 16);
+	}
+
+	public static int getEntityId(long entity) {
+		return (int) (entity >> 32);
+	}
+
+	public static short getTypeId(long entity) {
+		return (short) (entity >> 16);
+	}
+
+	public void initEntity(long entity, IComponent[] components) {
+		maxEntityId = Math.max(maxEntityId, getEntityId(entity));
+
 		for (int i = 0; i < components.length; i++) {
-			components[i].setEntityId(entityId);
+			components[i].setEntity(entity);
 		}
-		entities.put(entityId, components);
-		return entityId;
+
+		// add to entities
+		entities.add(entity);
+
+		// add to componentsByEntity
+		componentsByEntity.put(entity, Arrays.asList(components));
+
+		// add to componentsByComponentType
+		for (int i = 0; i < components.length; i++) {
+			IComponent component = components[i];
+			Class<? extends IComponent> componentClass = component.getClass();
+
+			Set<IComponent> c = componentsByComponentType.get(componentClass);
+			if (c == null) {
+				c = new HashSet<>();
+				componentsByComponentType.put(componentClass, c);
+			}
+			c.add(component);
+		}
 	}
 
-	public IComponent[] removeEntity(int entityId) {
-		return entities.remove(entityId);
+	public long addEntity(short typeId, IComponent[] components) {
+		int entityId = ++maxEntityId;
+		long entity = getEntity(entityId, typeId);
+
+		initEntity(entity, components);
+
+		return entity;
 	}
 
-	public IEntity getEntity(int entityId) {
-		return new Entity(entityId, this);
+	public Collection<IComponent> removeEntity(long entity) {
+		List<IComponent> components = componentsByEntity.get(entity);
+
+		entities.remove(entity);
+		componentsByEntity.remove(entity);
+		for (IComponent component : components) {
+			Class<? extends IComponent> componentClass = component.getClass();
+			componentsByComponentType.get(componentClass).remove(component);
+		}
+
+		return components;
+	}
+
+	public void clearEntities() {
+		maxEntityId = 1;
+
+		entities.clear();
+		componentsByEntity.clear();
+		componentsByComponentType.clear();
+	}
+
+	public Collection<Long> getEntities() {
+		return entities;
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends IComponent> T getEntityComponent(int entityId, Class<T> componentClass) {
-		IComponent[] allComponents = entities.get(entityId);
-		for (IComponent component : allComponents) {
+	public <T extends IComponent> T get(long entity, Class<T> componentClass) {
+		List<IComponent> allComponents = componentsByEntity.get(entity);
+		for (int i = 0; i < allComponents.size(); i++) {
+			IComponent component = allComponents.get(i);
 			if (component.getClass() == componentClass) {
 				return (T) component;
 			}
@@ -44,40 +110,12 @@ public class EntityContainer {
 		return null;
 	}
 
-	/**
-	 * Adds all components of an entity matching the specified component class to the list including subclasses.
-	 *
-	 * @param entityId
-	 * @param componentClass
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public <T extends IComponent> List<? super T> getEntityComponents(int entityId, Class<T> componentClass, List<? super T> components) {
-		IComponent[] allComponents = entities.get(entityId);
-
-		for (IComponent component : allComponents) {
-			if (componentClass.isAssignableFrom(component.getClass())) {
-				components.add((T) component);
-			}
-		}
-
-		return components;
+	public Collection<IComponent> get(long entity) {
+		return componentsByEntity.get(entity);
 	}
 
-	public IComponent[] getComponents(int entityId) {
-		return entities.get(entityId);
-	}
-
-	public <T extends IComponent> List<T> getComponents(Class<T> componentClass, List<T> components) {
-		for (IComponent[] allComponents : entities.values()) {
-			for (IComponent component : allComponents) {
-				if (component.getClass() == componentClass) {
-					components.add((T) component);
-				}
-			}
-		}
-
-		return components;
+	public <T extends IComponent> Collection<T> get(Class<T> componentClass) {
+		return (Collection<T>) componentsByComponentType.get(componentClass);
 	}
 
 }

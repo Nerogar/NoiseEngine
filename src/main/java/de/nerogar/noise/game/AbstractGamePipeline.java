@@ -146,7 +146,7 @@ public abstract class AbstractGamePipeline<T extends IEvent> implements IGamePip
 				Class<? extends IEvent> typeArgument = (Class<? extends IEvent>) ((ParameterizedType) genericParameterTypes[i]).getActualTypeArguments()[0];
 				parameters[i] = eventHub.getQueue(typeArgument);
 			} else {
-				throw new RuntimeException("Could not construct pipeline method. Unexpected parameter of type: " + genericParameterTypes[i]);
+				throw new RuntimeException("Could not construct pipeline method. Unexpected parameter of type: " + genericParameterTypes[i] + " in method " + object.getClass().getName() + "." + method.getName());
 			}
 		}
 

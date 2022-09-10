@@ -6,36 +6,26 @@ import de.nerogar.noiseInterface.math.ITransformation;
 
 public class TransformationComponent extends AbstractComponent {
 
-	private final ITransformation transformation;
+	public ITransformation transformation;
 
-	private int transformModCount;
+	public TransformationComponent() { }
 
-	public TransformationComponent(ITransformation transformation) {
+	public TransformationComponent init(ITransformation transformation) {
 		this.transformation = transformation;
+
+		return this;
 	}
 
-	public TransformationComponent(float x, float y, float z, float yaw, float pitch, float roll) {
-		this(new Transformation(
+	public TransformationComponent init(float x, float y, float z, float yaw, float pitch, float roll) {
+		return init(new Transformation(
 				yaw, pitch, roll,
 				x, y, z,
 				1, 1, 1
 		));
 	}
 
-	public TransformationComponent(float x, float y, float z) {
-		this(x, y, z, 0, 0, 0);
+	public TransformationComponent init(float x, float y, float z) {
+		return init(x, y, z, 0, 0, 0);
 	}
-
-	public TransformationComponent() {
-		this(0, 0, 0, 0, 0, 0);
-	}
-
-	@Override
-	public boolean hasChanged() {return transformModCount != transformation.getModCount();}
-
-	@Override
-	public void resetChangedState() {transformModCount = transformation.getModCount();}
-
-	public ITransformation getTransformation() {return transformation;}
 
 }
