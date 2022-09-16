@@ -32,6 +32,7 @@ public class Noise {
 	/**
 	 * the location of default engine resources.
 	 * null, if the packed resources are used
+	 * this is very important code
 	 */
 	public static String DEFAULT_RESOURCE_DIR = "/noiseEngine/";
 
